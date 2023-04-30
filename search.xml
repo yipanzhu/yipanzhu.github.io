@@ -49,45 +49,6 @@
       </tags>
   </entry>
   <entry>
-    <title>STM32环境搭建并实现C51与MDK共存（Hal开发）</title>
-    <url>/2023/04/30/test-my-site/</url>
-    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>笔者由于竞赛需要，最近开始学习STM32H7系列芯片，由于之前并没有学习过32，且51也是较早时期学习，对于一些概念一知半解，没有得到很好的吸收，所以在基础较差的情况下，现在搭建32的环境也是一波三折。特此记录，以供自己队友查看，自己水平有限，但其中整理的一些资料如果对其他人也能带来帮助，定会更好。</p>
-<h2 id="支持环境简介"><a href="#支持环境简介" class="headerlink" title="支持环境简介"></a>支持环境简介</h2><p>意法半导体基于32位ARM Cortex-M 内核的STM32系列微控制器得到了一整套软件工具的支持。它整合了传统集成式开发环境IDE和主要第三方提供的C&#x2F;C++编译器和调试器，并以ST的创新工具作为补充，比如STM32CubeMX，Cube.AI等。</p>
-<p>常用的IDE就笔者目前了解到的有ST自家的STM32CubeIDE、CLion、VScode配合插件，也有用IAR的，以及今天我要详细介绍的Keil。</p>
-<p>笔者目前使用CubeMX图形化界面进行MCU选型以及引脚配置，配合Keil进行代码编译调试，笔者水平有限，且仍在学习中，如有错误还请批评指正。这篇文章也只是便于队友搭环境所记录，更偏向于各方有参考意义的资料整合。</p>
-<h2 id="CubeMX安装与配置"><a href="#CubeMX安装与配置" class="headerlink" title="CubeMX安装与配置"></a>CubeMX安装与配置</h2><p>这是官网对于自家生态下的软件介绍：</p>
-<blockquote>
-<p>STM32CubeMX是STM32Cube工具家族中的一员，从MCU&#x2F;MPU选型，引脚配置，系统时钟以及外设时钟设置，到外设参数配置，中间件参数配置，它给STM32开发者们提供了一种简单，方便，并且直观的方式来完成这些工作。所有的配置完成后，它还可以根据所选的IDE生成对应的工程和初始化C代码。</p>
-</blockquote>
-<p><a class="link"   href="https://www.stmcu.com.cn/" >ST中文官网 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
-<p>关于CubeMX的安装，官网中就能够直接进行下载<a class="link"   href="https://www.stmcu.com.cn/Designresource/detail/software/711627" >Windows点击下载 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
-<p>下载好安装包后，具体的安装步骤与教程可以参考以下视频，需要注意的一点就是<strong>库的安装路径不能出现中文</strong>，否则会有乱码。然后视频中下载了当时用不上的F1的pack，就没下，后面直接在MX里线上选择H7进行了下载，好在校园网这次可给力了一把，下载没出乱子。</p>
-<p><a class="link"   href="https://www.bilibili.com/video/BV1q4411d7RX?p=2&vd_source=df63b1518b81b99bf6c584903334107e" >B站参考视频，这时候看P2 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
-<p>安装好MX和H7的包之后，新建项目，可以根据芯片来创建，也可以根据ST官方开发板来进行创建，笔者竞赛申请的开发板以及已有的开发板为以下两款：</p>
-<p><a class="link"   href="https://www.st.com/zh/evaluation-tools/stm32h7b3i-dk.html" >STM32H7B3I-DK <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
-<p><a class="link"   href="https://www.st.com/zh/evaluation-tools/nucleo-h7a3zi-q.html" >NUCLEO-H7A3ZI-Q <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
-<p>创建好新的项目后，就可以看到MX的图形化配置界面，十分友好。然后在选择IDE时，就到了我们需要介绍的Keil的MDK的安装了。</p>
-<h3 id="插叙"><a href="#插叙" class="headerlink" title="插叙"></a>插叙</h3><p>在本节中，笔者提到了中文路径一事，在注册微软账户时，由于笔者注册了中文名，导致C盘用户文件夹为中文，在之前搭建VScode环境时就出过问题，这次MX的路径好在可以修改，但笔者在学习51时所安装的老版本Keil也遇到过乱码问题，所以这次查了大量方法，想从根本上解决该问题，功夫不负有心人，笔者找到了下面文章中的解决方法，该方法与网上其他方法的原理相同，但操作更为简单，只需粘贴执行几行命令，即可实现一个英文文件夹的镜像链接。</p>
-<p><a class="link"   href="https://answers.microsoft.com/zh-hans/windows/forum/all/%E4%BF%AE%E6%94%B9-windows/3c8cc397-e62a-4e3f-a113-96a342995982" >修改 Windows 用户账户文件夹路径，以改善应用程序兼容性 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
-<h2 id="Keil的MDK与51的共存"><a href="#Keil的MDK与51的共存" class="headerlink" title="Keil的MDK与51的共存"></a>Keil的MDK与51的共存</h2><p>笔者在之前就安装过Keil，但版本较老，这次也是卸载重装，主要参考了以下三个视频，建议都看完，就明白到底是要干个什么事了。</p>
-<p><a class="link"   href="https://www.bilibili.com/video/BV1q4411d7RX?p=1&vd_source=df63b1518b81b99bf6c584903334107e" >只看P1 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
-<p>这个视频里没有提供安装包资源，但对于整体流程讲的较为清晰，总结为下载Keil，并装上C51实现能对51的开发，装上MDK实现对32的开发。然后为了能够免费使用，需要那啥一下，视频中那个及其古早画风的黑色界面软件。</p>
-<p><a class="link"   href="https://www.bilibili.com/video/BV1ae4y1G7rW/?spm_id_from=333.788&vd_source=df63b1518b81b99bf6c584903334107e" >看完整个3P <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
-<p>这个视频讲得太细了，而且可以要到他的安装包资源，可以直接用他整理好的安装包进行安装搭建。按照教程就不会有错误。</p>
-<p><a class="link"   href="https://www.bilibili.com/video/BV1Ga4y1a7Xa/?vd_source=df63b1518b81b99bf6c584903334107e" >这个视频对于理解以上所有内容都有帮助 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
-<p>这个UP很接地气，也是便于理解上面的操作。</p>
-<p>到这里应该就能完成Keil的下载和MDK等的安装了，然后笔者其实忘记了在Keil中安装32的那些开发包，在后续的将代码从MX生成用MDK打开时，通过自带的一个installer才在线上较慢速度地下载完成。可以正常使用。关于创建工程以及将代码用Keil打开，可以看这个视频地前面一段<a class="link"   href="https://www.bilibili.com/video/BV1q4411d7RX?p=3&vd_source=df63b1518b81b99bf6c584903334107e" >可以看看P3和P2 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
-<hr>
-<p>至此笔者竞赛的初步需求就已经满足，关于STLink的安装，由于时间关系还未做，后续可能会补充。</p>
-<pre><code>本文由ZYiPan编写，技术有限，如有问题，请指正！
-</code></pre>
-]]></content>
-      <tags>
-        <tag>STM32</tag>
-        <tag>环境搭建</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Anaconda+PyTorch深度学习环境搭建</title>
     <url>/2023/04/30/hello-world/</url>
     <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本文为作者为了实现一个项目跑yolo的需求，从师兄那里听取了基本的操作，然后开始自己摸索的过程记录。类似的环境搭建教程虽然多，但是总感觉不是完全契合自己的需求，所以为方便记录本过程以及提供一个全面的介绍，笔者决定自己写一篇经验帖，另笔者只是一名刚刚接触深度学习就要赶鸭子上架的大二代码搬运工，技术有限，文章如有错误欢迎指正。</p>
@@ -471,6 +432,45 @@
       <tags>
         <tag>环境搭建</tag>
         <tag>深度学习</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>STM32环境搭建并实现C51与MDK共存（Hal开发）</title>
+    <url>/2023/04/30/test-my-site/</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>笔者由于竞赛需要，最近开始学习STM32H7系列芯片，由于之前并没有学习过32，且51也是较早时期学习，对于一些概念一知半解，没有得到很好的吸收，所以在基础较差的情况下，现在搭建32的环境也是一波三折。特此记录，以供自己队友查看，自己水平有限，但其中整理的一些资料如果对其他人也能带来帮助，定会更好。</p>
+<h2 id="支持环境简介"><a href="#支持环境简介" class="headerlink" title="支持环境简介"></a>支持环境简介</h2><p>意法半导体基于32位ARM Cortex-M 内核的STM32系列微控制器得到了一整套软件工具的支持。它整合了传统集成式开发环境IDE和主要第三方提供的C&#x2F;C++编译器和调试器，并以ST的创新工具作为补充，比如STM32CubeMX，Cube.AI等。</p>
+<p>常用的IDE就笔者目前了解到的有ST自家的STM32CubeIDE、CLion、VScode配合插件，也有用IAR的，以及今天我要详细介绍的Keil。</p>
+<p>笔者目前使用CubeMX图形化界面进行MCU选型以及引脚配置，配合Keil进行代码编译调试，笔者水平有限，且仍在学习中，如有错误还请批评指正。这篇文章也只是便于队友搭环境所记录，更偏向于各方有参考意义的资料整合。</p>
+<h2 id="CubeMX安装与配置"><a href="#CubeMX安装与配置" class="headerlink" title="CubeMX安装与配置"></a>CubeMX安装与配置</h2><p>这是官网对于自家生态下的软件介绍：</p>
+<blockquote>
+<p>STM32CubeMX是STM32Cube工具家族中的一员，从MCU&#x2F;MPU选型，引脚配置，系统时钟以及外设时钟设置，到外设参数配置，中间件参数配置，它给STM32开发者们提供了一种简单，方便，并且直观的方式来完成这些工作。所有的配置完成后，它还可以根据所选的IDE生成对应的工程和初始化C代码。</p>
+</blockquote>
+<p><a class="link"   href="https://www.stmcu.com.cn/" >ST中文官网 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>关于CubeMX的安装，官网中就能够直接进行下载<a class="link"   href="https://www.stmcu.com.cn/Designresource/detail/software/711627" >Windows点击下载 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>下载好安装包后，具体的安装步骤与教程可以参考以下视频，需要注意的一点就是<strong>库的安装路径不能出现中文</strong>，否则会有乱码。然后视频中下载了当时用不上的F1的pack，就没下，后面直接在MX里线上选择H7进行了下载，好在校园网这次可给力了一把，下载没出乱子。</p>
+<p><a class="link"   href="https://www.bilibili.com/video/BV1q4411d7RX?p=2&vd_source=df63b1518b81b99bf6c584903334107e" >B站参考视频，这时候看P2 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>安装好MX和H7的包之后，新建项目，可以根据芯片来创建，也可以根据ST官方开发板来进行创建，笔者竞赛申请的开发板以及已有的开发板为以下两款：</p>
+<p><a class="link"   href="https://www.st.com/zh/evaluation-tools/stm32h7b3i-dk.html" >STM32H7B3I-DK <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><a class="link"   href="https://www.st.com/zh/evaluation-tools/nucleo-h7a3zi-q.html" >NUCLEO-H7A3ZI-Q <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>创建好新的项目后，就可以看到MX的图形化配置界面，十分友好。然后在选择IDE时，就到了我们需要介绍的Keil的MDK的安装了。</p>
+<h3 id="插叙"><a href="#插叙" class="headerlink" title="插叙"></a>插叙</h3><p>在本节中，笔者提到了中文路径一事，在注册微软账户时，由于笔者注册了中文名，导致C盘用户文件夹为中文，在之前搭建VScode环境时就出过问题，这次MX的路径好在可以修改，但笔者在学习51时所安装的老版本Keil也遇到过乱码问题，所以这次查了大量方法，想从根本上解决该问题，功夫不负有心人，笔者找到了下面文章中的解决方法，该方法与网上其他方法的原理相同，但操作更为简单，只需粘贴执行几行命令，即可实现一个英文文件夹的镜像链接。</p>
+<p><a class="link"   href="https://answers.microsoft.com/zh-hans/windows/forum/all/%E4%BF%AE%E6%94%B9-windows/3c8cc397-e62a-4e3f-a113-96a342995982" >修改 Windows 用户账户文件夹路径，以改善应用程序兼容性 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<h2 id="Keil的MDK与51的共存"><a href="#Keil的MDK与51的共存" class="headerlink" title="Keil的MDK与51的共存"></a>Keil的MDK与51的共存</h2><p>笔者在之前就安装过Keil，但版本较老，这次也是卸载重装，主要参考了以下三个视频，建议都看完，就明白到底是要干个什么事了。</p>
+<p><a class="link"   href="https://www.bilibili.com/video/BV1q4411d7RX?p=1&vd_source=df63b1518b81b99bf6c584903334107e" >只看P1 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>这个视频里没有提供安装包资源，但对于整体流程讲的较为清晰，总结为下载Keil，并装上C51实现能对51的开发，装上MDK实现对32的开发。然后为了能够免费使用，需要那啥一下，视频中那个及其古早画风的黑色界面软件。</p>
+<p><a class="link"   href="https://www.bilibili.com/video/BV1ae4y1G7rW/?spm_id_from=333.788&vd_source=df63b1518b81b99bf6c584903334107e" >看完整个3P <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>这个视频讲得太细了，而且可以要到他的安装包资源，可以直接用他整理好的安装包进行安装搭建。按照教程就不会有错误。</p>
+<p><a class="link"   href="https://www.bilibili.com/video/BV1Ga4y1a7Xa/?vd_source=df63b1518b81b99bf6c584903334107e" >这个视频对于理解以上所有内容都有帮助 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>这个UP很接地气，也是便于理解上面的操作。</p>
+<p>到这里应该就能完成Keil的下载和MDK等的安装了，然后笔者其实忘记了在Keil中安装32的那些开发包，在后续的将代码从MX生成用MDK打开时，通过自带的一个installer才在线上较慢速度地下载完成。可以正常使用。关于创建工程以及将代码用Keil打开，可以看这个视频地前面一段<a class="link"   href="https://www.bilibili.com/video/BV1q4411d7RX?p=3&vd_source=df63b1518b81b99bf6c584903334107e" >可以看看P3和P2 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<hr>
+<p>至此笔者竞赛的初步需求就已经满足，关于STLink的安装，由于时间关系还未做，后续可能会补充。</p>
+<pre><code>本文由ZYiPan编写，技术有限，如有问题，请指正！
+</code></pre>
+]]></content>
+      <tags>
+        <tag>环境搭建</tag>
+        <tag>STM32</tag>
       </tags>
   </entry>
 </search>
