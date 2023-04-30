@@ -49,26 +49,428 @@
       </tags>
   </entry>
   <entry>
-    <title>Hello World</title>
-    <url>/2023/04/29/hello-world/</url>
-    <content><![CDATA[<p>Welcome to <a class="link"   href="https://hexo.io/" >Hexo <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a>! This is your very first post. Check <a class="link"   href="https://hexo.io/docs/" >documentation <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a> for more info. If you get any problems when using Hexo, you can find the answer in <a class="link"   href="https://hexo.io/docs/troubleshooting.html" >troubleshooting <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a> or you can ask me on <a class="link"   href="https://github.com/hexojs/hexo/issues" >GitHub <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure></div>
-
-<p>More info: <a class="link"   href="https://hexo.io/docs/writing.html" >Writing <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure></div>
-
-<p>More info: <a class="link"   href="https://hexo.io/docs/server.html" >Server <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure></div>
-
-<p>More info: <a class="link"   href="https://hexo.io/docs/generating.html" >Generating <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure></div>
-
-<p>More info: <a class="link"   href="https://hexo.io/docs/one-command-deployment.html" >Deployment <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+    <title>STM32环境搭建并实现C51与MDK共存（Hal开发）</title>
+    <url>/2023/04/30/test-my-site/</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>笔者由于竞赛需要，最近开始学习STM32H7系列芯片，由于之前并没有学习过32，且51也是较早时期学习，对于一些概念一知半解，没有得到很好的吸收，所以在基础较差的情况下，现在搭建32的环境也是一波三折。特此记录，以供自己队友查看，自己水平有限，但其中整理的一些资料如果对其他人也能带来帮助，定会更好。</p>
+<h2 id="支持环境简介"><a href="#支持环境简介" class="headerlink" title="支持环境简介"></a>支持环境简介</h2><p>意法半导体基于32位ARM Cortex-M 内核的STM32系列微控制器得到了一整套软件工具的支持。它整合了传统集成式开发环境IDE和主要第三方提供的C&#x2F;C++编译器和调试器，并以ST的创新工具作为补充，比如STM32CubeMX，Cube.AI等。</p>
+<p>常用的IDE就笔者目前了解到的有ST自家的STM32CubeIDE、CLion、VScode配合插件，也有用IAR的，以及今天我要详细介绍的Keil。</p>
+<p>笔者目前使用CubeMX图形化界面进行MCU选型以及引脚配置，配合Keil进行代码编译调试，笔者水平有限，且仍在学习中，如有错误还请批评指正。这篇文章也只是便于队友搭环境所记录，更偏向于各方有参考意义的资料整合。</p>
+<h2 id="CubeMX安装与配置"><a href="#CubeMX安装与配置" class="headerlink" title="CubeMX安装与配置"></a>CubeMX安装与配置</h2><p>这是官网对于自家生态下的软件介绍：</p>
+<blockquote>
+<p>STM32CubeMX是STM32Cube工具家族中的一员，从MCU&#x2F;MPU选型，引脚配置，系统时钟以及外设时钟设置，到外设参数配置，中间件参数配置，它给STM32开发者们提供了一种简单，方便，并且直观的方式来完成这些工作。所有的配置完成后，它还可以根据所选的IDE生成对应的工程和初始化C代码。</p>
+</blockquote>
+<p><a class="link"   href="https://www.stmcu.com.cn/" >ST中文官网 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>关于CubeMX的安装，官网中就能够直接进行下载<a class="link"   href="https://www.stmcu.com.cn/Designresource/detail/software/711627" >Windows点击下载 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>下载好安装包后，具体的安装步骤与教程可以参考以下视频，需要注意的一点就是<strong>库的安装路径不能出现中文</strong>，否则会有乱码。然后视频中下载了当时用不上的F1的pack，就没下，后面直接在MX里线上选择H7进行了下载，好在校园网这次可给力了一把，下载没出乱子。</p>
+<p><a class="link"   href="https://www.bilibili.com/video/BV1q4411d7RX?p=2&vd_source=df63b1518b81b99bf6c584903334107e" >B站参考视频，这时候看P2 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>安装好MX和H7的包之后，新建项目，可以根据芯片来创建，也可以根据ST官方开发板来进行创建，笔者竞赛申请的开发板以及已有的开发板为以下两款：</p>
+<p><a class="link"   href="https://www.st.com/zh/evaluation-tools/stm32h7b3i-dk.html" >STM32H7B3I-DK <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><a class="link"   href="https://www.st.com/zh/evaluation-tools/nucleo-h7a3zi-q.html" >NUCLEO-H7A3ZI-Q <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>创建好新的项目后，就可以看到MX的图形化配置界面，十分友好。然后在选择IDE时，就到了我们需要介绍的Keil的MDK的安装了。</p>
+<h3 id="插叙"><a href="#插叙" class="headerlink" title="插叙"></a>插叙</h3><p>在本节中，笔者提到了中文路径一事，在注册微软账户时，由于笔者注册了中文名，导致C盘用户文件夹为中文，在之前搭建VScode环境时就出过问题，这次MX的路径好在可以修改，但笔者在学习51时所安装的老版本Keil也遇到过乱码问题，所以这次查了大量方法，想从根本上解决该问题，功夫不负有心人，笔者找到了下面文章中的解决方法，该方法与网上其他方法的原理相同，但操作更为简单，只需粘贴执行几行命令，即可实现一个英文文件夹的镜像链接。</p>
+<p><a class="link"   href="https://answers.microsoft.com/zh-hans/windows/forum/all/%E4%BF%AE%E6%94%B9-windows/3c8cc397-e62a-4e3f-a113-96a342995982" >修改 Windows 用户账户文件夹路径，以改善应用程序兼容性 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<h2 id="Keil的MDK与51的共存"><a href="#Keil的MDK与51的共存" class="headerlink" title="Keil的MDK与51的共存"></a>Keil的MDK与51的共存</h2><p>笔者在之前就安装过Keil，但版本较老，这次也是卸载重装，主要参考了以下三个视频，建议都看完，就明白到底是要干个什么事了。</p>
+<p><a class="link"   href="https://www.bilibili.com/video/BV1q4411d7RX?p=1&vd_source=df63b1518b81b99bf6c584903334107e" >只看P1 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>这个视频里没有提供安装包资源，但对于整体流程讲的较为清晰，总结为下载Keil，并装上C51实现能对51的开发，装上MDK实现对32的开发。然后为了能够免费使用，需要那啥一下，视频中那个及其古早画风的黑色界面软件。</p>
+<p><a class="link"   href="https://www.bilibili.com/video/BV1ae4y1G7rW/?spm_id_from=333.788&vd_source=df63b1518b81b99bf6c584903334107e" >看完整个3P <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>这个视频讲得太细了，而且可以要到他的安装包资源，可以直接用他整理好的安装包进行安装搭建。按照教程就不会有错误。</p>
+<p><a class="link"   href="https://www.bilibili.com/video/BV1Ga4y1a7Xa/?vd_source=df63b1518b81b99bf6c584903334107e" >这个视频对于理解以上所有内容都有帮助 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>这个UP很接地气，也是便于理解上面的操作。</p>
+<p>到这里应该就能完成Keil的下载和MDK等的安装了，然后笔者其实忘记了在Keil中安装32的那些开发包，在后续的将代码从MX生成用MDK打开时，通过自带的一个installer才在线上较慢速度地下载完成。可以正常使用。关于创建工程以及将代码用Keil打开，可以看这个视频地前面一段<a class="link"   href="https://www.bilibili.com/video/BV1q4411d7RX?p=3&vd_source=df63b1518b81b99bf6c584903334107e" >可以看看P3和P2 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<hr>
+<p>至此笔者竞赛的初步需求就已经满足，关于STLink的安装，由于时间关系还未做，后续可能会补充。</p>
+<pre><code>本文由ZYiPan编写，技术有限，如有问题，请指正！
+</code></pre>
 ]]></content>
+      <tags>
+        <tag>STM32</tag>
+        <tag>环境搭建</tag>
+      </tags>
   </entry>
   <entry>
-    <title>test_my_site</title>
-    <url>/2023/04/29/test-my-site/</url>
-    <content><![CDATA[]]></content>
+    <title>Anaconda+PyTorch深度学习环境搭建</title>
+    <url>/2023/04/30/hello-world/</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本文为作者为了实现一个项目跑yolo的需求，从师兄那里听取了基本的操作，然后开始自己摸索的过程记录。类似的环境搭建教程虽然多，但是总感觉不是完全契合自己的需求，所以为方便记录本过程以及提供一个全面的介绍，笔者决定自己写一篇经验帖，另笔者只是一名刚刚接触深度学习就要赶鸭子上架的大二代码搬运工，技术有限，文章如有错误欢迎指正。</p>
+<h2 id="Anaconda安装"><a href="#Anaconda安装" class="headerlink" title="Anaconda安装"></a>Anaconda安装</h2><h3 id="什么是Anaconda"><a href="#什么是Anaconda" class="headerlink" title="什么是Anaconda"></a>什么是Anaconda</h3><p>Anaconda是一个集成的Python包以及环境，包含依赖项等，可以用来管理包，安装、运行应用，其包含了conda、Python等180多个科学包及其依赖项，Anaconda + Jupyter 基本上已经是大部分机器学习&#x2F;数据分析等开发者标配的开发环境，针对不同版本的Python需求，Anaconda可以帮助建立管理多个环境，以避免不同环境的相互影响，提供一个更加快速和简单的方式来运行机器学习的相关代码。</p>
+<p><a class="link"   href="https://www.anaconda.com/" >Anaconda官网 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-04-15%20163617.jpg"
+                      alt="Anaconda官网"
+                ></p>
+<h3 id="软件安装"><a href="#软件安装" class="headerlink" title="软件安装"></a>软件安装</h3><p>有两种下载的方式，网上部分教程使用清华的镜像进行下载，我是使用上文引用的官网就可以直接进行安装，<br>在官网进行下载，直接点击Download即可，这里可以用最新的版本。<br>下载好后双击安装包，进行安装。<img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/1.jpg"
+                      alt="1"
+                ></p>
+<p>安装过程整体来说没什么坑，点Next就可-&gt;I Agree.</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/2.jpg"
+                      alt="2"
+                ></p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/3.jpg"
+                      alt="3"
+                ></p>
+<p>这里与你的电脑的操作用户有关，一般个人就选择Just Me即可。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/4.jpg"
+                      alt="4"
+                ></p>
+<p>关于路径如果C盘不是很阔绰的还是换到其它盘吧，软件因为各种包比较多，还是蛮大的。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/5.jpg"
+                      alt="5"
+                ></p>
+<p>是否添加环境变量，如果为了省事我看许多教程就直接将第二条打勾了，但有一位网友的教程说到可能会影响电脑装好的origin-py，</p>
+<p>所以我这里选择了不打勾，后续自己添加，但我在原本没有装Python的情况下好像没什么影响。然后点击Install即可进行安装。安装过程不算快，需要等3、5分钟。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/6.jpg"
+                      alt="6"
+                ></p>
+<p>之后过掉两页没什么说的Next，最后一页这里不用打勾，勾了会有弹窗。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/7.jpg"
+                      alt="7"
+                ></p>
+<p>至此安装完成，可以在电脑中找到该软件。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/8.jpg"
+                      alt="8"
+                ></p>
+<h3 id="添加环境变量"><a href="#添加环境变量" class="headerlink" title="添加环境变量"></a>添加环境变量</h3><p>如果刚刚没有打勾自动添加，那么现在则是需要手动添加，如果像我一样直接在D盘新建了文件夹进行安装的话，那么可以直接逐行复制下面的路径添加到PATH中，</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">D:\Anaconda</span><br><span class="line">D:\Anaconda\Scripts</span><br><span class="line">D:\Anaconda\Library\mingw-w64\bin</span><br><span class="line">D:\Anaconda\Library\bin</span><br></pre></td></tr></table></figure></div>
+<p>添加环境变量的方法如下：</p>
+<p>右键此电脑，点击属性，找到高级系统设置</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/9.jpg"
+                      alt="9"
+                ></p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/10.jpg"
+                      alt="10"
+                ></p>
+<p>点击环境变量进行设置</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/11.jpg"
+                      alt="11"
+                ></p>
+<p>在系统变量中找到PATH双击或者点击编辑，进入环境变量配置页面，</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/12.jpg"
+                      alt="12"
+                ></p>
+<p>如果你和我一样在D盘中新建文件夹进行安装，则按照一开始我说的四行路径逐一新建添加进去即可，如果不是，则按照自己的安装路径进行添加。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/13.jpg"
+                      alt="13"
+                ></p>
+<p>完成上述操作后我们可以进cmd检查一下，直接在搜索框中搜索cmd打开，输入</p>
+<p><code>conda --version</code>并执行，可以查看版本信息，输入</p>
+<p><code>conda info</code>执行可以获取更多信息</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/14.jpg"
+                      alt="14"
+                ></p>
+<p>至此，Anaconda安装完成。</p>
+<h2 id="Anaconda虚拟环境管理演示"><a href="#Anaconda虚拟环境管理演示" class="headerlink" title="Anaconda虚拟环境管理演示"></a>Anaconda虚拟环境管理演示</h2><p>针对不同版本的Python需求，Anaconda可以帮助建立管理多个环境，建立开发用虚拟环境可以理解为只是系统的另一个区域，你可以在其中使用任意安装包，并与其他的Python包隔离开，互不影响，这就是conda的价值。</p>
+<p>打开Cmd，键入<code>activate</code>，即可进入base环境<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/15.jpg"
+                      alt="15"
+                ></p>
+<p>再继续键入<code>conda create -n py38 python=3.8</code>&#x2F;&#x2F;环境命名为py38，其中python版本指定为了3.8（-n是name的缩写）</p>
+<p>即可创建一个环境名称为py38的，python版本为3.8的虚拟环境。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/16.jpg"
+                      alt="16"
+                ></p>
+<p>稍等片刻后，即可出现询问是否确定下载创建环境的对话，这时键入<code>y</code>即可完成下载。（我这里的WARNING是说有新版本的conda，没有影响我创建环境）</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/17.jpg"
+                      alt="17"
+                ></p>
+<p>等待进度条加载完成，下载创建好环境后，键入<code>conda activate py38</code>即可激活进入建立的py38环境（命令行前面的括号有所提示）。这时键入<code>python</code>并执行，出现的本环境中的python版本为3.8.16，符合要求。<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/18.jpg"
+                      alt="18"
+                ></p>
+<p>在&gt;&gt;&gt;后键入<code> exit()</code>执行即可出现新的命令行，键入<code>conda deactivate</code>即可退出py38环境，回到base环境中，这时键入<code>python</code>执行显示版本为与安装的Anaconda配套的3.10.9版本。</p>
+<p>再次键入<br><code> exit()</code> 、 <code>conda deactivate</code>即可从base环境中退出。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/19.jpg"
+                      alt="19"
+                ></p>
+<p>以上就是Anaconda基本的建立环境操作了，常用的相关指令可以查看conda网站</p>
+<p><a class="link"   href="https://docs.conda.io/projects/conda/en/latest/commands.html" >点击查看更多指令 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>比如查看所有环境的指令<code>conda env list</code>，即可看到我的base环境与建立的py38环境。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/20.jpg"
+                      alt="20"
+                ></p>
+<h2 id="编程环境安装"><a href="#编程环境安装" class="headerlink" title="编程环境安装"></a>编程环境安装</h2><p>我学校的师兄使用的是PyCharm，为方便出问题后可以询问，我没有使用vscode，也选择了PyCharm，且据说高版本的Anaconda里面无法直接下载vscode了。</p>
+<p><a class="link"   href="https://www.jetbrains.com/pycharm/" >PyCharm官网 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/21.jpg"
+                      alt="21"
+                ></p>
+<p>直接在官网点击DOWNLOAD，即可弹出页面下载，这里选择右边社区版本为免费开源的。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/22.jpg"
+                      alt="22"
+                ></p>
+<p>下载好安装包后双击安装即可，路径可以自选，然后下图页面全打勾即可，环境变量让他自动安装好。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/23.jpg"
+                      alt="23"
+                ></p>
+<p>之后的一个页面保持默认即可，点击Install安装完成。<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/24.jpg"
+                      alt="24"
+                ></p>
+<p>在桌面找到快捷方式打开PyCharm，我电脑上没有.py程序，我这里点击新建，new project</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/25.jpg"
+                      alt="25"
+                ></p>
+<p>之前不是使用Anaconda新建了一个虚拟环境吗，这里我们就选择第二项先前的…</p>
+<p>然后点击Add解释器，<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/26.jpg"
+                      alt="26"
+                ></p>
+<p>左边选择第一项虚拟环境，右边选择现存的Existing，然后点击···，选择之前建立的虚拟环境。<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/27.jpg"
+                      alt="27"
+                ></p>
+<p>我之前就安在D盘文件夹下，找到Anaconda下的envs，下拉会有一个python.exe选中后点击create即可。<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/28.jpg"
+                      alt="28"
+                ></p>
+<p>这里我们能看到python版本为py38环境中的3.8版本，点击create即可新建工程。<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/29.jpg"
+                      alt="29"
+                ></p>
+<p>至此IDE也安装完成。</p>
+<h2 id="CUDA与cuDNN安装"><a href="#CUDA与cuDNN安装" class="headerlink" title="CUDA与cuDNN安装"></a>CUDA与cuDNN安装</h2><h3 id="什么是CUDA与cuDNN"><a href="#什么是CUDA与cuDNN" class="headerlink" title="什么是CUDA与cuDNN"></a>什么是CUDA与cuDNN</h3><p>CUDA是NVIDIA推出的运算平台。 它是一种由NVIDIA推出的通用并行计算架构，该架构使GPU能够解决复杂的计算问题。 它包含了CUDA指令集架构（ISA）以及GPU内部的并行计算引擎。深度神经网络库 (cuDNN) 是一个GPU加速的深度神经网络基元库。cuDNN可大幅度优化标准例程（例如前向和后向卷积、池化、归一化和激活层）的实施。总的来说，二者的作用是促使GPU加速。</p>
+<h3 id="关于CUDA的下载版本讨论"><a href="#关于CUDA的下载版本讨论" class="headerlink" title="关于CUDA的下载版本讨论"></a>关于CUDA的下载版本讨论</h3><p>下载前关于版本的注意事项：</p>
+<blockquote>
+<p>笔者查阅大量经验帖，众说纷纭，大致有以下注意事项：</p>
+<blockquote>
+<p>30系显卡网上说只能安装CUDA11.0以上了，这直接导致许多经验帖下共享的的资源不可用，或者下载后会报错，建议查清自己适配的版本后从官网下载；</p>
+</blockquote>
+<blockquote>
+<p>cuDNN版本与CUDA版本相对应，而电脑支持的CUDA版本较高，但PyTorch支持的版本有限，可以从官网上查看；</p>
+</blockquote>
+<blockquote>
+<p>CUDA对显卡驱动也有要求，所以网上教程第一步一般都是装显卡驱动，一般CUDA11版本又需要版本号&gt;450的显卡驱动；</p>
+</blockquote>
+</blockquote>
+<p>在版本对应上，这位大佬的文章讲解得较为精简明了：</p>
+<p><a class="link"   href="https://www.jianshu.com/p/ac70300b598b" >pytorch、显卡、显卡驱动、cuda版本是如何对应的 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>以下记录我的安装过程，我的显卡是3050Laptop，电脑上自带NVIDIA GeForce Experimence，使用该软件我完成了诸多经验贴的第一步——安装&#x2F;更新显卡驱动，</p>
+<p>可以看到，我的显卡驱动为531.61版本，足够高，理论上下载什么CUDA都可以，</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/30.png"
+                      alt="30"
+                ></p>
+<p>在这里我附上可以查找显卡更新驱动的链接，如果没有这个软件，可以通过这个网站装显卡驱动，<a class="link"   href="https://www.nvidia.cn/geforce/drivers/" >GeForce 驱动程序 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a>。</p>
+<p>然后就是确定我到底可以安装什么版本的CUDA，而CUDA需要与cuDNN相对应，又需要与PyTorch适配，我首先进入了PyTorch的官网查看到最新的版本支持CUDA为11.7和11.8，<a class="link"   href="https://pytorch.org/" >PyTorch官网 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%EF%BC%93%EF%BC%91.png"
+                      alt="31"
+                ></p>
+<p>又进入CUDA的历史版本中查看11.8和11.7是否都有，发现果然不是最新的CUDA版本，<br><a class="link"   href="https://developer.nvidia.com/cuda-toolkit-archive" >CUDA历代版本 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a><br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%EF%BC%93%EF%BC%92.png"
+                      alt="32"
+                ></p>
+<p>又去看了cuDNN的版本支持<a class="link"   href="https://developer.nvidia.com/rdp/cudnn-archive" >cuDNN历代版本 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a>，发现还是有支持11与12代CUDA版本的，主要就是PyTorch版本拖后腿，于是我最终决定下载11.7版本的CUDA。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%EF%BC%93%EF%BC%93.png"
+                      alt="33"
+                ></p>
+<h3 id="CUDA下载步骤"><a href="#CUDA下载步骤" class="headerlink" title="CUDA下载步骤"></a>CUDA下载步骤</h3><p>决定下载11.7之后，我在上面发的CUDA的历代版本下载页里点击了11.7.1版本下载，有下图选项需要选择，我是win10系统，所以进行了如下选择，注意这里的VERSION指的是你的电脑操作系统版本，根据情况选，然后选择下载到本地。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%EF%BC%93%EF%BC%94.png"
+                      alt="34"
+                ></p>
+<p>安装包下载好后，双击打开它，下图页面不建议更改路径，之后等待安装</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%EF%BC%93%EF%BC%95.png"
+                      alt="35"
+                ></p>
+<p>中途一路默认，到这里，选择自定义安装</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%EF%BC%93%EF%BC%96.png"
+                      alt="36"
+                ></p>
+<p>自定义安装中，我对照我显卡装完驱动后已有的程序取消了几个勾，一般应该只勾选第一个大项CUDA即可</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%EF%BC%93%EF%BC%97.png"
+                      alt="37"
+                ></p>
+<p>下一步选择安装路径，我按照网上教程多新建了几个文件夹，路径如下供参考，</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%EF%BC%93%EF%BC%98.png"
+                      alt="38"
+                ></p>
+<p>结果发现我这里并没有网上教程中的CUDA Samples那一项，不过大部分装新版本CUDA的一般直接下一步了，应该应该影响不大。所以在更改路径后我也下一步了，<a class="link"   href="https://blog.csdn.net/wumingshuing/article/details/126624615?spm=1001.2101.3001.6650.3&utm_medium=distribute.pc_relevant.none-task-blog-2~default~CTRLIST~Rate-3-126624615-blog-127499808.235%5Ev29%5Epc_relevant_default_base3&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2~default~CTRLIST~Rate-3-126624615-blog-127499808.235%5Ev29%5Epc_relevant_default_base3&utm_relevant_index=6" >据说11.6后就都没有了 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%EF%BC%93%EF%BC%99.png"
+                      alt="39"
+                ></p>
+<p>下一步是让勾选vs什么的，不勾无法下一步，所以我勾好后下一步一路默认安装好了。</p>
+<p>然后可以验证一下是否成功安装，打开cmd，键入<code>nvcc -V</code>注意V要大写，否则你会和我一样心脏骤停。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/40.png"
+                      alt="40"
+                ></p>
+<h3 id="cuDNN下载步骤"><a href="#cuDNN下载步骤" class="headerlink" title="cuDNN下载步骤"></a>cuDNN下载步骤</h3><p>既然CUDA安装了11.7.1，那么cnDNN只要选择相对应的版本即可，</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/41.png"
+                      alt="41"
+                ></p>
+<p>我这里选择了对应11.x的版本然后下载win版本，下载好后就是一个安装包，我们解压它，将里面的三个文件夹复制粘贴到刚刚安装CUDA的文件夹里，对我来说就是刚刚建的那好几个文件夹的地方。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/42.png"
+                      alt="42"
+                ><br>我的话是复制到下图这里。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/43.png"
+                      alt="43"
+                ></p>
+<p>至此CUDA与cuDNN安装完成。</p>
+<h2 id="PyTorch安装"><a href="#PyTorch安装" class="headerlink" title="PyTorch安装"></a>PyTorch安装</h2><h3 id="什么是PyTorch"><a href="#什么是PyTorch" class="headerlink" title="什么是PyTorch"></a>什么是PyTorch</h3><p>PyTorch 是一种用于构建深度学习模型的功能完备框架，是一种通常用于图像识别和语言处理等应用程序的机器学习。使用 Python 编写，因此对于大多数机器学习开发者而言，学习和使用起来相对简单。PyTorch 的独特之处在于，它完全支持 GPU，并且使用反向模式自动微分技术，因此可以动态修改计算图形。这使其成为快速实验和原型设计的常用选择。</p>
+<h3 id="PyTorch安装-1"><a href="#PyTorch安装-1" class="headerlink" title="PyTorch安装"></a>PyTorch安装</h3><p>我首先看了我这次搭建深度学习环境的目的——yolov3对Python环境的要求，发现是大于3.7即可，那么我之前构建的3.8版本的py38环境可以用，所以决定就在这个环境中去装PyTorch了。</p>
+<p>打开cmd，还是进入py38环境。在命令行界面输入<code>activate</code>进入base环境，输入<code>conda activate py38</code>激活进入py38，</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/45.jpg"
+                      alt="45"
+                ></p>
+<p>然后进入<a class="link"   href="https://pytorch.org/" >PyTorch官网 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a>，我这里已经提前看好了它的11.7版本，直接复制下面的指令代码到cmd中执行即可下载。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/47.png"
+                      alt="47"
+                ></p>
+<p>之后会加载出来一个需要下载的包的list，并问你y&#x2F;n，这时键入y并执行开始下载，下载界面只拍了照，没有截图，大概就是长这样，经过漫长的等待，下载好后会显示done。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/46.jpg"
+                      alt="46"
+                ></p>
+<p>显示done之后，我们在py38环境中键入<code>python</code>，然后依次输入下面三条指令并执行，查看输出结果是否正常，我的结果如下图：</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">import torch</span><br><span class="line">print(torch. __version__)</span><br><span class="line">torch.cuda. is_available()</span><br></pre></td></tr></table></figure></div>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/44.jpg"
+                      alt="44"
+                ></p>
+<p>注意当最后一条指令返回True代表安装成功，且可以使用GPU。</p>
+<h3 id="配置PyCharm"><a href="#配置PyCharm" class="headerlink" title="配置PyCharm"></a>配置PyCharm</h3><p>这一步骤是为了在PyCharm中可以使用PyTorch，我们打开刚刚下载的PyCharm，然后在刚刚下载时py38环境中建立的工程内写下这几行代码：</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">import torch</span><br><span class="line">print(torch.__version__)</span><br><span class="line">print(torch.cuda.is_available())</span><br></pre></td></tr></table></figure></div>
+<p>然后run一下，输出结果为</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/48.png"
+                      alt="48"
+                ></p>
+<p>代表此时PyCharm可以使用PyTorch，网络上有的帖子这里仍旧需要配置环境变量，但是我这里就直接run出来了，如果有配置环境变量的需求可以参考这篇博客（<a class="link"   href="https://blog.csdn.net/weixin_44842318/article/details/127487476" >需要配置环境点这里 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a>）。但感觉如果你和我相同的操作应该就没问题。</p>
+<hr>
+<p>至此，深度学习的开发环境Anaconda+CUDA+cuDNN+PyTorch+PyCharm就已经搭建完成了，我要去学习跑yolo了，希望本篇对你有所帮助。</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">本文由ZYiPan编写，刚接触深度学习，技术有限，如有错误，欢迎指正！</span><br></pre></td></tr></table></figure></div>]]></content>
+      <tags>
+        <tag>环境搭建</tag>
+        <tag>深度学习</tag>
+      </tags>
   </entry>
 </search>
