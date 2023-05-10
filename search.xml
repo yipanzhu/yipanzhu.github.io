@@ -33,6 +33,10 @@
 <p>关于主题参数设置真的没什么大问题，主题作者将步骤讲解得十分全面，每次改动后使用</p>
 <div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">hexo clean //这是清除网页缓存</span><br><span class="line">hexo g //这是生成</span><br><span class="line">hexo d //这是部署</span><br></pre></td></tr></table></figure></div>
 <p>这三条指令，注意都是在blog文件夹下打开git命令行。</p>
+<p>当想要写笔记的时候，只要在blog下打开git命令行，输入<code>hexo n &quot;name&quot;</code>即可在source文件夹中的_post里创建一个.md文档，写就是了。</p>
+<p>写好后，还是</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">hexo g</span><br><span class="line">hexo d</span><br></pre></td></tr></table></figure></div>
+<p>即可部署好文章</p>
 <h2 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h2><p>以上就是简短的一个踩坑经验，其实本篇文章更重要的意义是作为第一篇博客来帮助我查看是否有网站搭建问题，所以没什么大用。</p>
 <p>搭建个人网站主要是有自己的一个输出平台，希望自己保持这份折腾的心，一直走下去，多写多记。</p>
 <hr>
@@ -46,6 +50,92 @@
 ]]></content>
       <tags>
         <tag>网站搭建</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>STM32学习笔记（一）</title>
+    <url>/2023/05/10/STM32-1/</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>简单写一下，主要是工作室的学习任务，老师要写一篇32的标准库教程应该是，笔者因为也有在学习项目所需的Hal库之前学习一下标准库的想法，所以帮老师也写一下教程。不完全是被抓壮丁了。然后主要是自己回顾所用的笔记，这里记录的多为代码，以及简单理论，这里所发表的不是教程，所以不是很详尽。</p>
+<p>关于看的教程就是B站江科大的视频，51就是看的他的，跟机构讲解完全不是一个模式，可学。</p>
+<h2 id="GPIO输出"><a href="#GPIO输出" class="headerlink" title="GPIO输出"></a>GPIO输出</h2><p>通用输入输出口，可配置为8种输入输出模式，引脚电平0-3.3V，引脚定义带有FT的可容忍5V，输出可以控制蜂鸣器、LED等，还可以模拟通信协议，</p>
+<p>输入模式可以读取端口的高低电压，可以读取按键输入等，GPIO挂在APB2外设总线，结构为</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-10%20102936.jpg"
+                      alt="1"
+                ></p>
+<p>位结构如图</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-10%20103243.jpg"
+                      alt="2"
+                ></p>
+<p>看上图可以分析通过上拉电阻、下拉电阻来控制上、下拉输入，为了避免悬空时引脚不确定的问题而添加</p>
+<p>8种工作模式如下：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-10%20103638.jpg"
+                      alt="3"
+                ></p>
+<p>前三个输入操作都可以读取引脚高低电平，模拟输入是则是接入片上外设也就是ADC，开漏输出和推挽输出，都是数字输出高低电平，开漏高阻态，没有驱动能力，只有低电平有驱动能力，推挽输出则高低电平都有驱动能力，复用推挽输出等最后两个功能和上两个差不多，只不过可以通过片上外设进行控制。</p>
+<p>点亮与熄灭一个LED的代码如下，</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;stm32f10x.h&quot;                  // Device header</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">	GPIO_InitTypeDef GPIO_InitStructure;</span><br><span class="line">	//定义一个符合类型的结构体，自己的编译器变量只能在前面定义</span><br><span class="line">	</span><br><span class="line">	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA,ENABLE);</span><br><span class="line">	//调用RCC里面的APB2外设时钟控制函数，</span><br><span class="line">	//第一个参数选正确接口的外设，然后第二个选ENABLE即可开启时钟</span><br><span class="line">	</span><br><span class="line">	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;//推挽输出</span><br><span class="line">	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;//GPIOA的0号引脚</span><br><span class="line">	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;</span><br><span class="line">	//定义各个结构体成员的参数</span><br><span class="line">	</span><br><span class="line">	GPIO_Init(GPIOA, &amp;GPIO_InitStructure);</span><br><span class="line">	//用结构体来初始化变量，</span><br><span class="line">	//这里就是用第二个参数（结构体来定义第一个参数接口）</span><br><span class="line">	</span><br><span class="line">    //下面为GPIO的几个常用的函数</span><br><span class="line"></span><br><span class="line">	GPIO_SetBits(GPIOA,GPIO_Pin_0);  </span><br><span class="line">	//使PA0口为高电平，最小系统板接的灯灭</span><br><span class="line">	//GPIO_ResetBits(GPIOA,GPIO_Pin_0);</span><br><span class="line">	//使PA0口为低电平，最小系统板接的灯亮</span><br><span class="line">  	//GPIO_WriteBit(GPIOA,GPIO_Pin_0,Bit_RESET);  </span><br><span class="line">	//bit_reset就是清除端口值，也就是置为低电平</span><br><span class="line">	//bit_set就是设置端口值，给高电平</span><br><span class="line">  </span><br><span class="line"></span><br><span class="line">    while(1)</span><br><span class="line">	&#123;</span><br><span class="line">		</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>
+<p>然后是流水灯的电路，</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;stm32f10x.h&quot;                  // Device header</span><br><span class="line">#include &quot;Delay.h&quot;</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">	GPIO_InitTypeDef GPIO_InitStructure;</span><br><span class="line">	//定义一个符合类型的结构体，自己的编译器变量只能在前面定义</span><br><span class="line">	</span><br><span class="line">	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA,ENABLE);</span><br><span class="line">	//调用RCC里面的APB2外设时钟控制函数，</span><br><span class="line">	//第一个参数选正确接口的外设，然后第二个选ENABLE即可开启时钟</span><br><span class="line">	</span><br><span class="line">	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;//推挽输出</span><br><span class="line">	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3;  </span><br><span class="line">    //GPIOA的0号引脚，加上或的几个脚，，，这几个一或相当于，0000 0000 0000 1111，，最后四个都进行了初始化</span><br><span class="line">	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;</span><br><span class="line">	//定义各个结构体成员的参数</span><br><span class="line">	</span><br><span class="line">	GPIO_Init(GPIOA, &amp;GPIO_InitStructure);</span><br><span class="line">	//用结构体来初始化变量，</span><br><span class="line">	//这里就是用第二个参数（结构体来定义第一个参数接口）</span><br><span class="line">	</span><br><span class="line">	</span><br><span class="line">	while(1)</span><br><span class="line">	&#123;</span><br><span class="line">		GPIO_Write(GPIOA, ~0x0001); //0000 0000 0000 0001，，加~是因为是低电平点亮，所以进行取反</span><br><span class="line">		Delay_ms(500);</span><br><span class="line">		GPIO_Write(GPIOA, ~0x0002); //0000 0000 0000 0010</span><br><span class="line">		Delay_ms(500);</span><br><span class="line">		GPIO_Write(GPIOA, ~0x0004); //0000 0000 0000 0100</span><br><span class="line">		Delay_ms(500);</span><br><span class="line">		GPIO_Write(GPIOA, ~0x0008); //0000 0000 0000 1000</span><br><span class="line">		Delay_ms(500);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>
+
+<p>然后是蜂鸣器</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;stm32f10x.h&quot;                  // Device header</span><br><span class="line">#include &quot;Delay.h&quot;</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">	GPIO_InitTypeDef GPIO_InitStructure;</span><br><span class="line">	//定义一个符合类型的结构体，自己的编译器变量只能在前面定义</span><br><span class="line">	</span><br><span class="line">	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB,ENABLE);</span><br><span class="line">	//调用RCC里面的APB2外设时钟控制函数，</span><br><span class="line">	//第一个参数选正确接口的外设，然后第二个选ENABLE即可开启时钟,蜂鸣器按教程是PB12</span><br><span class="line">	</span><br><span class="line">	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;//推挽输出</span><br><span class="line">	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12;//GPIOA的12号引脚，加上或几个脚</span><br><span class="line">	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;</span><br><span class="line">	//定义各个结构体成员的参数</span><br><span class="line">	</span><br><span class="line">	GPIO_Init(GPIOB, &amp;GPIO_InitStructure);</span><br><span class="line">	//用结构体来初始化变量，</span><br><span class="line">	//这里就是用第二个参数（结构体来定义第一个参数接口）</span><br><span class="line">	</span><br><span class="line">	</span><br><span class="line">	while(1)</span><br><span class="line">	&#123;</span><br><span class="line">		GPIO_SetBits(GPIOB,GPIO_Pin_12);</span><br><span class="line">		Delay_ms(100);</span><br><span class="line">		GPIO_ResetBits(GPIOB,GPIO_Pin_12);</span><br><span class="line">		Delay_ms(100);</span><br><span class="line">		GPIO_SetBits(GPIOB,GPIO_Pin_12);</span><br><span class="line">		Delay_ms(100);</span><br><span class="line">		GPIO_ResetBits(GPIOB,GPIO_Pin_12);</span><br><span class="line">		Delay_ms(700);</span><br><span class="line">		</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>
+
+<p>以上就是用GPIO的输出控制LED以及蜂鸣器的代码部分。</p>
+<p>然后是还讲了关于调用函数的一些方法方式，</p>
+<p>第一种就是打开.h文件的最后，右键看定义，去看各个参数</p>
+<p>第二种就是看库函数使用文档，不过有的文档不好找，且找到了估计是英文</p>
+<p>第三种就是去看别人的代码，直接取用。</p>
+]]></content>
+      <tags>
+        <tag>STM32</tag>
+        <tag>“学习笔记”</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>STM32笔记（二）</title>
+    <url>/2023/05/10/STM32-2/</url>
+    <content><![CDATA[<h2 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h2><p>从本节开始，笔者开始使用工作室发放的板子，根据课程举一反三，自己根据自己板子的电路开始写代码了，跟课程里的有可能不一致。</p>
+<h2 id="GPIO输入"><a href="#GPIO输入" class="headerlink" title="GPIO输入"></a>GPIO输入</h2><p>按键是常见的输入设备，按下导通，松手断开，按键抖动是因为机械式弹簧片通断物理上就会有抖动，会抖5-10ms，要过滤他，最简单的就是通过延时</p>
+<p>传感器模块原理都差不多，那些电阻的阻值会随着外界模拟量来改变，通常与定值电阻串联分压，得到模拟电压的输出，方便电路检测。还可以通过电压比较器来对模拟电压进行二值化，从而得到数字电压输出</p>
+<p>按键一般采用下接地的习惯，看高低电平需要来考虑加上拉电阻，直接接GPIO口，按下时导通到GND，这种接法就会是按下是为低电平，松开时为高电平。</p>
+<h2 id="C语言知识复习"><a href="#C语言知识复习" class="headerlink" title="C语言知识复习"></a>C语言知识复习</h2><p>数据类型比较基础，各种数据类型的关键字、位数、表示范围等，STM32中int为32位的，</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-10%20103638.jpg"
+                      alt="1"
+                ></p>
+<p>st给数据类型都起了新的名字，uint8_t表示无符号字符。</p>
+<p>C语言的宏定义：#define</p>
+<p>用来用字符来代替一个数字</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#define ABC 12345//定义时</span><br><span class="line">int a = ABC;//引用时</span><br></pre></td></tr></table></figure></div>
+<p>typedef是将一个比较长的变量名换个名字，用来给变量命名时常用。</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">typedef unsigned char uint8_t;//定义时</span><br><span class="line">uint8_t a;//引用时</span><br></pre></td></tr></table></figure></div>
+<p>C语言的结构体就比较重要，他也是一种高级点的数据类型，数组是组合数据类型，但他只能组合相同类型的数据，但结构体可以组合不同类型的变量数据。</p>
+<p>结构体的简单用法</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">    int a;//整形变量</span><br><span class="line">    a = 66;</span><br><span class="line">    int b[5];//数组</span><br><span class="line">    b[0] = 66;</span><br><span class="line">    b[1] = 77;</span><br><span class="line">    b[2] = 88;</span><br><span class="line">    struct&#123;char x;int y;float z;&#125; c;//这是结构体c的定义，要在关键字后面表明各个变量的数据类型</span><br><span class="line">    c.x = &#x27;A&#x27;;//结构体赋值语句</span><br><span class="line">    c.y = 66;</span><br><span class="line">    c.z = 1.23;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<p>每次敲struct来定义结构体太麻烦，活用typedef</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">typedef struct&#123;</span><br><span class="line">    char x;</span><br><span class="line">    int y;</span><br><span class="line">    float z;</span><br><span class="line">&#125;StructName_t;   //利用typedef一个东西，来代替定义结构体的一大堆字母</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">    int a;//整形变量</span><br><span class="line">    a = 66;</span><br><span class="line">    int b[5];//数组</span><br><span class="line">    b[0] = 66;</span><br><span class="line">    b[1] = 77;</span><br><span class="line">    b[2] = 88;</span><br><span class="line">    StructName_t c;//这是结构体c的定义，要在关键字后面表明各个变量的数据类型</span><br><span class="line">    StructName_t d;//能快速再定义一个和c差不多的结构体</span><br><span class="line"></span><br><span class="line">    c.x = &#x27;A&#x27;;//结构体赋值语句</span><br><span class="line">    c.y = 66;</span><br><span class="line">    c.z = 1.23;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<p>其次是C语言的枚举，关键字为enum</p>
+<p>也是数据类型，定义一个取值受限制的整型变量，用于限制取值范围</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">typedef enum&#123;</span><br><span class="line">    MONDAY = 1,</span><br><span class="line">    TUESDAY,</span><br><span class="line">    WEDNESDAY</span><br><span class="line">&#125; week_t;  </span><br><span class="line"></span><br><span class="line">  //利用typedef一个枚举变量，来代替定义一些受限制的只能是那几个数的量</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">    Week_t week;</span><br><span class="line">    week = MONDAY;  //week = 1</span><br><span class="line">    week = TUESDAY;  //week = 2</span><br><span class="line">    week = 100;   //error</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<p>具体控制代码部分明天写了。</p>
+<hr>
+<p>今天开了组会，项目进展堪忧，教程这样写下去也不知道能不能来得及</p>
+<p>加油吧</p>
+]]></content>
+      <tags>
+        <tag>STM32</tag>
+        <tag>学习笔记</tag>
       </tags>
   </entry>
   <entry>
@@ -469,8 +559,8 @@
 </code></pre>
 ]]></content>
       <tags>
-        <tag>环境搭建</tag>
         <tag>STM32</tag>
+        <tag>环境搭建</tag>
       </tags>
   </entry>
 </search>
