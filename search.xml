@@ -97,7 +97,7 @@
 ]]></content>
       <tags>
         <tag>STM32</tag>
-        <tag>“学习笔记”</tag>
+        <tag>学习笔记</tag>
       </tags>
   </entry>
   <entry>
@@ -125,6 +125,15 @@
 <div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">    int a;//整形变量</span><br><span class="line">    a = 66;</span><br><span class="line">    int b[5];//数组</span><br><span class="line">    b[0] = 66;</span><br><span class="line">    b[1] = 77;</span><br><span class="line">    b[2] = 88;</span><br><span class="line">    struct&#123;char x;int y;float z;&#125; c;//这是结构体c的定义，要在关键字后面表明各个变量的数据类型</span><br><span class="line">    c.x = &#x27;A&#x27;;//结构体赋值语句</span><br><span class="line">    c.y = 66;</span><br><span class="line">    c.z = 1.23;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
 <p>每次敲struct来定义结构体太麻烦，活用typedef</p>
 <div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">typedef struct&#123;</span><br><span class="line">    char x;</span><br><span class="line">    int y;</span><br><span class="line">    float z;</span><br><span class="line">&#125;StructName_t;   //利用typedef一个东西，来代替定义结构体的一大堆字母</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">    int a;//整形变量</span><br><span class="line">    a = 66;</span><br><span class="line">    int b[5];//数组</span><br><span class="line">    b[0] = 66;</span><br><span class="line">    b[1] = 77;</span><br><span class="line">    b[2] = 88;</span><br><span class="line">    StructName_t c;//这是结构体c的定义，要在关键字后面表明各个变量的数据类型</span><br><span class="line">    StructName_t d;//能快速再定义一个和c差不多的结构体</span><br><span class="line"></span><br><span class="line">    c.x = &#x27;A&#x27;;//结构体赋值语句</span><br><span class="line">    c.y = 66;</span><br><span class="line">    c.z = 1.23;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>附一段数据结构的小内容:</p>
+<p>为何头指针为head的带头结点的单链表判空条件head-&gt;next&#x3D;&#x3D;null?其实一开始这里也是没啥问题的，只是突然产生了疑问点——head为头指针，储存了头结点的地址，按照我残余的一点指针知识，我总感觉不对，head只是个地址，咋可以直接head-&gt;next使用呢？其实哈，这里又产生了和我之前学结构体这个知识点一样的纠结点（嘿嘿，其实这里也算是结构体类型）——结构体</p>
+<p>总之和结构体类型一样这个指向符号“-&gt;”,这里是有特殊规定的，比如你定义个结构体类型</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct student</span><br><span class="line">&#123;</span><br><span class="line">	int age;</span><br><span class="line">	float score;</span><br><span class="line">	char name[100];</span><br><span class="line">&#125;*pstu，stu;</span><br></pre></td></tr></table></figure></div>
+<p>你用stu.age，pstu-&gt;age或者(*pstu).age都是一样可以取到成员变量的，这里的pstu它也是个地址，但是c语言就是这么规定了利用pstu-&gt;age可以取到其结构体内部成员变量（记住就好）所以不难理解为啥head这个指向头结点的指针为啥用head-&gt;next就能取到头结点结构体中的next成员变量了。</p>
+<p>如此便恍然大悟，头结点中next成员变量存储的是下一个结点的地址，若next域中为null，所以除了头结点外，链表中无其他结点，于是单链表判空。</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">版权声明：本段为CSDN博主「懵逼是一种状态」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。</span><br></pre></td></tr></table></figure></div>
+<p><a class="link"   href="https://blog.csdn.net/qq_41113008/article/details/107494929" >原文链接 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
 <p>其次是C语言的枚举，关键字为enum</p>
 <p>也是数据类型，定义一个取值受限制的整型变量，用于限制取值范围</p>
 <div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">typedef enum&#123;</span><br><span class="line">    MONDAY = 1,</span><br><span class="line">    TUESDAY,</span><br><span class="line">    WEDNESDAY</span><br><span class="line">&#125; week_t;  </span><br><span class="line"></span><br><span class="line">  //利用typedef一个枚举变量，来代替定义一些受限制的只能是那几个数的量</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">    Week_t week;</span><br><span class="line">    week = MONDAY;  //week = 1</span><br><span class="line">    week = TUESDAY;  //week = 2</span><br><span class="line">    week = 100;   //error</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
@@ -561,6 +570,190 @@
       <tags>
         <tag>环境搭建</tag>
         <tag>深度学习</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>STM32_3</title>
+    <url>/2023/05/14/STM32-3/</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>续前篇GPIO输入的理论部分，没什么好讲的，直接上代码书写部分吧，笔记一般都写在注释里了。</p>
+<p>这两天正值期中考试，这几个学期自己专业都没期中考试，在部门中理所当然多做了些工作，也算是从部门工作快开摆的末尾在奉献奉献吧。节能减排在没什么成果的情况下竟然能获得推入国赛的资格，好好珍惜，没有成果也要拼一把，如果不是炮灰，这不就发达了。</p>
+<h2 id="代码书写"><a href="#代码书写" class="headerlink" title="代码书写"></a>代码书写</h2><p>模块化编程确实重要，一般驱动代码都会单独封装起来，用到时再引用，这样也不错。</p>
+<p>由于是标准库，所以建文件夹并且添加文件夹不可少，用标准库的弊端这不就显现了。添加Hardware文件并添加，这个不过多讲了，相信以后做的多了也就会了。</p>
+<p>工程管理加组挪位置，工程选项加到头文件路径，在文件夹中添加.c文件.h文件，注意都加在该文件夹中，.c用来放驱动程序主体代码，.h放程序对外提供的函数或变量的声明。</p>
+<p>两个文件建好后，需要添加一些必要的头头，</p>
+<h2 id="在-c文件中，需要添加芯片的头文件，在-h文件中则是添加防止头文件重复包含的代码。"><a href="#在-c文件中，需要添加芯片的头文件，在-h文件中则是添加防止头文件重复包含的代码。" class="headerlink" title="在.c文件中，需要添加芯片的头文件，在.h文件中则是添加防止头文件重复包含的代码。"></a>在.c文件中，需要添加芯片的头文件，在.h文件中则是添加防止头文件重复包含的代码。<br><div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#ifndef __LED_H   //如果没有定义LED字符串</span><br><span class="line">#define __LED_H   //那么就定义这个字符串</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#endif  //这个和ifndef组成括号，同样注意文件以空行结尾</span><br><span class="line"></span><br></pre></td></tr></table></figure></div></h2><p>未完待续</p>
+]]></content>
+      <tags>
+        <tag>STM32</tag>
+        <tag>学习笔记</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>STM32笔记（三）——Flash模拟EEPROM</title>
+    <url>/2023/05/28/STM32-3-1/</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>笔者终于要完成工作室的第一篇教程了，终于找到了去哪里学这个东西，开始着手写教程了，打算自己博客写的多一些，然后工作室教程适当截取便是。</p>
+<h2 id="STM32FLASH操作介绍"><a href="#STM32FLASH操作介绍" class="headerlink" title="STM32FLASH操作介绍"></a>STM32FLASH操作介绍</h2><h3 id="STM32编程方式"><a href="#STM32编程方式" class="headerlink" title="STM32编程方式"></a>STM32编程方式</h3><ul>
+<li>在线编程<br>通过JTAG&#x2F;SWD协议或Boot loader下载程序到微控制器，这两个协议其实就是在用STlink、JLink等下载程序，而这个BL其实就是通过串口。这两种都是比较常见的。</li>
+<li>在程序中编程<br>首先我们通过在线编程写一个程序到微控制器，然后这个程序可以把一个数据包重新烧写到闪存存储器中。</li>
+</ul>
+<h3 id="STM32闪存模块存储器组织"><a href="#STM32闪存模块存储器组织" class="headerlink" title="STM32闪存模块存储器组织"></a>STM32闪存模块存储器组织</h3><p>不同型号的 STM32，其 FLASH 容量也有所不同，最小的只有 16K 字节，最大的则达到了1024K 字节。根据下图，可知C8T6的FLASH为64K，</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%A4%A7%E5%B0%8F%E5%88%A4%E6%96%AD.jpg"
+                      alt="大小判断"
+                ></p>
+<p>那么它作为小容量产品的闪存模块组织如下图：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B0%8F%E5%AE%B9%E9%87%8F%E5%88%86%E9%85%8D.png"
+                      alt="小容量"
+                ></p>
+<p>STM32的闪存模块由：主存储器、信息块和闪存存储器接口寄存器等三部分组成。</p>
+<p>主存储器，该部分用来存放代码和数据常数（如const类型的数据）。对于小容量产品，被划分为页0~页31，每页1K字节。上图中也可以看到主存储器的起始地址为0x0800 0000。</p>
+<p>信息块，该部分分为两个个小部分，其中启动程序代码（系统存储器），是用来存储 ST 自带的启动程序，用于串口下载代码。用户选择字节，则一般用于配置写保护、读保护等功能。</p>
+<p>闪存存储器接口寄存器，该部分用于控制闪存读写等，是整个闪存模块的控制机构。</p>
+<h3 id="FLASH闪存的读取"><a href="#FLASH闪存的读取" class="headerlink" title="FLASH闪存的读取"></a>FLASH闪存的读取</h3><p>内置闪存模块可以在通用地址空间直接寻址，任何32位数据的读操作都能访问闪存模块内容并得到相应的数据。</p>
+<p>例如，我们要从地址addr，读取一个半字（半字为 16 为，字为 32 位），可以通过如下的语句读取：</p>
+<p><code>data=*(vu16*)addr;</code></p>
+<p>将addr强制转换为vu16指针，然后取该指针所指向的地址的值，即得到了addr地址的值。类似的，将上面的 vu16 改为 vu8，即可读取指定地址的一个字节。</p>
+<h3 id="FLASH闪存的写和擦除操作"><a href="#FLASH闪存的写和擦除操作" class="headerlink" title="FLASH闪存的写和擦除操作"></a>FLASH闪存的写和擦除操作</h3><p>STM32闪存编程由FPEC（闪存编程和擦除控制器）模块处理，它包含7个32位寄存器：</p>
+<ul>
+<li>FPEC 键寄存器(FLASH_KEYR)</li>
+<li>选择字节键寄存器(FLASH_OPTKEYR)</li>
+<li>闪存控制寄存器(FLASH_CR)</li>
+<li>闪存状态寄存器(FLASH_SR)</li>
+<li>闪存地址寄存器(FLASH_AR)</li>
+<li>选择字节寄存器(FLASH_OBR)</li>
+<li>写保护寄存器(FLASH_WRPR)</li>
+</ul>
+<p>写的注意事项：</p>
+<blockquote>
+<p>STM32 复位后，FPEC 模块是被保护的，不能写入 FLASH_CR 寄存器；通过写入特定的序列到 FLASH_KEYR 寄存器可以打开 FPEC 模块（即写入 KEY1 和 KEY2），只有在写保护被解除后，我们才能操作相关寄存器，这个过程叫Unlock。</p>
+</blockquote>
+<blockquote>
+<p>KEY1和KEY2是指其中 FPEC 键寄存器总共有的三个个键值：</p>
+</blockquote>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">RDPRT 键=0X000000A5</span><br><span class="line">KEY1=0X45670123</span><br><span class="line">KEY2=0XCDEF89AB</span><br></pre></td></tr></table></figure></div>
+<blockquote>
+<p>STM32 闪存的编程每次必须写入 16 位（不可写入 8 位数据），当 FLASH_CR 寄存器的 PG 位为’1’时，在一个闪存地址写入一个半字将启动一次编程；写入任何非半字的数据，FPEC 都会产生总线错误。</p>
+</blockquote>
+<blockquote>
+<p>在编程过程中(BSY 位为’1’)，任何读写闪存的操作都会使CPU暂停，直到此次闪存编程结束，所以在写之前要保证没有其他的操作在进行。</p>
+</blockquote>
+<blockquote>
+<p>写FLASH某个地址的时候，首先要保障这个地址是被擦除了的。STM32 的 FLASH 在编程的时候，也必须要求其写入地址的 FLASH 是被擦除了的（也就是其值必须是 0XFFFF），否则无法写入，在 FLASH_SR 寄存器的 PGERR 位将得到一个警告。</p>
+</blockquote>
+<p>总结流程如下图：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E6%B5%81%E7%A8%8B.png"
+                      alt="流程"
+                ></p>
+<p>从上图可以得到闪存的编程顺序如下：</p>
+<ul>
+<li>检查 FLASH_CR 的 LOCK 是否解锁，如果没有则先解锁</li>
+<li>检查 FLASH_SR 寄存器的 BSY 位，以确认没有其他正在进行的编程操作</li>
+<li>设置 FLASH_CR 寄存器的 PG 位为’1’</li>
+<li>在指定的地址写入要编程的半字</li>
+<li>等待 BSY 位变为’0’</li>
+<li>读出写入的地址并验证数据</li>
+</ul>
+<p>前面提到，我们在 STM32 的 FLASH 编程的时候，要先判断缩写地址是否被擦除了，所以，我们有必要再介绍一下 STM32 的闪存擦除，STM32 的闪存擦除分为两种：页擦除和整片擦除。</p>
+<p>已经说过，对于小容量来说，主存分成了32个页，页擦除顾名思义就是擦除那一页的1K字节。其步骤如下图：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E9%A1%B5%E6%93%A6%E9%99%A4.png"
+                      alt="页擦除"
+                ></p>
+<p>从上图可以看出，STM32 的页擦除顺序为：</p>
+<ul>
+<li>检查 FLASH_CR 的 LOCK 是否解锁，如果没有则先解锁</li>
+<li>检查 FLASH_SR 寄存器的 BSY 位，以确认没有其他正在进行的闪存操作</li>
+<li>设置 FLASH_CR 寄存器的 PER 位为’1’</li>
+<li>用 FLASH_AR 寄存器选择要擦除的页</li>
+<li>设置 FLASH_CR 寄存器的 STRT 位为’1’</li>
+<li>等待 BSY 位变为’0’</li>
+<li>读出被擦除的页并做验证</li>
+</ul>
+<p>全片擦除则不需要选择要擦除的页，然后将 FLASH_CR 寄存器的 MER 设置为’1’，其它操作相同。</p>
+<h3 id="相关寄存器具体介绍"><a href="#相关寄存器具体介绍" class="headerlink" title="相关寄存器具体介绍"></a>相关寄存器具体介绍</h3><h4 id="FPEC-键寄存器：FLASH-KEYR"><a href="#FPEC-键寄存器：FLASH-KEYR" class="headerlink" title="FPEC 键寄存器：FLASH_KEYR"></a>FPEC 键寄存器：FLASH_KEYR</h4><p>前文的两个Unlock键值已经介绍，没有太多其他用法。下面具体介绍与程序相关的一些寄存器。</p>
+<h4 id="闪存控制寄存器（FLASH-CR）"><a href="#闪存控制寄存器（FLASH-CR）" class="headerlink" title="闪存控制寄存器（FLASH_CR）"></a>闪存控制寄存器（FLASH_CR）</h4><p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/CR.png"
+                      alt="CR"
+                ></p>
+<p>位7正是控制解锁的LOCK位，位6是开始位，当该位为’1’时将触发一次擦除操作。该位只可由软件置为’1’并在BSY变为’1’时清为’0’。位2和1，则是擦除选项，MER为全擦除，PER为页擦除。</p>
+<h4 id="内存地址寄存器（FLASH-AR）"><a href="#内存地址寄存器（FLASH-AR）" class="headerlink" title="内存地址寄存器（FLASH_AR）"></a>内存地址寄存器（FLASH_AR）</h4><p>主要用来当进行编程时选择要编程的地址，当进行页擦除时选择要擦除的页。</p>
+<h2 id="FLASH相关操作库函数"><a href="#FLASH相关操作库函数" class="headerlink" title="FLASH相关操作库函数"></a>FLASH相关操作库函数</h2><p>用到的库函数为stmflash.h&#x2F;stmflash.c</p>
+<p>前文提到，在对 FLASH 进行写操作前必须先解锁，解锁操作也就是必须在FLASH_KEYR 寄存器写入特定的序列（KEY1 和 KEY2）,固件库函数实现很简单：</p>
+<p><code>void FLASH_Unlock(void);</code></p>
+<p>同样的道理，在对 FLASH 写操作完成之后，我们要锁定 FLASH，使用的库函数是：</p>
+<p><code>void FLASH_Lock(void);</code></p>
+<p>解锁后，如果我们要进行写操作，官方固件库提供了三个FLASH写函数：</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">FLASH_Status FLASH_ProgramWord(uint32_t Address, uint32_t Data);</span><br><span class="line">FLASH_Status FLASH_ProgramHalfWord(uint32_t Address, uint16_t Data);</span><br><span class="line">FLASH_Status FLASH_ProgramOptionByteData(uint32_t Address, uint8_t Data);</span><br></pre></td></tr></table></figure></div>
+<p>其作用分别为FLASH_ProgramWord 为 32 位字写入函数，其他分别为 16 位半字写入和用户选择字节写入函数。这里需要说明，32 位字节写入实际上是写入的两次 16 位数据，写完第一次后地址+2，这与前面提到的 STM32 闪存的编程每次必须写入 16 位相呼应。</p>
+<p>写好后，如果我需要擦除，</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">FLASH_Status FLASH_ErasePage(uint32_t Page_Address);</span><br><span class="line">FLASH_Status FLASH_EraseAllPages(void);</span><br><span class="line">FLASH_Status FLASH_EraseOptionBytes(void);</span><br></pre></td></tr></table></figure></div>
+<p>第一个函数是页擦除函数，根据页地址擦除特定的页数据，第二个函数是擦除所有的页数据，第三个函数是擦除用户选择字节数据。</p>
+<p>只会写入和擦除还是不够的，还要能够获取FLASH的状态，主要用到<br>&#96;&#96;FLASH_Status FLASH_GetStatus(void);<br>返回值通过枚举类型定义：</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">typedef enum</span><br><span class="line">&#123; </span><br><span class="line"> FLASH_BUSY = 1,//忙</span><br><span class="line"> FLASH_ERROR_PG,//编程错误</span><br><span class="line"> FLASH_ERROR_WRP,//写保护错误</span><br><span class="line"> FLASH_COMPLETE,//操作完成</span><br><span class="line"> FLASH_TIMEOUT//操作超时</span><br><span class="line">&#125;FLASH_Status</span><br></pre></td></tr></table></figure></div>
+
+<p>从这里面我们可以看到 FLASH 操作的 5 个状态。</p>
+<p>在执行闪存写操作时，任何对闪存的读操作都会锁住总线，在写操作完成后读操作才能正确地进行；即在进行写或擦除操作时，不能进行代码或数据的读取操作。所以在每次操作之前，我们都要等待上一次操作完成这次操作才能开始。使用的函数是：</p>
+<p><code>FLASH_Status FLASH_WaitForLastOperation(uint32_t Timeout)</code></p>
+<p>入口参数为等待时间，返回值是 FLASH 的状态。</p>
+<h2 id="USART串口通信"><a href="#USART串口通信" class="headerlink" title="USART串口通信"></a>USART串口通信</h2><p>为了能有明显的实验现象，学习串口来进行打印。</p>
+<h3 id="串口通信基础理论"><a href="#串口通信基础理论" class="headerlink" title="串口通信基础理论"></a>串口通信基础理论</h3><p>通信是为了实现数据交流，扩展硬件系统。如果需要两个芯片交流，就需要进行通信。通信协议就是通信的一套规则。</p>
+<p>对于我们要学的UASRT，他的两个引脚为TX、RX（或者叫TXD、RXD），RX是数据接收脚，TX是数据发送脚。双工模式为全双工，指通信双方能同时进行双向通信。常用通信的特性汇总如下：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-30%20094354.jpg"
+                      alt="特性汇总"
+                ></p>
+<p>接线对应要求如图：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-30%20095853.jpg"
+                      alt="接线"
+                ></p>
+<p>注意电平问题，电平标准是数据1和数据0的表达方式，TTL电平为+3.3或+5V表示1，0V表示0。RS232电平，-3<del>-15V表示1，+3</del>+15表示0。RS485两线压差+2<del>+6V表示1，-2</del>-6V表示0。（差分信号）</p>
+<p>接下来该了解串口参数及时序了，串口中每一个字节放再一个数据帧里，每一个数据帧由起始位、数据位和停止位组成。数据位一般位8位，有时会在数据位后有一个奇偶校验位。串口的主要参数有：</p>
+<ul>
+<li>波特率：串口通信的速率，异步通信，需要约定好速率。二进制下，波特率&#x3D;比特率，说白了是规定每隔多久发送&#x2F;接收1位。</li>
+<li>起始位：固定为低电平，表示数据帧开始，产生下降沿</li>
+<li>数据位：数据帧的有效载荷，1为高电平，0为低电平，低位先行。传0F，，那应该是1111 0000。</li>
+<li>校验位：用于数据验证，由数据位得来。奇偶校验，看1的个数，补在校验位。</li>
+<li>停止位：用于数据帧间隔，固定为高，为了保障开始位产生下降沿。</li>
+</ul>
+<h3 id="USART外设简介"><a href="#USART外设简介" class="headerlink" title="USART外设简介"></a>USART外设简介</h3><p>STM32内部集成的硬件外设。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-30%20103610.jpg"
+                      alt="内容"
+                ></p>
+<p>关于USART的内部框图，我这里就不放了，可以去查数据手册，需要注意的是，引脚上，我们常用的就是TX和RX引脚，其他用于别的功能的不用在意。然后对应写和读操作的两个寄存器可以了解一下，而两个引脚相接的就是两个移位寄存器，一个用于发送，一个用于接收。了解原理即可。</p>
+<p>可简略为下图</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-30%20110525.jpg"
+                      alt="简略图"
+                ></p>
+<p>而对于数据位细节，输出较为简单，但输入则需要采样时间配合好，比较复杂，所以就有了起始位侦测，他一位会进行16次采样，保证准确性，避免噪声的影响。</p>
+<hr>
+<p>代码实现等掌握了发出来吧，连带eeprom读写。</p>
+]]></content>
+      <tags>
+        <tag>STM32</tag>
+        <tag>学习笔记</tag>
       </tags>
   </entry>
 </search>
