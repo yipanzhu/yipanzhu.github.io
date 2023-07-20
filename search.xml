@@ -53,47 +53,167 @@
       </tags>
   </entry>
   <entry>
-    <title>STM32学习笔记（一）</title>
-    <url>/2023/05/10/STM32-1/</url>
-    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>简单写一下，主要是工作室的学习任务，老师要写一篇32的标准库教程应该是，笔者因为也有在学习项目所需的Hal库之前学习一下标准库的想法，所以帮老师也写一下教程。不完全是被抓壮丁了。然后主要是自己回顾所用的笔记，这里记录的多为代码，以及简单理论，这里所发表的不是教程，所以不是很详尽。</p>
-<p>关于看的教程就是B站江科大的视频，51就是看的他的，跟机构讲解完全不是一个模式，可学。</p>
-<h2 id="GPIO输出"><a href="#GPIO输出" class="headerlink" title="GPIO输出"></a>GPIO输出</h2><p>通用输入输出口，可配置为8种输入输出模式，引脚电平0-3.3V，引脚定义带有FT的可容忍5V，输出可以控制蜂鸣器、LED等，还可以模拟通信协议，</p>
-<p>输入模式可以读取端口的高低电压，可以读取按键输入等，GPIO挂在APB2外设总线，结构为</p>
+    <title>STM32笔记（三）——Flash模拟EEPROM</title>
+    <url>/2023/05/28/STM32-3-1/</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>笔者终于要完成工作室的第一篇教程了，终于找到了去哪里学这个东西，开始着手写教程了，打算自己博客写的多一些，然后工作室教程适当截取便是。</p>
+<h2 id="STM32FLASH操作介绍"><a href="#STM32FLASH操作介绍" class="headerlink" title="STM32FLASH操作介绍"></a>STM32FLASH操作介绍</h2><h3 id="STM32编程方式"><a href="#STM32编程方式" class="headerlink" title="STM32编程方式"></a>STM32编程方式</h3><ul>
+<li>在线编程<br>通过JTAG&#x2F;SWD协议或Boot loader下载程序到微控制器，这两个协议其实就是在用STlink、JLink等下载程序，而这个BL其实就是通过串口。这两种都是比较常见的。</li>
+<li>在程序中编程<br>首先我们通过在线编程写一个程序到微控制器，然后这个程序可以把一个数据包重新烧写到闪存存储器中。</li>
+</ul>
+<h3 id="STM32闪存模块存储器组织"><a href="#STM32闪存模块存储器组织" class="headerlink" title="STM32闪存模块存储器组织"></a>STM32闪存模块存储器组织</h3><p>不同型号的 STM32，其 FLASH 容量也有所不同，最小的只有 16K 字节，最大的则达到了1024K 字节。根据下图，可知C8T6的FLASH为64K，</p>
 <p><img  
                      lazyload
                      src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-10%20102936.jpg"
-                      alt="1"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%A4%A7%E5%B0%8F%E5%88%A4%E6%96%AD.jpg"
+                      alt="大小判断"
                 ></p>
-<p>位结构如图</p>
+<p>那么它作为小容量产品的闪存模块组织如下图：</p>
 <p><img  
                      lazyload
                      src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-10%20103243.jpg"
-                      alt="2"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B0%8F%E5%AE%B9%E9%87%8F%E5%88%86%E9%85%8D.png"
+                      alt="小容量"
                 ></p>
-<p>看上图可以分析通过上拉电阻、下拉电阻来控制上、下拉输入，为了避免悬空时引脚不确定的问题而添加</p>
-<p>8种工作模式如下：</p>
+<p>STM32的闪存模块由：主存储器、信息块和闪存存储器接口寄存器等三部分组成。</p>
+<p>主存储器，该部分用来存放代码和数据常数（如const类型的数据）。对于小容量产品，被划分为页0~页31，每页1K字节。上图中也可以看到主存储器的起始地址为0x0800 0000。</p>
+<p>信息块，该部分分为两个个小部分，其中启动程序代码（系统存储器），是用来存储 ST 自带的启动程序，用于串口下载代码。用户选择字节，则一般用于配置写保护、读保护等功能。</p>
+<p>闪存存储器接口寄存器，该部分用于控制闪存读写等，是整个闪存模块的控制机构。</p>
+<h3 id="FLASH闪存的读取"><a href="#FLASH闪存的读取" class="headerlink" title="FLASH闪存的读取"></a>FLASH闪存的读取</h3><p>内置闪存模块可以在通用地址空间直接寻址，任何32位数据的读操作都能访问闪存模块内容并得到相应的数据。</p>
+<p>例如，我们要从地址addr，读取一个半字（半字为 16 为，字为 32 位），可以通过如下的语句读取：</p>
+<p><code>data=*(vu16*)addr;</code></p>
+<p>将addr强制转换为vu16指针，然后取该指针所指向的地址的值，即得到了addr地址的值。类似的，将上面的 vu16 改为 vu8，即可读取指定地址的一个字节。</p>
+<h3 id="FLASH闪存的写和擦除操作"><a href="#FLASH闪存的写和擦除操作" class="headerlink" title="FLASH闪存的写和擦除操作"></a>FLASH闪存的写和擦除操作</h3><p>STM32闪存编程由FPEC（闪存编程和擦除控制器）模块处理，它包含7个32位寄存器：</p>
+<ul>
+<li>FPEC 键寄存器(FLASH_KEYR)</li>
+<li>选择字节键寄存器(FLASH_OPTKEYR)</li>
+<li>闪存控制寄存器(FLASH_CR)</li>
+<li>闪存状态寄存器(FLASH_SR)</li>
+<li>闪存地址寄存器(FLASH_AR)</li>
+<li>选择字节寄存器(FLASH_OBR)</li>
+<li>写保护寄存器(FLASH_WRPR)</li>
+</ul>
+<p>写的注意事项：</p>
+<blockquote>
+<p>STM32 复位后，FPEC 模块是被保护的，不能写入 FLASH_CR 寄存器；通过写入特定的序列到 FLASH_KEYR 寄存器可以打开 FPEC 模块（即写入 KEY1 和 KEY2），只有在写保护被解除后，我们才能操作相关寄存器，这个过程叫Unlock。</p>
+</blockquote>
+<blockquote>
+<p>KEY1和KEY2是指其中 FPEC 键寄存器总共有的三个个键值：</p>
+</blockquote>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">RDPRT 键=0X000000A5</span><br><span class="line">KEY1=0X45670123</span><br><span class="line">KEY2=0XCDEF89AB</span><br></pre></td></tr></table></figure></div>
+<blockquote>
+<p>STM32 闪存的编程每次必须写入 16 位（不可写入 8 位数据），当 FLASH_CR 寄存器的 PG 位为’1’时，在一个闪存地址写入一个半字将启动一次编程；写入任何非半字的数据，FPEC 都会产生总线错误。</p>
+</blockquote>
+<blockquote>
+<p>在编程过程中(BSY 位为’1’)，任何读写闪存的操作都会使CPU暂停，直到此次闪存编程结束，所以在写之前要保证没有其他的操作在进行。</p>
+</blockquote>
+<blockquote>
+<p>写FLASH某个地址的时候，首先要保障这个地址是被擦除了的。STM32 的 FLASH 在编程的时候，也必须要求其写入地址的 FLASH 是被擦除了的（也就是其值必须是 0XFFFF），否则无法写入，在 FLASH_SR 寄存器的 PGERR 位将得到一个警告。</p>
+</blockquote>
+<p>总结流程如下图：</p>
 <p><img  
                      lazyload
                      src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-10%20103638.jpg"
-                      alt="3"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E6%B5%81%E7%A8%8B.png"
+                      alt="流程"
                 ></p>
-<p>前三个输入操作都可以读取引脚高低电平，模拟输入是则是接入片上外设也就是ADC，开漏输出和推挽输出，都是数字输出高低电平，开漏高阻态，没有驱动能力，只有低电平有驱动能力，推挽输出则高低电平都有驱动能力，复用推挽输出等最后两个功能和上两个差不多，只不过可以通过片上外设进行控制。</p>
-<p>点亮与熄灭一个LED的代码如下，</p>
-<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;stm32f10x.h&quot;                  // Device header</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">	GPIO_InitTypeDef GPIO_InitStructure;</span><br><span class="line">	//定义一个符合类型的结构体，自己的编译器变量只能在前面定义</span><br><span class="line">	</span><br><span class="line">	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA,ENABLE);</span><br><span class="line">	//调用RCC里面的APB2外设时钟控制函数，</span><br><span class="line">	//第一个参数选正确接口的外设，然后第二个选ENABLE即可开启时钟</span><br><span class="line">	</span><br><span class="line">	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;//推挽输出</span><br><span class="line">	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;//GPIOA的0号引脚</span><br><span class="line">	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;</span><br><span class="line">	//定义各个结构体成员的参数</span><br><span class="line">	</span><br><span class="line">	GPIO_Init(GPIOA, &amp;GPIO_InitStructure);</span><br><span class="line">	//用结构体来初始化变量，</span><br><span class="line">	//这里就是用第二个参数（结构体来定义第一个参数接口）</span><br><span class="line">	</span><br><span class="line">    //下面为GPIO的几个常用的函数</span><br><span class="line"></span><br><span class="line">	GPIO_SetBits(GPIOA,GPIO_Pin_0);  </span><br><span class="line">	//使PA0口为高电平，最小系统板接的灯灭</span><br><span class="line">	//GPIO_ResetBits(GPIOA,GPIO_Pin_0);</span><br><span class="line">	//使PA0口为低电平，最小系统板接的灯亮</span><br><span class="line">  	//GPIO_WriteBit(GPIOA,GPIO_Pin_0,Bit_RESET);  </span><br><span class="line">	//bit_reset就是清除端口值，也就是置为低电平</span><br><span class="line">	//bit_set就是设置端口值，给高电平</span><br><span class="line">  </span><br><span class="line"></span><br><span class="line">    while(1)</span><br><span class="line">	&#123;</span><br><span class="line">		</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>
-<p>然后是流水灯的电路，</p>
-<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;stm32f10x.h&quot;                  // Device header</span><br><span class="line">#include &quot;Delay.h&quot;</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">	GPIO_InitTypeDef GPIO_InitStructure;</span><br><span class="line">	//定义一个符合类型的结构体，自己的编译器变量只能在前面定义</span><br><span class="line">	</span><br><span class="line">	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA,ENABLE);</span><br><span class="line">	//调用RCC里面的APB2外设时钟控制函数，</span><br><span class="line">	//第一个参数选正确接口的外设，然后第二个选ENABLE即可开启时钟</span><br><span class="line">	</span><br><span class="line">	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;//推挽输出</span><br><span class="line">	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3;  </span><br><span class="line">    //GPIOA的0号引脚，加上或的几个脚，，，这几个一或相当于，0000 0000 0000 1111，，最后四个都进行了初始化</span><br><span class="line">	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;</span><br><span class="line">	//定义各个结构体成员的参数</span><br><span class="line">	</span><br><span class="line">	GPIO_Init(GPIOA, &amp;GPIO_InitStructure);</span><br><span class="line">	//用结构体来初始化变量，</span><br><span class="line">	//这里就是用第二个参数（结构体来定义第一个参数接口）</span><br><span class="line">	</span><br><span class="line">	</span><br><span class="line">	while(1)</span><br><span class="line">	&#123;</span><br><span class="line">		GPIO_Write(GPIOA, ~0x0001); //0000 0000 0000 0001，，加~是因为是低电平点亮，所以进行取反</span><br><span class="line">		Delay_ms(500);</span><br><span class="line">		GPIO_Write(GPIOA, ~0x0002); //0000 0000 0000 0010</span><br><span class="line">		Delay_ms(500);</span><br><span class="line">		GPIO_Write(GPIOA, ~0x0004); //0000 0000 0000 0100</span><br><span class="line">		Delay_ms(500);</span><br><span class="line">		GPIO_Write(GPIOA, ~0x0008); //0000 0000 0000 1000</span><br><span class="line">		Delay_ms(500);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>
+<p>从上图可以得到闪存的编程顺序如下：</p>
+<ul>
+<li>检查 FLASH_CR 的 LOCK 是否解锁，如果没有则先解锁</li>
+<li>检查 FLASH_SR 寄存器的 BSY 位，以确认没有其他正在进行的编程操作</li>
+<li>设置 FLASH_CR 寄存器的 PG 位为’1’</li>
+<li>在指定的地址写入要编程的半字</li>
+<li>等待 BSY 位变为’0’</li>
+<li>读出写入的地址并验证数据</li>
+</ul>
+<p>前面提到，我们在 STM32 的 FLASH 编程的时候，要先判断缩写地址是否被擦除了，所以，我们有必要再介绍一下 STM32 的闪存擦除，STM32 的闪存擦除分为两种：页擦除和整片擦除。</p>
+<p>已经说过，对于小容量来说，主存分成了32个页，页擦除顾名思义就是擦除那一页的1K字节。其步骤如下图：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E9%A1%B5%E6%93%A6%E9%99%A4.png"
+                      alt="页擦除"
+                ></p>
+<p>从上图可以看出，STM32 的页擦除顺序为：</p>
+<ul>
+<li>检查 FLASH_CR 的 LOCK 是否解锁，如果没有则先解锁</li>
+<li>检查 FLASH_SR 寄存器的 BSY 位，以确认没有其他正在进行的闪存操作</li>
+<li>设置 FLASH_CR 寄存器的 PER 位为’1’</li>
+<li>用 FLASH_AR 寄存器选择要擦除的页</li>
+<li>设置 FLASH_CR 寄存器的 STRT 位为’1’</li>
+<li>等待 BSY 位变为’0’</li>
+<li>读出被擦除的页并做验证</li>
+</ul>
+<p>全片擦除则不需要选择要擦除的页，然后将 FLASH_CR 寄存器的 MER 设置为’1’，其它操作相同。</p>
+<h3 id="相关寄存器具体介绍"><a href="#相关寄存器具体介绍" class="headerlink" title="相关寄存器具体介绍"></a>相关寄存器具体介绍</h3><h4 id="FPEC-键寄存器：FLASH-KEYR"><a href="#FPEC-键寄存器：FLASH-KEYR" class="headerlink" title="FPEC 键寄存器：FLASH_KEYR"></a>FPEC 键寄存器：FLASH_KEYR</h4><p>前文的两个Unlock键值已经介绍，没有太多其他用法。下面具体介绍与程序相关的一些寄存器。</p>
+<h4 id="闪存控制寄存器（FLASH-CR）"><a href="#闪存控制寄存器（FLASH-CR）" class="headerlink" title="闪存控制寄存器（FLASH_CR）"></a>闪存控制寄存器（FLASH_CR）</h4><p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/CR.png"
+                      alt="CR"
+                ></p>
+<p>位7正是控制解锁的LOCK位，位6是开始位，当该位为’1’时将触发一次擦除操作。该位只可由软件置为’1’并在BSY变为’1’时清为’0’。位2和1，则是擦除选项，MER为全擦除，PER为页擦除。</p>
+<h4 id="内存地址寄存器（FLASH-AR）"><a href="#内存地址寄存器（FLASH-AR）" class="headerlink" title="内存地址寄存器（FLASH_AR）"></a>内存地址寄存器（FLASH_AR）</h4><p>主要用来当进行编程时选择要编程的地址，当进行页擦除时选择要擦除的页。</p>
+<h2 id="FLASH相关操作库函数"><a href="#FLASH相关操作库函数" class="headerlink" title="FLASH相关操作库函数"></a>FLASH相关操作库函数</h2><p>用到的库函数为stmflash.h&#x2F;stmflash.c</p>
+<p>前文提到，在对 FLASH 进行写操作前必须先解锁，解锁操作也就是必须在FLASH_KEYR 寄存器写入特定的序列（KEY1 和 KEY2）,固件库函数实现很简单：</p>
+<p><code>void FLASH_Unlock(void);</code></p>
+<p>同样的道理，在对 FLASH 写操作完成之后，我们要锁定 FLASH，使用的库函数是：</p>
+<p><code>void FLASH_Lock(void);</code></p>
+<p>解锁后，如果我们要进行写操作，官方固件库提供了三个FLASH写函数：</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">FLASH_Status FLASH_ProgramWord(uint32_t Address, uint32_t Data);</span><br><span class="line">FLASH_Status FLASH_ProgramHalfWord(uint32_t Address, uint16_t Data);</span><br><span class="line">FLASH_Status FLASH_ProgramOptionByteData(uint32_t Address, uint8_t Data);</span><br></pre></td></tr></table></figure></div>
+<p>其作用分别为FLASH_ProgramWord 为 32 位字写入函数，其他分别为 16 位半字写入和用户选择字节写入函数。这里需要说明，32 位字节写入实际上是写入的两次 16 位数据，写完第一次后地址+2，这与前面提到的 STM32 闪存的编程每次必须写入 16 位相呼应。</p>
+<p>写好后，如果我需要擦除，</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">FLASH_Status FLASH_ErasePage(uint32_t Page_Address);</span><br><span class="line">FLASH_Status FLASH_EraseAllPages(void);</span><br><span class="line">FLASH_Status FLASH_EraseOptionBytes(void);</span><br></pre></td></tr></table></figure></div>
+<p>第一个函数是页擦除函数，根据页地址擦除特定的页数据，第二个函数是擦除所有的页数据，第三个函数是擦除用户选择字节数据。</p>
+<p>只会写入和擦除还是不够的，还要能够获取FLASH的状态，主要用到<br>&#96;&#96;FLASH_Status FLASH_GetStatus(void);<br>返回值通过枚举类型定义：</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">typedef enum</span><br><span class="line">&#123; </span><br><span class="line"> FLASH_BUSY = 1,//忙</span><br><span class="line"> FLASH_ERROR_PG,//编程错误</span><br><span class="line"> FLASH_ERROR_WRP,//写保护错误</span><br><span class="line"> FLASH_COMPLETE,//操作完成</span><br><span class="line"> FLASH_TIMEOUT//操作超时</span><br><span class="line">&#125;FLASH_Status</span><br></pre></td></tr></table></figure></div>
 
-<p>然后是蜂鸣器</p>
-<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;stm32f10x.h&quot;                  // Device header</span><br><span class="line">#include &quot;Delay.h&quot;</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">	GPIO_InitTypeDef GPIO_InitStructure;</span><br><span class="line">	//定义一个符合类型的结构体，自己的编译器变量只能在前面定义</span><br><span class="line">	</span><br><span class="line">	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB,ENABLE);</span><br><span class="line">	//调用RCC里面的APB2外设时钟控制函数，</span><br><span class="line">	//第一个参数选正确接口的外设，然后第二个选ENABLE即可开启时钟,蜂鸣器按教程是PB12</span><br><span class="line">	</span><br><span class="line">	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;//推挽输出</span><br><span class="line">	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12;//GPIOA的12号引脚，加上或几个脚</span><br><span class="line">	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;</span><br><span class="line">	//定义各个结构体成员的参数</span><br><span class="line">	</span><br><span class="line">	GPIO_Init(GPIOB, &amp;GPIO_InitStructure);</span><br><span class="line">	//用结构体来初始化变量，</span><br><span class="line">	//这里就是用第二个参数（结构体来定义第一个参数接口）</span><br><span class="line">	</span><br><span class="line">	</span><br><span class="line">	while(1)</span><br><span class="line">	&#123;</span><br><span class="line">		GPIO_SetBits(GPIOB,GPIO_Pin_12);</span><br><span class="line">		Delay_ms(100);</span><br><span class="line">		GPIO_ResetBits(GPIOB,GPIO_Pin_12);</span><br><span class="line">		Delay_ms(100);</span><br><span class="line">		GPIO_SetBits(GPIOB,GPIO_Pin_12);</span><br><span class="line">		Delay_ms(100);</span><br><span class="line">		GPIO_ResetBits(GPIOB,GPIO_Pin_12);</span><br><span class="line">		Delay_ms(700);</span><br><span class="line">		</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>
-
-<p>以上就是用GPIO的输出控制LED以及蜂鸣器的代码部分。</p>
-<p>然后是还讲了关于调用函数的一些方法方式，</p>
-<p>第一种就是打开.h文件的最后，右键看定义，去看各个参数</p>
-<p>第二种就是看库函数使用文档，不过有的文档不好找，且找到了估计是英文</p>
-<p>第三种就是去看别人的代码，直接取用。</p>
+<p>从这里面我们可以看到 FLASH 操作的 5 个状态。</p>
+<p>在执行闪存写操作时，任何对闪存的读操作都会锁住总线，在写操作完成后读操作才能正确地进行；即在进行写或擦除操作时，不能进行代码或数据的读取操作。所以在每次操作之前，我们都要等待上一次操作完成这次操作才能开始。使用的函数是：</p>
+<p><code>FLASH_Status FLASH_WaitForLastOperation(uint32_t Timeout)</code></p>
+<p>入口参数为等待时间，返回值是 FLASH 的状态。</p>
+<h2 id="USART串口通信"><a href="#USART串口通信" class="headerlink" title="USART串口通信"></a>USART串口通信</h2><p>为了能有明显的实验现象，学习串口来进行打印。</p>
+<h3 id="串口通信基础理论"><a href="#串口通信基础理论" class="headerlink" title="串口通信基础理论"></a>串口通信基础理论</h3><p>通信是为了实现数据交流，扩展硬件系统。如果需要两个芯片交流，就需要进行通信。通信协议就是通信的一套规则。</p>
+<p>对于我们要学的UASRT，他的两个引脚为TX、RX（或者叫TXD、RXD），RX是数据接收脚，TX是数据发送脚。双工模式为全双工，指通信双方能同时进行双向通信。常用通信的特性汇总如下：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-30%20094354.jpg"
+                      alt="特性汇总"
+                ></p>
+<p>接线对应要求如图：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-30%20095853.jpg"
+                      alt="接线"
+                ></p>
+<p>注意电平问题，电平标准是数据1和数据0的表达方式，TTL电平为+3.3或+5V表示1，0V表示0。RS232电平，-3<del>-15V表示1，+3</del>+15表示0。RS485两线压差+2<del>+6V表示1，-2</del>-6V表示0。（差分信号）</p>
+<p>接下来该了解串口参数及时序了，串口中每一个字节放再一个数据帧里，每一个数据帧由起始位、数据位和停止位组成。数据位一般位8位，有时会在数据位后有一个奇偶校验位。串口的主要参数有：</p>
+<ul>
+<li>波特率：串口通信的速率，异步通信，需要约定好速率。二进制下，波特率&#x3D;比特率，说白了是规定每隔多久发送&#x2F;接收1位。</li>
+<li>起始位：固定为低电平，表示数据帧开始，产生下降沿</li>
+<li>数据位：数据帧的有效载荷，1为高电平，0为低电平，低位先行。传0F，，那应该是1111 0000。</li>
+<li>校验位：用于数据验证，由数据位得来。奇偶校验，看1的个数，补在校验位。</li>
+<li>停止位：用于数据帧间隔，固定为高，为了保障开始位产生下降沿。</li>
+</ul>
+<h3 id="USART外设简介"><a href="#USART外设简介" class="headerlink" title="USART外设简介"></a>USART外设简介</h3><p>STM32内部集成的硬件外设。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-30%20103610.jpg"
+                      alt="内容"
+                ></p>
+<p>关于USART的内部框图，我这里就不放了，可以去查数据手册，需要注意的是，引脚上，我们常用的就是TX和RX引脚，其他用于别的功能的不用在意。然后对应写和读操作的两个寄存器可以了解一下，而两个引脚相接的就是两个移位寄存器，一个用于发送，一个用于接收。了解原理即可。</p>
+<p>可简略为下图</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-30%20110525.jpg"
+                      alt="简略图"
+                ></p>
+<p>而对于数据位细节，输出较为简单，但输入则需要采样时间配合好，比较复杂，所以就有了起始位侦测，他一位会进行16次采样，保证准确性，避免噪声的影响。</p>
+<hr>
+<p>代码实现等掌握了发出来吧，连带eeprom读写。</p>
 ]]></content>
       <tags>
         <tag>STM32</tag>
@@ -145,6 +265,122 @@
       <tags>
         <tag>STM32</tag>
         <tag>学习笔记</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>STM32学习笔记（一）</title>
+    <url>/2023/05/10/STM32-1/</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>简单写一下，主要是工作室的学习任务，老师要写一篇32的标准库教程应该是，笔者因为也有在学习项目所需的Hal库之前学习一下标准库的想法，所以帮老师也写一下教程。不完全是被抓壮丁了。然后主要是自己回顾所用的笔记，这里记录的多为代码，以及简单理论，这里所发表的不是教程，所以不是很详尽。</p>
+<p>关于看的教程就是B站江科大的视频，51就是看的他的，跟机构讲解完全不是一个模式，可学。</p>
+<h2 id="GPIO输出"><a href="#GPIO输出" class="headerlink" title="GPIO输出"></a>GPIO输出</h2><p>通用输入输出口，可配置为8种输入输出模式，引脚电平0-3.3V，引脚定义带有FT的可容忍5V，输出可以控制蜂鸣器、LED等，还可以模拟通信协议，</p>
+<p>输入模式可以读取端口的高低电压，可以读取按键输入等，GPIO挂在APB2外设总线，结构为</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-10%20102936.jpg"
+                      alt="1"
+                ></p>
+<p>位结构如图</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-10%20103243.jpg"
+                      alt="2"
+                ></p>
+<p>看上图可以分析通过上拉电阻、下拉电阻来控制上、下拉输入，为了避免悬空时引脚不确定的问题而添加</p>
+<p>8种工作模式如下：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-10%20103638.jpg"
+                      alt="3"
+                ></p>
+<p>前三个输入操作都可以读取引脚高低电平，模拟输入是则是接入片上外设也就是ADC，开漏输出和推挽输出，都是数字输出高低电平，开漏高阻态，没有驱动能力，只有低电平有驱动能力，推挽输出则高低电平都有驱动能力，复用推挽输出等最后两个功能和上两个差不多，只不过可以通过片上外设进行控制。</p>
+<p>点亮与熄灭一个LED的代码如下，</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;stm32f10x.h&quot;                  // Device header</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">	GPIO_InitTypeDef GPIO_InitStructure;</span><br><span class="line">	//定义一个符合类型的结构体，自己的编译器变量只能在前面定义</span><br><span class="line">	</span><br><span class="line">	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA,ENABLE);</span><br><span class="line">	//调用RCC里面的APB2外设时钟控制函数，</span><br><span class="line">	//第一个参数选正确接口的外设，然后第二个选ENABLE即可开启时钟</span><br><span class="line">	</span><br><span class="line">	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;//推挽输出</span><br><span class="line">	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;//GPIOA的0号引脚</span><br><span class="line">	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;</span><br><span class="line">	//定义各个结构体成员的参数</span><br><span class="line">	</span><br><span class="line">	GPIO_Init(GPIOA, &amp;GPIO_InitStructure);</span><br><span class="line">	//用结构体来初始化变量，</span><br><span class="line">	//这里就是用第二个参数（结构体来定义第一个参数接口）</span><br><span class="line">	</span><br><span class="line">    //下面为GPIO的几个常用的函数</span><br><span class="line"></span><br><span class="line">	GPIO_SetBits(GPIOA,GPIO_Pin_0);  </span><br><span class="line">	//使PA0口为高电平，最小系统板接的灯灭</span><br><span class="line">	//GPIO_ResetBits(GPIOA,GPIO_Pin_0);</span><br><span class="line">	//使PA0口为低电平，最小系统板接的灯亮</span><br><span class="line">  	//GPIO_WriteBit(GPIOA,GPIO_Pin_0,Bit_RESET);  </span><br><span class="line">	//bit_reset就是清除端口值，也就是置为低电平</span><br><span class="line">	//bit_set就是设置端口值，给高电平</span><br><span class="line">  </span><br><span class="line"></span><br><span class="line">    while(1)</span><br><span class="line">	&#123;</span><br><span class="line">		</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>
+<p>然后是流水灯的电路，</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;stm32f10x.h&quot;                  // Device header</span><br><span class="line">#include &quot;Delay.h&quot;</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">	GPIO_InitTypeDef GPIO_InitStructure;</span><br><span class="line">	//定义一个符合类型的结构体，自己的编译器变量只能在前面定义</span><br><span class="line">	</span><br><span class="line">	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA,ENABLE);</span><br><span class="line">	//调用RCC里面的APB2外设时钟控制函数，</span><br><span class="line">	//第一个参数选正确接口的外设，然后第二个选ENABLE即可开启时钟</span><br><span class="line">	</span><br><span class="line">	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;//推挽输出</span><br><span class="line">	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3;  </span><br><span class="line">    //GPIOA的0号引脚，加上或的几个脚，，，这几个一或相当于，0000 0000 0000 1111，，最后四个都进行了初始化</span><br><span class="line">	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;</span><br><span class="line">	//定义各个结构体成员的参数</span><br><span class="line">	</span><br><span class="line">	GPIO_Init(GPIOA, &amp;GPIO_InitStructure);</span><br><span class="line">	//用结构体来初始化变量，</span><br><span class="line">	//这里就是用第二个参数（结构体来定义第一个参数接口）</span><br><span class="line">	</span><br><span class="line">	</span><br><span class="line">	while(1)</span><br><span class="line">	&#123;</span><br><span class="line">		GPIO_Write(GPIOA, ~0x0001); //0000 0000 0000 0001，，加~是因为是低电平点亮，所以进行取反</span><br><span class="line">		Delay_ms(500);</span><br><span class="line">		GPIO_Write(GPIOA, ~0x0002); //0000 0000 0000 0010</span><br><span class="line">		Delay_ms(500);</span><br><span class="line">		GPIO_Write(GPIOA, ~0x0004); //0000 0000 0000 0100</span><br><span class="line">		Delay_ms(500);</span><br><span class="line">		GPIO_Write(GPIOA, ~0x0008); //0000 0000 0000 1000</span><br><span class="line">		Delay_ms(500);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>
+
+<p>然后是蜂鸣器</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;stm32f10x.h&quot;                  // Device header</span><br><span class="line">#include &quot;Delay.h&quot;</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">	GPIO_InitTypeDef GPIO_InitStructure;</span><br><span class="line">	//定义一个符合类型的结构体，自己的编译器变量只能在前面定义</span><br><span class="line">	</span><br><span class="line">	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB,ENABLE);</span><br><span class="line">	//调用RCC里面的APB2外设时钟控制函数，</span><br><span class="line">	//第一个参数选正确接口的外设，然后第二个选ENABLE即可开启时钟,蜂鸣器按教程是PB12</span><br><span class="line">	</span><br><span class="line">	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;//推挽输出</span><br><span class="line">	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12;//GPIOA的12号引脚，加上或几个脚</span><br><span class="line">	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;</span><br><span class="line">	//定义各个结构体成员的参数</span><br><span class="line">	</span><br><span class="line">	GPIO_Init(GPIOB, &amp;GPIO_InitStructure);</span><br><span class="line">	//用结构体来初始化变量，</span><br><span class="line">	//这里就是用第二个参数（结构体来定义第一个参数接口）</span><br><span class="line">	</span><br><span class="line">	</span><br><span class="line">	while(1)</span><br><span class="line">	&#123;</span><br><span class="line">		GPIO_SetBits(GPIOB,GPIO_Pin_12);</span><br><span class="line">		Delay_ms(100);</span><br><span class="line">		GPIO_ResetBits(GPIOB,GPIO_Pin_12);</span><br><span class="line">		Delay_ms(100);</span><br><span class="line">		GPIO_SetBits(GPIOB,GPIO_Pin_12);</span><br><span class="line">		Delay_ms(100);</span><br><span class="line">		GPIO_ResetBits(GPIOB,GPIO_Pin_12);</span><br><span class="line">		Delay_ms(700);</span><br><span class="line">		</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>
+
+<p>以上就是用GPIO的输出控制LED以及蜂鸣器的代码部分。</p>
+<p>然后是还讲了关于调用函数的一些方法方式，</p>
+<p>第一种就是打开.h文件的最后，右键看定义，去看各个参数</p>
+<p>第二种就是看库函数使用文档，不过有的文档不好找，且找到了估计是英文</p>
+<p>第三种就是去看别人的代码，直接取用。</p>
+]]></content>
+      <tags>
+        <tag>STM32</tag>
+        <tag>学习笔记</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>STM32_3</title>
+    <url>/2023/05/14/STM32-3/</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>续前篇GPIO输入的理论部分，没什么好讲的，直接上代码书写部分吧，笔记一般都写在注释里了。</p>
+<p>这两天正值期中考试，这几个学期自己专业都没期中考试，在部门中理所当然多做了些工作，也算是从部门工作快开摆的末尾在奉献奉献吧。节能减排在没什么成果的情况下竟然能获得推入国赛的资格，好好珍惜，没有成果也要拼一把，如果不是炮灰，这不就发达了。</p>
+<h2 id="代码书写"><a href="#代码书写" class="headerlink" title="代码书写"></a>代码书写</h2><p>模块化编程确实重要，一般驱动代码都会单独封装起来，用到时再引用，这样也不错。</p>
+<p>由于是标准库，所以建文件夹并且添加文件夹不可少，用标准库的弊端这不就显现了。添加Hardware文件并添加，这个不过多讲了，相信以后做的多了也就会了。</p>
+<p>工程管理加组挪位置，工程选项加到头文件路径，在文件夹中添加.c文件.h文件，注意都加在该文件夹中，.c用来放驱动程序主体代码，.h放程序对外提供的函数或变量的声明。</p>
+<p>两个文件建好后，需要添加一些必要的头头，</p>
+<h2 id="在-c文件中，需要添加芯片的头文件，在-h文件中则是添加防止头文件重复包含的代码。"><a href="#在-c文件中，需要添加芯片的头文件，在-h文件中则是添加防止头文件重复包含的代码。" class="headerlink" title="在.c文件中，需要添加芯片的头文件，在.h文件中则是添加防止头文件重复包含的代码。"></a>在.c文件中，需要添加芯片的头文件，在.h文件中则是添加防止头文件重复包含的代码。<br><div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#ifndef __LED_H   //如果没有定义LED字符串</span><br><span class="line">#define __LED_H   //那么就定义这个字符串</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#endif  //这个和ifndef组成括号，同样注意文件以空行结尾</span><br><span class="line"></span><br></pre></td></tr></table></figure></div></h2><p>未完待续</p>
+]]></content>
+      <tags>
+        <tag>STM32</tag>
+        <tag>学习笔记</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>2023上半年总结</title>
+    <url>/2023/07/05/diaryone/</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>26号考完最后一科到现在也算是期末平稳落地，自己又过了八天慢生活，遗憾的是武功山没按计划去爬，不过这周末约了js，能聊聊也不错，很久没见老班长了。<br>放假八天，权重文件搞出来了，也算有一点点成果，但不多。大学过半，2023年过半，一直觉得该写点总结，今日终于动笔，简单总结下这个学期，反思下2023这半年。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/8%7BD3~14%24IHLU(VF2Y4_CT)8.jpg"
+                     
+                ></p>
+<h2 id="生活的A面"><a href="#生活的A面" class="headerlink" title="生活的A面"></a>生活的A面</h2><p>这个学期终于有点像是大学生的体验了，不再只是简单的学习课本，做作业，考试。微机原理进行了汇编语言实验以及电子技术实践，都让我有很多体会。最重要一点，参加嵌入式竞赛，我闻到了点科研的味道。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/SMV%24OE7I515J%24MB9F242QRQ.jpg"
+                     
+                ></p>
+<p>2023年3月左右，本意是打算深耕于建为工作室的我，最终还是一上头跟着lx参加了这个预热半学期的嵌入式竞赛，自此写项目书、了解stm32、了解视觉算法，一扇崭新的大门向我打开。通过了学院的初筛，入驻实验室，最重要的是通过l老师认识了yj师兄，pz师姐以及帮助了许多的jl哥，跟随着他们，自己这小比赛因为涉及点深度学习的内容，甚至有了点科研的感觉。顺路打了场节能减排和职规赛，马马虎虎拿了点不上台面的奖。此间也算是有了一些stm32的基础知识，跑yolo运用roboflow的一些傻瓜式操作，但是目前学习都不深入，不懂原理，终究只是小打小闹罢了。还需要再接再厉。实验室里平时氛围一般，但近期光电赛临近提交，终于有了点攻坚的感觉，听着长我一届的学长说着我仅仅听过的一些词，调试着程序，终于意识到自己这半年其实真没学到什么东西，别说触摸科研，连学院做项目的合格水平都没达到。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E5%9B%BE%E7%89%8720230318160421.png"
+                     
+                ></p>
+<p>竞赛与实验室上还算费心，不用说还有部门工作和蛋疼的工作室，投入到学习学业的时间必然减少，但大学这种形式上的期末考试让我十分讨厌，不知怎的对期末真的不太上心，这总归不太好。我后续不断告诉自己，绩点还是很重要的，能往上刷的机会也不多了，好在目前靠着考前突击还维持在3以上。</p>
+<h2 id="生活的B面"><a href="#生活的B面" class="headerlink" title="生活的B面"></a>生活的B面</h2><p>半年来生活上仍然没有什么改进，懒懒散散。一直幻想自己成为一个自律有效率的人，但通常是自律不了半天时间，便想给自己放个假。半年前在22年最后一天，也写了下对23年的期望，希望自己能在今年结束的时候，细数自己一年的进步与成就。现在已经过了半年，生活上反正是没什么进步，成就的话，也不能完全算取得了。</p>
+<p>关于这方面的反思，我时不时就会来一次，无非就是自己哪里做的不好，哪里仍需要改进，但每当忙起来或者累了，又将之抛于脑后。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/5DZ4ZGIN%7DUKS3YFYAW~K5XM.jpg"
+                     
+                ></p>
+<p>和部门的三位相处还算融洽，熬夜加班个几次，革命友情也就来了。一些委员也着实让人省心，当时留任想的是自己能够给委员带来一些东西，自认为尽可能的能帮就帮了，但这半年真的让人费心的事有点多，可能没完成最初的预期。我一直觉得自己是个好为人师的人，有什么经验就希望能分享出去，有什么能避坑的点就提醒一下，但其实这些行为在一些人看来有些多余，我在认识到这点之后也在逐渐改正。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E5%9B%BE%E7%89%8720230705165113.jpg"
+                     
+                ></p>
+<p>和班里的人打交道总是缺乏热情，关系比较好的，也仅限自己的室友和几个人，能脱去团书的职务是我没想到的，但承接班长的工作也是我没有计划的，唉，总是喜欢操这些没有人愿意操的心，明明今年没有入选发展对象已经令人很寒心了，好在g书记真的很给力，部门那边申请的校级五四评优竟然悄咪咪通过了。</p>
+<p>湖南的天气无语到令人发狂，有下雨天的湿热，大晴天的燥热，有时候接连不断的大雨还会连续几天，总是能搞人心态。前两天可能是因为吹空调吹的太猛了而发烧，让我想起了lx这个学期因为身体原因而颇为不顺心，一直想要去锻炼，想要多注意点生活方式，尽量让自己健康些，发现自己这代人可能真的是有点网上说的“无病呻吟”，在20岁的年纪就开始“保温杯泡枸杞”，预防“老寒腿”，注意饮食，但又经常吃外卖，夜宵，熬夜。</p>
+<p>这学期和家里人通电话的次数也变少了，我不认为忙应当是减少联系的理由，不该把联系家里人当做一种负担，随着自己走出家门，和家人聚少离多，父母的关心和思念是弥足珍贵的。每次通电话都希望尽可能传达我过的还算不错的感觉，分享一下自己的成果，感觉子女和父母总是能以任何方式彼此理解。</p>
+<h2 id="未来一阵子的期望"><a href="#未来一阵子的期望" class="headerlink" title="未来一阵子的期望"></a>未来一阵子的期望</h2><p>这个暑假既然留校，希望自己能在stm32开发上学到一些真本事，而且两个竞赛的时间紧迫必须要做出点东西，不能浪费自己这个学期的工作。</p>
+<p>自从看了大疆大佬的一篇文章之后，我一直把英语当做一种工具来学，但这半年很少接触英语，考六级的机会不多了，也要抓紧。</p>
+<p>沾到了点科研的感觉，暂且不论目前人工智能方向的火热，不论未来深挖哪个方向，都让我感觉读研是很有必要的。即将步入大三，考研的一些东西也应当开始了解，下个学期没那么忙的话，要抓住考六级和刷绩点的机会。</p>
+<p>不管怎么说，希望自己终有一天能构建自己的精神世界，做一个情感丰富的人，有自己热爱的事物。在此之上，人将无所不能。</p>
+]]></content>
+      <tags>
+        <tag>杂记</tag>
       </tags>
   </entry>
   <entry>
@@ -570,242 +806,6 @@
       <tags>
         <tag>环境搭建</tag>
         <tag>深度学习</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>STM32_3</title>
-    <url>/2023/05/14/STM32-3/</url>
-    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>续前篇GPIO输入的理论部分，没什么好讲的，直接上代码书写部分吧，笔记一般都写在注释里了。</p>
-<p>这两天正值期中考试，这几个学期自己专业都没期中考试，在部门中理所当然多做了些工作，也算是从部门工作快开摆的末尾在奉献奉献吧。节能减排在没什么成果的情况下竟然能获得推入国赛的资格，好好珍惜，没有成果也要拼一把，如果不是炮灰，这不就发达了。</p>
-<h2 id="代码书写"><a href="#代码书写" class="headerlink" title="代码书写"></a>代码书写</h2><p>模块化编程确实重要，一般驱动代码都会单独封装起来，用到时再引用，这样也不错。</p>
-<p>由于是标准库，所以建文件夹并且添加文件夹不可少，用标准库的弊端这不就显现了。添加Hardware文件并添加，这个不过多讲了，相信以后做的多了也就会了。</p>
-<p>工程管理加组挪位置，工程选项加到头文件路径，在文件夹中添加.c文件.h文件，注意都加在该文件夹中，.c用来放驱动程序主体代码，.h放程序对外提供的函数或变量的声明。</p>
-<p>两个文件建好后，需要添加一些必要的头头，</p>
-<h2 id="在-c文件中，需要添加芯片的头文件，在-h文件中则是添加防止头文件重复包含的代码。"><a href="#在-c文件中，需要添加芯片的头文件，在-h文件中则是添加防止头文件重复包含的代码。" class="headerlink" title="在.c文件中，需要添加芯片的头文件，在.h文件中则是添加防止头文件重复包含的代码。"></a>在.c文件中，需要添加芯片的头文件，在.h文件中则是添加防止头文件重复包含的代码。<br><div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#ifndef __LED_H   //如果没有定义LED字符串</span><br><span class="line">#define __LED_H   //那么就定义这个字符串</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#endif  //这个和ifndef组成括号，同样注意文件以空行结尾</span><br><span class="line"></span><br></pre></td></tr></table></figure></div></h2><p>未完待续</p>
-]]></content>
-      <tags>
-        <tag>STM32</tag>
-        <tag>学习笔记</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>STM32笔记（三）——Flash模拟EEPROM</title>
-    <url>/2023/05/28/STM32-3-1/</url>
-    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>笔者终于要完成工作室的第一篇教程了，终于找到了去哪里学这个东西，开始着手写教程了，打算自己博客写的多一些，然后工作室教程适当截取便是。</p>
-<h2 id="STM32FLASH操作介绍"><a href="#STM32FLASH操作介绍" class="headerlink" title="STM32FLASH操作介绍"></a>STM32FLASH操作介绍</h2><h3 id="STM32编程方式"><a href="#STM32编程方式" class="headerlink" title="STM32编程方式"></a>STM32编程方式</h3><ul>
-<li>在线编程<br>通过JTAG&#x2F;SWD协议或Boot loader下载程序到微控制器，这两个协议其实就是在用STlink、JLink等下载程序，而这个BL其实就是通过串口。这两种都是比较常见的。</li>
-<li>在程序中编程<br>首先我们通过在线编程写一个程序到微控制器，然后这个程序可以把一个数据包重新烧写到闪存存储器中。</li>
-</ul>
-<h3 id="STM32闪存模块存储器组织"><a href="#STM32闪存模块存储器组织" class="headerlink" title="STM32闪存模块存储器组织"></a>STM32闪存模块存储器组织</h3><p>不同型号的 STM32，其 FLASH 容量也有所不同，最小的只有 16K 字节，最大的则达到了1024K 字节。根据下图，可知C8T6的FLASH为64K，</p>
-<p><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%A4%A7%E5%B0%8F%E5%88%A4%E6%96%AD.jpg"
-                      alt="大小判断"
-                ></p>
-<p>那么它作为小容量产品的闪存模块组织如下图：</p>
-<p><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B0%8F%E5%AE%B9%E9%87%8F%E5%88%86%E9%85%8D.png"
-                      alt="小容量"
-                ></p>
-<p>STM32的闪存模块由：主存储器、信息块和闪存存储器接口寄存器等三部分组成。</p>
-<p>主存储器，该部分用来存放代码和数据常数（如const类型的数据）。对于小容量产品，被划分为页0~页31，每页1K字节。上图中也可以看到主存储器的起始地址为0x0800 0000。</p>
-<p>信息块，该部分分为两个个小部分，其中启动程序代码（系统存储器），是用来存储 ST 自带的启动程序，用于串口下载代码。用户选择字节，则一般用于配置写保护、读保护等功能。</p>
-<p>闪存存储器接口寄存器，该部分用于控制闪存读写等，是整个闪存模块的控制机构。</p>
-<h3 id="FLASH闪存的读取"><a href="#FLASH闪存的读取" class="headerlink" title="FLASH闪存的读取"></a>FLASH闪存的读取</h3><p>内置闪存模块可以在通用地址空间直接寻址，任何32位数据的读操作都能访问闪存模块内容并得到相应的数据。</p>
-<p>例如，我们要从地址addr，读取一个半字（半字为 16 为，字为 32 位），可以通过如下的语句读取：</p>
-<p><code>data=*(vu16*)addr;</code></p>
-<p>将addr强制转换为vu16指针，然后取该指针所指向的地址的值，即得到了addr地址的值。类似的，将上面的 vu16 改为 vu8，即可读取指定地址的一个字节。</p>
-<h3 id="FLASH闪存的写和擦除操作"><a href="#FLASH闪存的写和擦除操作" class="headerlink" title="FLASH闪存的写和擦除操作"></a>FLASH闪存的写和擦除操作</h3><p>STM32闪存编程由FPEC（闪存编程和擦除控制器）模块处理，它包含7个32位寄存器：</p>
-<ul>
-<li>FPEC 键寄存器(FLASH_KEYR)</li>
-<li>选择字节键寄存器(FLASH_OPTKEYR)</li>
-<li>闪存控制寄存器(FLASH_CR)</li>
-<li>闪存状态寄存器(FLASH_SR)</li>
-<li>闪存地址寄存器(FLASH_AR)</li>
-<li>选择字节寄存器(FLASH_OBR)</li>
-<li>写保护寄存器(FLASH_WRPR)</li>
-</ul>
-<p>写的注意事项：</p>
-<blockquote>
-<p>STM32 复位后，FPEC 模块是被保护的，不能写入 FLASH_CR 寄存器；通过写入特定的序列到 FLASH_KEYR 寄存器可以打开 FPEC 模块（即写入 KEY1 和 KEY2），只有在写保护被解除后，我们才能操作相关寄存器，这个过程叫Unlock。</p>
-</blockquote>
-<blockquote>
-<p>KEY1和KEY2是指其中 FPEC 键寄存器总共有的三个个键值：</p>
-</blockquote>
-<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">RDPRT 键=0X000000A5</span><br><span class="line">KEY1=0X45670123</span><br><span class="line">KEY2=0XCDEF89AB</span><br></pre></td></tr></table></figure></div>
-<blockquote>
-<p>STM32 闪存的编程每次必须写入 16 位（不可写入 8 位数据），当 FLASH_CR 寄存器的 PG 位为’1’时，在一个闪存地址写入一个半字将启动一次编程；写入任何非半字的数据，FPEC 都会产生总线错误。</p>
-</blockquote>
-<blockquote>
-<p>在编程过程中(BSY 位为’1’)，任何读写闪存的操作都会使CPU暂停，直到此次闪存编程结束，所以在写之前要保证没有其他的操作在进行。</p>
-</blockquote>
-<blockquote>
-<p>写FLASH某个地址的时候，首先要保障这个地址是被擦除了的。STM32 的 FLASH 在编程的时候，也必须要求其写入地址的 FLASH 是被擦除了的（也就是其值必须是 0XFFFF），否则无法写入，在 FLASH_SR 寄存器的 PGERR 位将得到一个警告。</p>
-</blockquote>
-<p>总结流程如下图：</p>
-<p><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E6%B5%81%E7%A8%8B.png"
-                      alt="流程"
-                ></p>
-<p>从上图可以得到闪存的编程顺序如下：</p>
-<ul>
-<li>检查 FLASH_CR 的 LOCK 是否解锁，如果没有则先解锁</li>
-<li>检查 FLASH_SR 寄存器的 BSY 位，以确认没有其他正在进行的编程操作</li>
-<li>设置 FLASH_CR 寄存器的 PG 位为’1’</li>
-<li>在指定的地址写入要编程的半字</li>
-<li>等待 BSY 位变为’0’</li>
-<li>读出写入的地址并验证数据</li>
-</ul>
-<p>前面提到，我们在 STM32 的 FLASH 编程的时候，要先判断缩写地址是否被擦除了，所以，我们有必要再介绍一下 STM32 的闪存擦除，STM32 的闪存擦除分为两种：页擦除和整片擦除。</p>
-<p>已经说过，对于小容量来说，主存分成了32个页，页擦除顾名思义就是擦除那一页的1K字节。其步骤如下图：</p>
-<p><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E9%A1%B5%E6%93%A6%E9%99%A4.png"
-                      alt="页擦除"
-                ></p>
-<p>从上图可以看出，STM32 的页擦除顺序为：</p>
-<ul>
-<li>检查 FLASH_CR 的 LOCK 是否解锁，如果没有则先解锁</li>
-<li>检查 FLASH_SR 寄存器的 BSY 位，以确认没有其他正在进行的闪存操作</li>
-<li>设置 FLASH_CR 寄存器的 PER 位为’1’</li>
-<li>用 FLASH_AR 寄存器选择要擦除的页</li>
-<li>设置 FLASH_CR 寄存器的 STRT 位为’1’</li>
-<li>等待 BSY 位变为’0’</li>
-<li>读出被擦除的页并做验证</li>
-</ul>
-<p>全片擦除则不需要选择要擦除的页，然后将 FLASH_CR 寄存器的 MER 设置为’1’，其它操作相同。</p>
-<h3 id="相关寄存器具体介绍"><a href="#相关寄存器具体介绍" class="headerlink" title="相关寄存器具体介绍"></a>相关寄存器具体介绍</h3><h4 id="FPEC-键寄存器：FLASH-KEYR"><a href="#FPEC-键寄存器：FLASH-KEYR" class="headerlink" title="FPEC 键寄存器：FLASH_KEYR"></a>FPEC 键寄存器：FLASH_KEYR</h4><p>前文的两个Unlock键值已经介绍，没有太多其他用法。下面具体介绍与程序相关的一些寄存器。</p>
-<h4 id="闪存控制寄存器（FLASH-CR）"><a href="#闪存控制寄存器（FLASH-CR）" class="headerlink" title="闪存控制寄存器（FLASH_CR）"></a>闪存控制寄存器（FLASH_CR）</h4><p><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/CR.png"
-                      alt="CR"
-                ></p>
-<p>位7正是控制解锁的LOCK位，位6是开始位，当该位为’1’时将触发一次擦除操作。该位只可由软件置为’1’并在BSY变为’1’时清为’0’。位2和1，则是擦除选项，MER为全擦除，PER为页擦除。</p>
-<h4 id="内存地址寄存器（FLASH-AR）"><a href="#内存地址寄存器（FLASH-AR）" class="headerlink" title="内存地址寄存器（FLASH_AR）"></a>内存地址寄存器（FLASH_AR）</h4><p>主要用来当进行编程时选择要编程的地址，当进行页擦除时选择要擦除的页。</p>
-<h2 id="FLASH相关操作库函数"><a href="#FLASH相关操作库函数" class="headerlink" title="FLASH相关操作库函数"></a>FLASH相关操作库函数</h2><p>用到的库函数为stmflash.h&#x2F;stmflash.c</p>
-<p>前文提到，在对 FLASH 进行写操作前必须先解锁，解锁操作也就是必须在FLASH_KEYR 寄存器写入特定的序列（KEY1 和 KEY2）,固件库函数实现很简单：</p>
-<p><code>void FLASH_Unlock(void);</code></p>
-<p>同样的道理，在对 FLASH 写操作完成之后，我们要锁定 FLASH，使用的库函数是：</p>
-<p><code>void FLASH_Lock(void);</code></p>
-<p>解锁后，如果我们要进行写操作，官方固件库提供了三个FLASH写函数：</p>
-<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">FLASH_Status FLASH_ProgramWord(uint32_t Address, uint32_t Data);</span><br><span class="line">FLASH_Status FLASH_ProgramHalfWord(uint32_t Address, uint16_t Data);</span><br><span class="line">FLASH_Status FLASH_ProgramOptionByteData(uint32_t Address, uint8_t Data);</span><br></pre></td></tr></table></figure></div>
-<p>其作用分别为FLASH_ProgramWord 为 32 位字写入函数，其他分别为 16 位半字写入和用户选择字节写入函数。这里需要说明，32 位字节写入实际上是写入的两次 16 位数据，写完第一次后地址+2，这与前面提到的 STM32 闪存的编程每次必须写入 16 位相呼应。</p>
-<p>写好后，如果我需要擦除，</p>
-<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">FLASH_Status FLASH_ErasePage(uint32_t Page_Address);</span><br><span class="line">FLASH_Status FLASH_EraseAllPages(void);</span><br><span class="line">FLASH_Status FLASH_EraseOptionBytes(void);</span><br></pre></td></tr></table></figure></div>
-<p>第一个函数是页擦除函数，根据页地址擦除特定的页数据，第二个函数是擦除所有的页数据，第三个函数是擦除用户选择字节数据。</p>
-<p>只会写入和擦除还是不够的，还要能够获取FLASH的状态，主要用到<br>&#96;&#96;FLASH_Status FLASH_GetStatus(void);<br>返回值通过枚举类型定义：</p>
-<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">typedef enum</span><br><span class="line">&#123; </span><br><span class="line"> FLASH_BUSY = 1,//忙</span><br><span class="line"> FLASH_ERROR_PG,//编程错误</span><br><span class="line"> FLASH_ERROR_WRP,//写保护错误</span><br><span class="line"> FLASH_COMPLETE,//操作完成</span><br><span class="line"> FLASH_TIMEOUT//操作超时</span><br><span class="line">&#125;FLASH_Status</span><br></pre></td></tr></table></figure></div>
-
-<p>从这里面我们可以看到 FLASH 操作的 5 个状态。</p>
-<p>在执行闪存写操作时，任何对闪存的读操作都会锁住总线，在写操作完成后读操作才能正确地进行；即在进行写或擦除操作时，不能进行代码或数据的读取操作。所以在每次操作之前，我们都要等待上一次操作完成这次操作才能开始。使用的函数是：</p>
-<p><code>FLASH_Status FLASH_WaitForLastOperation(uint32_t Timeout)</code></p>
-<p>入口参数为等待时间，返回值是 FLASH 的状态。</p>
-<h2 id="USART串口通信"><a href="#USART串口通信" class="headerlink" title="USART串口通信"></a>USART串口通信</h2><p>为了能有明显的实验现象，学习串口来进行打印。</p>
-<h3 id="串口通信基础理论"><a href="#串口通信基础理论" class="headerlink" title="串口通信基础理论"></a>串口通信基础理论</h3><p>通信是为了实现数据交流，扩展硬件系统。如果需要两个芯片交流，就需要进行通信。通信协议就是通信的一套规则。</p>
-<p>对于我们要学的UASRT，他的两个引脚为TX、RX（或者叫TXD、RXD），RX是数据接收脚，TX是数据发送脚。双工模式为全双工，指通信双方能同时进行双向通信。常用通信的特性汇总如下：</p>
-<p><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-30%20094354.jpg"
-                      alt="特性汇总"
-                ></p>
-<p>接线对应要求如图：</p>
-<p><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-30%20095853.jpg"
-                      alt="接线"
-                ></p>
-<p>注意电平问题，电平标准是数据1和数据0的表达方式，TTL电平为+3.3或+5V表示1，0V表示0。RS232电平，-3<del>-15V表示1，+3</del>+15表示0。RS485两线压差+2<del>+6V表示1，-2</del>-6V表示0。（差分信号）</p>
-<p>接下来该了解串口参数及时序了，串口中每一个字节放再一个数据帧里，每一个数据帧由起始位、数据位和停止位组成。数据位一般位8位，有时会在数据位后有一个奇偶校验位。串口的主要参数有：</p>
-<ul>
-<li>波特率：串口通信的速率，异步通信，需要约定好速率。二进制下，波特率&#x3D;比特率，说白了是规定每隔多久发送&#x2F;接收1位。</li>
-<li>起始位：固定为低电平，表示数据帧开始，产生下降沿</li>
-<li>数据位：数据帧的有效载荷，1为高电平，0为低电平，低位先行。传0F，，那应该是1111 0000。</li>
-<li>校验位：用于数据验证，由数据位得来。奇偶校验，看1的个数，补在校验位。</li>
-<li>停止位：用于数据帧间隔，固定为高，为了保障开始位产生下降沿。</li>
-</ul>
-<h3 id="USART外设简介"><a href="#USART外设简介" class="headerlink" title="USART外设简介"></a>USART外设简介</h3><p>STM32内部集成的硬件外设。</p>
-<p><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-30%20103610.jpg"
-                      alt="内容"
-                ></p>
-<p>关于USART的内部框图，我这里就不放了，可以去查数据手册，需要注意的是，引脚上，我们常用的就是TX和RX引脚，其他用于别的功能的不用在意。然后对应写和读操作的两个寄存器可以了解一下，而两个引脚相接的就是两个移位寄存器，一个用于发送，一个用于接收。了解原理即可。</p>
-<p>可简略为下图</p>
-<p><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-30%20110525.jpg"
-                      alt="简略图"
-                ></p>
-<p>而对于数据位细节，输出较为简单，但输入则需要采样时间配合好，比较复杂，所以就有了起始位侦测，他一位会进行16次采样，保证准确性，避免噪声的影响。</p>
-<hr>
-<p>代码实现等掌握了发出来吧，连带eeprom读写。</p>
-]]></content>
-      <tags>
-        <tag>STM32</tag>
-        <tag>学习笔记</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>2023上半年总结</title>
-    <url>/2023/07/05/diaryone/</url>
-    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>26号考完最后一科到现在也算是期末平稳落地，自己又过了八天慢生活，遗憾的是武功山没按计划去爬，不过这周末约了js，能聊聊也不错，很久没见老班长了。<br>放假八天，权重文件搞出来了，也算有一点点成果，但不多。大学过半，2023年过半，一直觉得该写点总结，今日终于动笔，简单总结下这个学期，反思下2023这半年。</p>
-<p><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/8%7BD3~14%24IHLU(VF2Y4_CT)8.jpg"
-                     
-                ></p>
-<h2 id="生活的A面"><a href="#生活的A面" class="headerlink" title="生活的A面"></a>生活的A面</h2><p>这个学期终于有点像是大学生的体验了，不再只是简单的学习课本，做作业，考试。微机原理进行了汇编语言实验以及电子技术实践，都让我有很多体会。最重要一点，参加嵌入式竞赛，我闻到了点科研的味道。</p>
-<p><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/SMV%24OE7I515J%24MB9F242QRQ.jpg"
-                     
-                ></p>
-<p>2023年3月左右，本意是打算深耕于建为工作室的我，最终还是一上头跟着lx参加了这个预热半学期的嵌入式竞赛，自此写项目书、了解stm32、了解视觉算法，一扇崭新的大门向我打开。通过了学院的初筛，入驻实验室，最重要的是通过l老师认识了yj师兄，pz师姐以及帮助了许多的jl哥，跟随着他们，自己这小比赛因为涉及点深度学习的内容，甚至有了点科研的感觉。顺路打了场节能减排和职规赛，马马虎虎拿了点不上台面的奖。此间也算是有了一些stm32的基础知识，跑yolo运用roboflow的一些傻瓜式操作，但是目前学习都不深入，不懂原理，终究只是小打小闹罢了。还需要再接再厉。实验室里平时氛围一般，但近期光电赛临近提交，终于有了点攻坚的感觉，听着长我一届的学长说着我仅仅听过的一些词，调试着程序，终于意识到自己这半年其实真没学到什么东西，别说触摸科研，连学院做项目的合格水平都没达到。</p>
-<p><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E5%9B%BE%E7%89%8720230318160421.png"
-                     
-                ></p>
-<p>竞赛与实验室上还算费心，不用说还有部门工作和蛋疼的工作室，投入到学习学业的时间必然减少，但大学这种形式上的期末考试让我十分讨厌，不知怎的对期末真的不太上心，这总归不太好。我后续不断告诉自己，绩点还是很重要的，能往上刷的机会也不多了，好在目前靠着考前突击还维持在3以上。</p>
-<h2 id="生活的B面"><a href="#生活的B面" class="headerlink" title="生活的B面"></a>生活的B面</h2><p>半年来生活上仍然没有什么改进，懒懒散散。一直幻想自己成为一个自律有效率的人，但通常是自律不了半天时间，便想给自己放个假。半年前在22年最后一天，也写了下对23年的期望，希望自己能在今年结束的时候，细数自己一年的进步与成就。现在已经过了半年，生活上反正是没什么进步，成就的话，也不能完全算取得了。</p>
-<p>关于这方面的反思，我时不时就会来一次，无非就是自己哪里做的不好，哪里仍需要改进，但每当忙起来或者累了，又将之抛于脑后。</p>
-<p><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/5DZ4ZGIN%7DUKS3YFYAW~K5XM.jpg"
-                     
-                ></p>
-<p>和部门的三位相处还算融洽，熬夜加班个几次，革命友情也就来了。一些委员也着实让人省心，当时留任想的是自己能够给委员带来一些东西，自认为尽可能的能帮就帮了，但这半年真的让人费心的事有点多，可能没完成最初的预期。我一直觉得自己是个好为人师的人，有什么经验就希望能分享出去，有什么能避坑的点就提醒一下，但其实这些行为在一些人看来有些多余，我在认识到这点之后也在逐渐改正。</p>
-<p><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E5%9B%BE%E7%89%8720230705165113.jpg"
-                     
-                ></p>
-<p>和班里的人打交道总是缺乏热情，关系比较好的，也仅限自己的室友和几个人，能脱去团书的职务是我没想到的，但承接班长的工作也是我没有计划的，唉，总是喜欢操这些没有人愿意操的心，明明今年没有入选发展对象已经令人很寒心了，好在g书记真的很给力，部门那边申请的校级五四评优竟然悄咪咪通过了。</p>
-<p>湖南的天气无语到令人发狂，有下雨天的湿热，大晴天的燥热，有时候接连不断的大雨还会连续几天，总是能搞人心态。前两天可能是因为吹空调吹的太猛了而发烧，让我想起了lx这个学期因为身体原因而颇为不顺心，一直想要去锻炼，想要多注意点生活方式，尽量让自己健康些，发现自己这代人可能真的是有点网上说的“无病呻吟”，在20岁的年纪就开始“保温杯泡枸杞”，预防“老寒腿”，注意饮食，但又经常吃外卖，夜宵，熬夜。</p>
-<p>这学期和家里人通电话的次数也变少了，我不认为忙应当是减少联系的理由，不该把联系家里人当做一种负担，随着自己走出家门，和家人聚少离多，父母的关心和思念是弥足珍贵的。每次通电话都希望尽可能传达我过的还算不错的感觉，分享一下自己的成果，感觉子女和父母总是能以任何方式彼此理解。</p>
-<h2 id="未来一阵子的期望"><a href="#未来一阵子的期望" class="headerlink" title="未来一阵子的期望"></a>未来一阵子的期望</h2><p>这个暑假既然留校，希望自己能在stm32开发上学到一些真本事，而且两个竞赛的时间紧迫必须要做出点东西，不能浪费自己这个学期的工作。</p>
-<p>自从看了大疆大佬的一篇文章之后，我一直把英语当做一种工具来学，但这半年很少接触英语，考六级的机会不多了，也要抓紧。</p>
-<p>沾到了点科研的感觉，暂且不论目前人工智能方向的火热，不论未来深挖哪个方向，都让我感觉读研是很有必要的。即将步入大三，考研的一些东西也应当开始了解，下个学期没那么忙的话，要抓住考六级和刷绩点的机会。</p>
-<p>不管怎么说，希望自己终有一天能构建自己的精神世界，做一个情感丰富的人，有自己热爱的事物。在此之上，人将无所不能。</p>
-]]></content>
-      <tags>
-        <tag>杂记</tag>
       </tags>
   </entry>
   <entry>
