@@ -894,4 +894,31 @@
         <tag>环境搭建</tag>
       </tags>
   </entry>
+  <entry>
+    <title>线上工具整理备用</title>
+    <url>/2023/07/22/tool/</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>很久没有打理自己的博客了，其实就自己目前的水平而言，博客不太好进一步优化了，还需要真正花些时间来学学才可能更进一步，当前就尽量完善内容，多写些东西吧。</p>
+<p>嵌入式前些天交稿，目前在等待结果了，希望能进入复赛，项目当前也面临着后继无人的状态，很难搞。自己的计划是，能在yj师兄回来前彻底掌握目前项目所需要的东西，进而向几个师兄师姐学习更多。</p>
+<p>今天是7月22日，正好是今年老妈的生日，也是今年BW的第二天，也是BML十周年的日子。今年因为打比赛，又没有计划好日子去一趟BW，高中毕业的暑假就想去，要学车等等没去成，大一暑假正好赶上遗憾的2022年，到今年已经错过了3个年头。未来想想只会更忙。就在刚刚的BML上有个节目叫时光胶囊，不只十年的番剧BGM响起，感觉自己才二十岁，就已经二次元不起来了快，我一直不认为自己算是个纯二次元，只不过小时候看死火海养成了追追番的习惯而已。而现在随着时间的压缩，很少追番了，只能是看看泛式的节目，找回点感觉。还是要不负时光，多做些有意义的事，多做些尝试。</p>
+<h2 id="工具整理"><a href="#工具整理" class="headerlink" title="工具整理"></a>工具整理</h2><h3 id="科技改变生活类"><a href="#科技改变生活类" class="headerlink" title="科技改变生活类"></a>科技改变生活类</h3><p>首当其冲，就是openai的chatgpt，这玩意无疑是学生和工作者的一大福音：<a class="link"   href="https://chat.openai.com/" >ChatGPT <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>然后就是不用使用魔法的Claude，我把它挂到了Slack上：<a class="link"   href="https://app.slack.com/client/T055K8QDKUM/D055QMJ4G68" >Claude <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>还有个套壳GPT，也整理了些AI工具的需要魔法的Poe：<a class="link"   href="https://poe.com/" >Poe <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>还有些LLM的整理：<a class="link"   href="https://chat.lmsys.org/" >More <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<h3 id="实用工具"><a href="#实用工具" class="headerlink" title="实用工具"></a>实用工具</h3><p><a class="link"   href="https://lceda.cn/" >立创eda <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><a class="link"   href="https://app.roboflow.com/new-space-n8oni" >Roboflow <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><a class="link"   href="https://www.pexels.com/zh-cn/" >Pexel <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><a class="link"   href="https://sms-activate.org/cn" >虚拟海外电话 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><a class="link"   href="https://www.remove.bg/zh" >抠图 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><a class="link"   href="https://chuangzaoshi.com/" >平面设计资源 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><a class="link"   href="https://tinypng.com/" >压缩图片 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><a class="link"   href="https://www.iconfont.cn/" >矢量图标库 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><a class="link"   href="https://imgtool.net/pdfrotate/" >图文工具箱 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><a class="link"   href="https://www.postermywall.com/index.php" >海报制作 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><a class="link"   href="https://www.aiseesoft.com/image-upscaler/" >提高图片分辨率 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+]]></content>
+      <tags>
+        <tag>杂记</tag>
+        <tag>工具</tag>
+      </tags>
+  </entry>
 </search>
