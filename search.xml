@@ -53,6 +53,53 @@
       </tags>
   </entry>
   <entry>
+    <title>STM32笔记（二）</title>
+    <url>/2023/05/10/STM32-2/</url>
+    <content><![CDATA[<h2 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h2><p>从本节开始，笔者开始使用工作室发放的板子，根据课程举一反三，自己根据自己板子的电路开始写代码了，跟课程里的有可能不一致。</p>
+<h2 id="GPIO输入"><a href="#GPIO输入" class="headerlink" title="GPIO输入"></a>GPIO输入</h2><p>按键是常见的输入设备，按下导通，松手断开，按键抖动是因为机械式弹簧片通断物理上就会有抖动，会抖5-10ms，要过滤他，最简单的就是通过延时</p>
+<p>传感器模块原理都差不多，那些电阻的阻值会随着外界模拟量来改变，通常与定值电阻串联分压，得到模拟电压的输出，方便电路检测。还可以通过电压比较器来对模拟电压进行二值化，从而得到数字电压输出</p>
+<p>按键一般采用下接地的习惯，看高低电平需要来考虑加上拉电阻，直接接GPIO口，按下时导通到GND，这种接法就会是按下是为低电平，松开时为高电平。</p>
+<h2 id="C语言知识复习"><a href="#C语言知识复习" class="headerlink" title="C语言知识复习"></a>C语言知识复习</h2><p>数据类型比较基础，各种数据类型的关键字、位数、表示范围等，STM32中int为32位的，</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-10%20103638.jpg"
+                      alt="1"
+                ></p>
+<p>st给数据类型都起了新的名字，uint8_t表示无符号字符。</p>
+<p>C语言的宏定义：#define</p>
+<p>用来用字符来代替一个数字</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#define ABC 12345//定义时</span><br><span class="line">int a = ABC;//引用时</span><br></pre></td></tr></table></figure></div>
+<p>typedef是将一个比较长的变量名换个名字，用来给变量命名时常用。</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">typedef unsigned char uint8_t;//定义时</span><br><span class="line">uint8_t a;//引用时</span><br></pre></td></tr></table></figure></div>
+<p>C语言的结构体就比较重要，他也是一种高级点的数据类型，数组是组合数据类型，但他只能组合相同类型的数据，但结构体可以组合不同类型的变量数据。</p>
+<p>结构体的简单用法</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">    int a;//整形变量</span><br><span class="line">    a = 66;</span><br><span class="line">    int b[5];//数组</span><br><span class="line">    b[0] = 66;</span><br><span class="line">    b[1] = 77;</span><br><span class="line">    b[2] = 88;</span><br><span class="line">    struct&#123;char x;int y;float z;&#125; c;//这是结构体c的定义，要在关键字后面表明各个变量的数据类型</span><br><span class="line">    c.x = &#x27;A&#x27;;//结构体赋值语句</span><br><span class="line">    c.y = 66;</span><br><span class="line">    c.z = 1.23;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<p>每次敲struct来定义结构体太麻烦，活用typedef</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">typedef struct&#123;</span><br><span class="line">    char x;</span><br><span class="line">    int y;</span><br><span class="line">    float z;</span><br><span class="line">&#125;StructName_t;   //利用typedef一个东西，来代替定义结构体的一大堆字母</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">    int a;//整形变量</span><br><span class="line">    a = 66;</span><br><span class="line">    int b[5];//数组</span><br><span class="line">    b[0] = 66;</span><br><span class="line">    b[1] = 77;</span><br><span class="line">    b[2] = 88;</span><br><span class="line">    StructName_t c;//这是结构体c的定义，要在关键字后面表明各个变量的数据类型</span><br><span class="line">    StructName_t d;//能快速再定义一个和c差不多的结构体</span><br><span class="line"></span><br><span class="line">    c.x = &#x27;A&#x27;;//结构体赋值语句</span><br><span class="line">    c.y = 66;</span><br><span class="line">    c.z = 1.23;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>附一段数据结构的小内容:</p>
+<p>为何头指针为head的带头结点的单链表判空条件head-&gt;next&#x3D;&#x3D;null?其实一开始这里也是没啥问题的，只是突然产生了疑问点——head为头指针，储存了头结点的地址，按照我残余的一点指针知识，我总感觉不对，head只是个地址，咋可以直接head-&gt;next使用呢？其实哈，这里又产生了和我之前学结构体这个知识点一样的纠结点（嘿嘿，其实这里也算是结构体类型）——结构体</p>
+<p>总之和结构体类型一样这个指向符号“-&gt;”,这里是有特殊规定的，比如你定义个结构体类型</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct student</span><br><span class="line">&#123;</span><br><span class="line">	int age;</span><br><span class="line">	float score;</span><br><span class="line">	char name[100];</span><br><span class="line">&#125;*pstu，stu;</span><br></pre></td></tr></table></figure></div>
+<p>你用stu.age，pstu-&gt;age或者(*pstu).age都是一样可以取到成员变量的，这里的pstu它也是个地址，但是c语言就是这么规定了利用pstu-&gt;age可以取到其结构体内部成员变量（记住就好）所以不难理解为啥head这个指向头结点的指针为啥用head-&gt;next就能取到头结点结构体中的next成员变量了。</p>
+<p>如此便恍然大悟，头结点中next成员变量存储的是下一个结点的地址，若next域中为null，所以除了头结点外，链表中无其他结点，于是单链表判空。</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">版权声明：本段为CSDN博主「懵逼是一种状态」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。</span><br></pre></td></tr></table></figure></div>
+<p><a class="link"   href="https://blog.csdn.net/qq_41113008/article/details/107494929" >原文链接 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>其次是C语言的枚举，关键字为enum</p>
+<p>也是数据类型，定义一个取值受限制的整型变量，用于限制取值范围</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">typedef enum&#123;</span><br><span class="line">    MONDAY = 1,</span><br><span class="line">    TUESDAY,</span><br><span class="line">    WEDNESDAY</span><br><span class="line">&#125; week_t;  </span><br><span class="line"></span><br><span class="line">  //利用typedef一个枚举变量，来代替定义一些受限制的只能是那几个数的量</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">    Week_t week;</span><br><span class="line">    week = MONDAY;  //week = 1</span><br><span class="line">    week = TUESDAY;  //week = 2</span><br><span class="line">    week = 100;   //error</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<p>具体控制代码部分明天写了。</p>
+<hr>
+<p>今天开了组会，项目进展堪忧，教程这样写下去也不知道能不能来得及</p>
+<p>加油吧</p>
+]]></content>
+      <tags>
+        <tag>STM32</tag>
+        <tag>学习笔记</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>STM32学习笔记（一）</title>
     <url>/2023/05/10/STM32-1/</url>
     <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>简单写一下，主要是工作室的学习任务，老师要写一篇32的标准库教程应该是，笔者因为也有在学习项目所需的Hal库之前学习一下标准库的想法，所以帮老师也写一下教程。不完全是被抓壮丁了。然后主要是自己回顾所用的笔记，这里记录的多为代码，以及简单理论，这里所发表的不是教程，所以不是很详尽。</p>
@@ -94,53 +141,6 @@
 <p>第一种就是打开.h文件的最后，右键看定义，去看各个参数</p>
 <p>第二种就是看库函数使用文档，不过有的文档不好找，且找到了估计是英文</p>
 <p>第三种就是去看别人的代码，直接取用。</p>
-]]></content>
-      <tags>
-        <tag>STM32</tag>
-        <tag>学习笔记</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>STM32笔记（二）</title>
-    <url>/2023/05/10/STM32-2/</url>
-    <content><![CDATA[<h2 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h2><p>从本节开始，笔者开始使用工作室发放的板子，根据课程举一反三，自己根据自己板子的电路开始写代码了，跟课程里的有可能不一致。</p>
-<h2 id="GPIO输入"><a href="#GPIO输入" class="headerlink" title="GPIO输入"></a>GPIO输入</h2><p>按键是常见的输入设备，按下导通，松手断开，按键抖动是因为机械式弹簧片通断物理上就会有抖动，会抖5-10ms，要过滤他，最简单的就是通过延时</p>
-<p>传感器模块原理都差不多，那些电阻的阻值会随着外界模拟量来改变，通常与定值电阻串联分压，得到模拟电压的输出，方便电路检测。还可以通过电压比较器来对模拟电压进行二值化，从而得到数字电压输出</p>
-<p>按键一般采用下接地的习惯，看高低电平需要来考虑加上拉电阻，直接接GPIO口，按下时导通到GND，这种接法就会是按下是为低电平，松开时为高电平。</p>
-<h2 id="C语言知识复习"><a href="#C语言知识复习" class="headerlink" title="C语言知识复习"></a>C语言知识复习</h2><p>数据类型比较基础，各种数据类型的关键字、位数、表示范围等，STM32中int为32位的，</p>
-<p><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-10%20103638.jpg"
-                      alt="1"
-                ></p>
-<p>st给数据类型都起了新的名字，uint8_t表示无符号字符。</p>
-<p>C语言的宏定义：#define</p>
-<p>用来用字符来代替一个数字</p>
-<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#define ABC 12345//定义时</span><br><span class="line">int a = ABC;//引用时</span><br></pre></td></tr></table></figure></div>
-<p>typedef是将一个比较长的变量名换个名字，用来给变量命名时常用。</p>
-<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">typedef unsigned char uint8_t;//定义时</span><br><span class="line">uint8_t a;//引用时</span><br></pre></td></tr></table></figure></div>
-<p>C语言的结构体就比较重要，他也是一种高级点的数据类型，数组是组合数据类型，但他只能组合相同类型的数据，但结构体可以组合不同类型的变量数据。</p>
-<p>结构体的简单用法</p>
-<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">    int a;//整形变量</span><br><span class="line">    a = 66;</span><br><span class="line">    int b[5];//数组</span><br><span class="line">    b[0] = 66;</span><br><span class="line">    b[1] = 77;</span><br><span class="line">    b[2] = 88;</span><br><span class="line">    struct&#123;char x;int y;float z;&#125; c;//这是结构体c的定义，要在关键字后面表明各个变量的数据类型</span><br><span class="line">    c.x = &#x27;A&#x27;;//结构体赋值语句</span><br><span class="line">    c.y = 66;</span><br><span class="line">    c.z = 1.23;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
-<p>每次敲struct来定义结构体太麻烦，活用typedef</p>
-<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">typedef struct&#123;</span><br><span class="line">    char x;</span><br><span class="line">    int y;</span><br><span class="line">    float z;</span><br><span class="line">&#125;StructName_t;   //利用typedef一个东西，来代替定义结构体的一大堆字母</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">    int a;//整形变量</span><br><span class="line">    a = 66;</span><br><span class="line">    int b[5];//数组</span><br><span class="line">    b[0] = 66;</span><br><span class="line">    b[1] = 77;</span><br><span class="line">    b[2] = 88;</span><br><span class="line">    StructName_t c;//这是结构体c的定义，要在关键字后面表明各个变量的数据类型</span><br><span class="line">    StructName_t d;//能快速再定义一个和c差不多的结构体</span><br><span class="line"></span><br><span class="line">    c.x = &#x27;A&#x27;;//结构体赋值语句</span><br><span class="line">    c.y = 66;</span><br><span class="line">    c.z = 1.23;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
-
-<p>附一段数据结构的小内容:</p>
-<p>为何头指针为head的带头结点的单链表判空条件head-&gt;next&#x3D;&#x3D;null?其实一开始这里也是没啥问题的，只是突然产生了疑问点——head为头指针，储存了头结点的地址，按照我残余的一点指针知识，我总感觉不对，head只是个地址，咋可以直接head-&gt;next使用呢？其实哈，这里又产生了和我之前学结构体这个知识点一样的纠结点（嘿嘿，其实这里也算是结构体类型）——结构体</p>
-<p>总之和结构体类型一样这个指向符号“-&gt;”,这里是有特殊规定的，比如你定义个结构体类型</p>
-<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct student</span><br><span class="line">&#123;</span><br><span class="line">	int age;</span><br><span class="line">	float score;</span><br><span class="line">	char name[100];</span><br><span class="line">&#125;*pstu，stu;</span><br></pre></td></tr></table></figure></div>
-<p>你用stu.age，pstu-&gt;age或者(*pstu).age都是一样可以取到成员变量的，这里的pstu它也是个地址，但是c语言就是这么规定了利用pstu-&gt;age可以取到其结构体内部成员变量（记住就好）所以不难理解为啥head这个指向头结点的指针为啥用head-&gt;next就能取到头结点结构体中的next成员变量了。</p>
-<p>如此便恍然大悟，头结点中next成员变量存储的是下一个结点的地址，若next域中为null，所以除了头结点外，链表中无其他结点，于是单链表判空。</p>
-<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">版权声明：本段为CSDN博主「懵逼是一种状态」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。</span><br></pre></td></tr></table></figure></div>
-<p><a class="link"   href="https://blog.csdn.net/qq_41113008/article/details/107494929" >原文链接 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
-<p>其次是C语言的枚举，关键字为enum</p>
-<p>也是数据类型，定义一个取值受限制的整型变量，用于限制取值范围</p>
-<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">typedef enum&#123;</span><br><span class="line">    MONDAY = 1,</span><br><span class="line">    TUESDAY,</span><br><span class="line">    WEDNESDAY</span><br><span class="line">&#125; week_t;  </span><br><span class="line"></span><br><span class="line">  //利用typedef一个枚举变量，来代替定义一些受限制的只能是那几个数的量</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">    Week_t week;</span><br><span class="line">    week = MONDAY;  //week = 1</span><br><span class="line">    week = TUESDAY;  //week = 2</span><br><span class="line">    week = 100;   //error</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
-<p>具体控制代码部分明天写了。</p>
-<hr>
-<p>今天开了组会，项目进展堪忧，教程这样写下去也不知道能不能来得及</p>
-<p>加油吧</p>
 ]]></content>
       <tags>
         <tag>STM32</tag>
@@ -313,74 +313,6 @@
       <tags>
         <tag>STM32</tag>
         <tag>学习笔记</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>STM32_3</title>
-    <url>/2023/05/14/STM32-3/</url>
-    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>续前篇GPIO输入的理论部分，没什么好讲的，直接上代码书写部分吧，笔记一般都写在注释里了。</p>
-<p>这两天正值期中考试，这几个学期自己专业都没期中考试，在部门中理所当然多做了些工作，也算是从部门工作快开摆的末尾在奉献奉献吧。节能减排在没什么成果的情况下竟然能获得推入国赛的资格，好好珍惜，没有成果也要拼一把，如果不是炮灰，这不就发达了。</p>
-<h2 id="代码书写"><a href="#代码书写" class="headerlink" title="代码书写"></a>代码书写</h2><p>模块化编程确实重要，一般驱动代码都会单独封装起来，用到时再引用，这样也不错。</p>
-<p>由于是标准库，所以建文件夹并且添加文件夹不可少，用标准库的弊端这不就显现了。添加Hardware文件并添加，这个不过多讲了，相信以后做的多了也就会了。</p>
-<p>工程管理加组挪位置，工程选项加到头文件路径，在文件夹中添加.c文件.h文件，注意都加在该文件夹中，.c用来放驱动程序主体代码，.h放程序对外提供的函数或变量的声明。</p>
-<p>两个文件建好后，需要添加一些必要的头头，</p>
-<h2 id="在-c文件中，需要添加芯片的头文件，在-h文件中则是添加防止头文件重复包含的代码。"><a href="#在-c文件中，需要添加芯片的头文件，在-h文件中则是添加防止头文件重复包含的代码。" class="headerlink" title="在.c文件中，需要添加芯片的头文件，在.h文件中则是添加防止头文件重复包含的代码。"></a>在.c文件中，需要添加芯片的头文件，在.h文件中则是添加防止头文件重复包含的代码。<br><div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#ifndef __LED_H   //如果没有定义LED字符串</span><br><span class="line">#define __LED_H   //那么就定义这个字符串</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#endif  //这个和ifndef组成括号，同样注意文件以空行结尾</span><br><span class="line"></span><br></pre></td></tr></table></figure></div></h2><p>未完待续</p>
-]]></content>
-      <tags>
-        <tag>STM32</tag>
-        <tag>学习笔记</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>2023上半年总结</title>
-    <url>/2023/07/05/diaryone/</url>
-    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>26号考完最后一科到现在也算是期末平稳落地，自己又过了八天慢生活，遗憾的是武功山没按计划去爬，不过这周末约了js，能聊聊也不错，很久没见老班长了。<br>放假八天，权重文件搞出来了，也算有一点点成果，但不多。大学过半，2023年过半，一直觉得该写点总结，今日终于动笔，简单总结下这个学期，反思下2023这半年。</p>
-<p><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/8%7BD3~14%24IHLU(VF2Y4_CT)8.jpg"
-                     
-                ></p>
-<h2 id="生活的A面"><a href="#生活的A面" class="headerlink" title="生活的A面"></a>生活的A面</h2><p>这个学期终于有点像是大学生的体验了，不再只是简单的学习课本，做作业，考试。微机原理进行了汇编语言实验以及电子技术实践，都让我有很多体会。最重要一点，参加嵌入式竞赛，我闻到了点科研的味道。</p>
-<p><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/SMV%24OE7I515J%24MB9F242QRQ.jpg"
-                     
-                ></p>
-<p>2023年3月左右，本意是打算深耕于建为工作室的我，最终还是一上头跟着lx参加了这个预热半学期的嵌入式竞赛，自此写项目书、了解stm32、了解视觉算法，一扇崭新的大门向我打开。通过了学院的初筛，入驻实验室，最重要的是通过l老师认识了yj师兄，pz师姐以及帮助了许多的jl哥，跟随着他们，自己这小比赛因为涉及点深度学习的内容，甚至有了点科研的感觉。顺路打了场节能减排和职规赛，马马虎虎拿了点不上台面的奖。此间也算是有了一些stm32的基础知识，跑yolo运用roboflow的一些傻瓜式操作，但是目前学习都不深入，不懂原理，终究只是小打小闹罢了。还需要再接再厉。实验室里平时氛围一般，但近期光电赛临近提交，终于有了点攻坚的感觉，听着长我一届的学长说着我仅仅听过的一些词，调试着程序，终于意识到自己这半年其实真没学到什么东西，别说触摸科研，连学院做项目的合格水平都没达到。</p>
-<p><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E5%9B%BE%E7%89%8720230318160421.png"
-                     
-                ></p>
-<p>竞赛与实验室上还算费心，不用说还有部门工作和蛋疼的工作室，投入到学习学业的时间必然减少，但大学这种形式上的期末考试让我十分讨厌，不知怎的对期末真的不太上心，这总归不太好。我后续不断告诉自己，绩点还是很重要的，能往上刷的机会也不多了，好在目前靠着考前突击还维持在3以上。</p>
-<h2 id="生活的B面"><a href="#生活的B面" class="headerlink" title="生活的B面"></a>生活的B面</h2><p>半年来生活上仍然没有什么改进，懒懒散散。一直幻想自己成为一个自律有效率的人，但通常是自律不了半天时间，便想给自己放个假。半年前在22年最后一天，也写了下对23年的期望，希望自己能在今年结束的时候，细数自己一年的进步与成就。现在已经过了半年，生活上反正是没什么进步，成就的话，也不能完全算取得了。</p>
-<p>关于这方面的反思，我时不时就会来一次，无非就是自己哪里做的不好，哪里仍需要改进，但每当忙起来或者累了，又将之抛于脑后。</p>
-<p><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/5DZ4ZGIN%7DUKS3YFYAW~K5XM.jpg"
-                     
-                ></p>
-<p>和部门的三位相处还算融洽，熬夜加班个几次，革命友情也就来了。一些委员也着实让人省心，当时留任想的是自己能够给委员带来一些东西，自认为尽可能的能帮就帮了，但这半年真的让人费心的事有点多，可能没完成最初的预期。我一直觉得自己是个好为人师的人，有什么经验就希望能分享出去，有什么能避坑的点就提醒一下，但其实这些行为在一些人看来有些多余，我在认识到这点之后也在逐渐改正。</p>
-<p><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E5%9B%BE%E7%89%8720230705165113.jpg"
-                     
-                ></p>
-<p>和班里的人打交道总是缺乏热情，关系比较好的，也仅限自己的室友和几个人，能脱去团书的职务是我没想到的，但承接班长的工作也是我没有计划的，唉，总是喜欢操这些没有人愿意操的心，明明今年没有入选发展对象已经令人很寒心了，好在g书记真的很给力，部门那边申请的校级五四评优竟然悄咪咪通过了。</p>
-<p>湖南的天气无语到令人发狂，有下雨天的湿热，大晴天的燥热，有时候接连不断的大雨还会连续几天，总是能搞人心态。前两天可能是因为吹空调吹的太猛了而发烧，让我想起了lx这个学期因为身体原因而颇为不顺心，一直想要去锻炼，想要多注意点生活方式，尽量让自己健康些，发现自己这代人可能真的是有点网上说的“无病呻吟”，在20岁的年纪就开始“保温杯泡枸杞”，预防“老寒腿”，注意饮食，但又经常吃外卖，夜宵，熬夜。</p>
-<p>这学期和家里人通电话的次数也变少了，我不认为忙应当是减少联系的理由，不该把联系家里人当做一种负担，随着自己走出家门，和家人聚少离多，父母的关心和思念是弥足珍贵的。每次通电话都希望尽可能传达我过的还算不错的感觉，分享一下自己的成果，感觉子女和父母总是能以任何方式彼此理解。</p>
-<h2 id="未来一阵子的期望"><a href="#未来一阵子的期望" class="headerlink" title="未来一阵子的期望"></a>未来一阵子的期望</h2><p>这个暑假既然留校，希望自己能在stm32开发上学到一些真本事，而且两个竞赛的时间紧迫必须要做出点东西，不能浪费自己这个学期的工作。</p>
-<p>自从看了大疆大佬的一篇文章之后，我一直把英语当做一种工具来学，但这半年很少接触英语，考六级的机会不多了，也要抓紧。</p>
-<p>沾到了点科研的感觉，暂且不论目前人工智能方向的火热，不论未来深挖哪个方向，都让我感觉读研是很有必要的。即将步入大三，考研的一些东西也应当开始了解，下个学期没那么忙的话，要抓住考六级和刷绩点的机会。</p>
-<p>不管怎么说，希望自己终有一天能构建自己的精神世界，做一个情感丰富的人，有自己热爱的事物。在此之上，人将无所不能。</p>
-]]></content>
-      <tags>
-        <tag>杂记</tag>
       </tags>
   </entry>
   <entry>
@@ -770,6 +702,61 @@
       </tags>
   </entry>
   <entry>
+    <title>STM32_3</title>
+    <url>/2023/05/14/STM32-3/</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>续前篇GPIO输入的理论部分，没什么好讲的，直接上代码书写部分吧，笔记一般都写在注释里了。</p>
+<p>这两天正值期中考试，这几个学期自己专业都没期中考试，在部门中理所当然多做了些工作，也算是从部门工作快开摆的末尾在奉献奉献吧。节能减排在没什么成果的情况下竟然能获得推入国赛的资格，好好珍惜，没有成果也要拼一把，如果不是炮灰，这不就发达了。</p>
+<h2 id="代码书写"><a href="#代码书写" class="headerlink" title="代码书写"></a>代码书写</h2><p>模块化编程确实重要，一般驱动代码都会单独封装起来，用到时再引用，这样也不错。</p>
+<p>由于是标准库，所以建文件夹并且添加文件夹不可少，用标准库的弊端这不就显现了。添加Hardware文件并添加，这个不过多讲了，相信以后做的多了也就会了。</p>
+<p>工程管理加组挪位置，工程选项加到头文件路径，在文件夹中添加.c文件.h文件，注意都加在该文件夹中，.c用来放驱动程序主体代码，.h放程序对外提供的函数或变量的声明。</p>
+<p>两个文件建好后，需要添加一些必要的头头，</p>
+<h2 id="在-c文件中，需要添加芯片的头文件，在-h文件中则是添加防止头文件重复包含的代码。"><a href="#在-c文件中，需要添加芯片的头文件，在-h文件中则是添加防止头文件重复包含的代码。" class="headerlink" title="在.c文件中，需要添加芯片的头文件，在.h文件中则是添加防止头文件重复包含的代码。"></a>在.c文件中，需要添加芯片的头文件，在.h文件中则是添加防止头文件重复包含的代码。<br><div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#ifndef __LED_H   //如果没有定义LED字符串</span><br><span class="line">#define __LED_H   //那么就定义这个字符串</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#endif  //这个和ifndef组成括号，同样注意文件以空行结尾</span><br><span class="line"></span><br></pre></td></tr></table></figure></div></h2><p>未完待续</p>
+]]></content>
+      <tags>
+        <tag>STM32</tag>
+        <tag>学习笔记</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>STM32环境搭建并实现C51与MDK共存（Hal开发）</title>
+    <url>/2023/04/30/test-my-site/</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>笔者由于竞赛需要，最近开始学习STM32H7系列芯片，由于之前并没有学习过32，且51也是较早时期学习，对于一些概念一知半解，没有得到很好的吸收，所以在基础较差的情况下，现在搭建32的环境也是一波三折。特此记录，以供自己队友查看，自己水平有限，但其中整理的一些资料如果对其他人也能带来帮助，定会更好。</p>
+<h2 id="支持环境简介"><a href="#支持环境简介" class="headerlink" title="支持环境简介"></a>支持环境简介</h2><p>意法半导体基于32位ARM Cortex-M 内核的STM32系列微控制器得到了一整套软件工具的支持。它整合了传统集成式开发环境IDE和主要第三方提供的C&#x2F;C++编译器和调试器，并以ST的创新工具作为补充，比如STM32CubeMX，Cube.AI等。</p>
+<p>常用的IDE就笔者目前了解到的有ST自家的STM32CubeIDE、CLion、VScode配合插件，也有用IAR的，以及今天我要详细介绍的Keil。</p>
+<p>笔者目前使用CubeMX图形化界面进行MCU选型以及引脚配置，配合Keil进行代码编译调试，笔者水平有限，且仍在学习中，如有错误还请批评指正。这篇文章也只是便于队友搭环境所记录，更偏向于各方有参考意义的资料整合。</p>
+<h2 id="CubeMX安装与配置"><a href="#CubeMX安装与配置" class="headerlink" title="CubeMX安装与配置"></a>CubeMX安装与配置</h2><p>这是官网对于自家生态下的软件介绍：</p>
+<blockquote>
+<p>STM32CubeMX是STM32Cube工具家族中的一员，从MCU&#x2F;MPU选型，引脚配置，系统时钟以及外设时钟设置，到外设参数配置，中间件参数配置，它给STM32开发者们提供了一种简单，方便，并且直观的方式来完成这些工作。所有的配置完成后，它还可以根据所选的IDE生成对应的工程和初始化C代码。</p>
+</blockquote>
+<p><a class="link"   href="https://www.stmcu.com.cn/" >ST中文官网 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>关于CubeMX的安装，官网中就能够直接进行下载<a class="link"   href="https://www.stmcu.com.cn/Designresource/detail/software/711627" >Windows点击下载 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>下载好安装包后，具体的安装步骤与教程可以参考以下视频，需要注意的一点就是<strong>库的安装路径不能出现中文</strong>，否则会有乱码。然后视频中下载了当时用不上的F1的pack，就没下，后面直接在MX里线上选择H7进行了下载，好在校园网这次可给力了一把，下载没出乱子。</p>
+<p><a class="link"   href="https://www.bilibili.com/video/BV1q4411d7RX?p=2&vd_source=df63b1518b81b99bf6c584903334107e" >B站参考视频，这时候看P2 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>安装好MX和H7的包之后，新建项目，可以根据芯片来创建，也可以根据ST官方开发板来进行创建，笔者竞赛申请的开发板以及已有的开发板为以下两款：</p>
+<p><a class="link"   href="https://www.st.com/zh/evaluation-tools/stm32h7b3i-dk.html" >STM32H7B3I-DK <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><a class="link"   href="https://www.st.com/zh/evaluation-tools/nucleo-h7a3zi-q.html" >NUCLEO-H7A3ZI-Q <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>创建好新的项目后，就可以看到MX的图形化配置界面，十分友好。然后在选择IDE时，就到了我们需要介绍的Keil的MDK的安装了。</p>
+<h3 id="插叙"><a href="#插叙" class="headerlink" title="插叙"></a>插叙</h3><p>在本节中，笔者提到了中文路径一事，在注册微软账户时，由于笔者注册了中文名，导致C盘用户文件夹为中文，在之前搭建VScode环境时就出过问题，这次MX的路径好在可以修改，但笔者在学习51时所安装的老版本Keil也遇到过乱码问题，所以这次查了大量方法，想从根本上解决该问题，功夫不负有心人，笔者找到了下面文章中的解决方法，该方法与网上其他方法的原理相同，但操作更为简单，只需粘贴执行几行命令，即可实现一个英文文件夹的镜像链接。</p>
+<p><a class="link"   href="https://answers.microsoft.com/zh-hans/windows/forum/all/%E4%BF%AE%E6%94%B9-windows/3c8cc397-e62a-4e3f-a113-96a342995982" >修改 Windows 用户账户文件夹路径，以改善应用程序兼容性 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<h2 id="Keil的MDK与51的共存"><a href="#Keil的MDK与51的共存" class="headerlink" title="Keil的MDK与51的共存"></a>Keil的MDK与51的共存</h2><p>笔者在之前就安装过Keil，但版本较老，这次也是卸载重装，主要参考了以下三个视频，建议都看完，就明白到底是要干个什么事了。</p>
+<p><a class="link"   href="https://www.bilibili.com/video/BV1q4411d7RX?p=1&vd_source=df63b1518b81b99bf6c584903334107e" >只看P1 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>这个视频里没有提供安装包资源，但对于整体流程讲的较为清晰，总结为下载Keil，并装上C51实现能对51的开发，装上MDK实现对32的开发。然后为了能够免费使用，需要那啥一下，视频中那个及其古早画风的黑色界面软件。</p>
+<p><a class="link"   href="https://www.bilibili.com/video/BV1ae4y1G7rW/?spm_id_from=333.788&vd_source=df63b1518b81b99bf6c584903334107e" >看完整个3P <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>这个视频讲得太细了，而且可以要到他的安装包资源，可以直接用他整理好的安装包进行安装搭建。按照教程就不会有错误。</p>
+<p><a class="link"   href="https://www.bilibili.com/video/BV1Ga4y1a7Xa/?vd_source=df63b1518b81b99bf6c584903334107e" >这个视频对于理解以上所有内容都有帮助 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>这个UP很接地气，也是便于理解上面的操作。</p>
+<p>到这里应该就能完成Keil的下载和MDK等的安装了，然后笔者其实忘记了在Keil中安装32的那些开发包，在后续的将代码从MX生成用MDK打开时，通过自带的一个installer才在线上较慢速度地下载完成。可以正常使用。关于创建工程以及将代码用Keil打开，可以看这个视频地前面一段<a class="link"   href="https://www.bilibili.com/video/BV1q4411d7RX?p=3&vd_source=df63b1518b81b99bf6c584903334107e" >可以看看P3和P2 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<hr>
+<p>至此笔者竞赛的初步需求就已经满足，关于STLink的安装，由于时间关系还未做，后续可能会补充。</p>
+<pre><code>本文由ZYiPan编写，技术有限，如有问题，请指正！
+</code></pre>
+]]></content>
+      <tags>
+        <tag>STM32</tag>
+        <tag>环境搭建</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>基于机器视觉的在线高速PCBA生产质量检测器</title>
     <url>/2023/07/17/project/</url>
     <content><![CDATA[<h2 id="设计概述"><a href="#设计概述" class="headerlink" title="设计概述"></a>设计概述</h2><p><img  
@@ -856,42 +843,55 @@
       </tags>
   </entry>
   <entry>
-    <title>STM32环境搭建并实现C51与MDK共存（Hal开发）</title>
-    <url>/2023/04/30/test-my-site/</url>
-    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>笔者由于竞赛需要，最近开始学习STM32H7系列芯片，由于之前并没有学习过32，且51也是较早时期学习，对于一些概念一知半解，没有得到很好的吸收，所以在基础较差的情况下，现在搭建32的环境也是一波三折。特此记录，以供自己队友查看，自己水平有限，但其中整理的一些资料如果对其他人也能带来帮助，定会更好。</p>
-<h2 id="支持环境简介"><a href="#支持环境简介" class="headerlink" title="支持环境简介"></a>支持环境简介</h2><p>意法半导体基于32位ARM Cortex-M 内核的STM32系列微控制器得到了一整套软件工具的支持。它整合了传统集成式开发环境IDE和主要第三方提供的C&#x2F;C++编译器和调试器，并以ST的创新工具作为补充，比如STM32CubeMX，Cube.AI等。</p>
-<p>常用的IDE就笔者目前了解到的有ST自家的STM32CubeIDE、CLion、VScode配合插件，也有用IAR的，以及今天我要详细介绍的Keil。</p>
-<p>笔者目前使用CubeMX图形化界面进行MCU选型以及引脚配置，配合Keil进行代码编译调试，笔者水平有限，且仍在学习中，如有错误还请批评指正。这篇文章也只是便于队友搭环境所记录，更偏向于各方有参考意义的资料整合。</p>
-<h2 id="CubeMX安装与配置"><a href="#CubeMX安装与配置" class="headerlink" title="CubeMX安装与配置"></a>CubeMX安装与配置</h2><p>这是官网对于自家生态下的软件介绍：</p>
-<blockquote>
-<p>STM32CubeMX是STM32Cube工具家族中的一员，从MCU&#x2F;MPU选型，引脚配置，系统时钟以及外设时钟设置，到外设参数配置，中间件参数配置，它给STM32开发者们提供了一种简单，方便，并且直观的方式来完成这些工作。所有的配置完成后，它还可以根据所选的IDE生成对应的工程和初始化C代码。</p>
-</blockquote>
-<p><a class="link"   href="https://www.stmcu.com.cn/" >ST中文官网 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
-<p>关于CubeMX的安装，官网中就能够直接进行下载<a class="link"   href="https://www.stmcu.com.cn/Designresource/detail/software/711627" >Windows点击下载 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
-<p>下载好安装包后，具体的安装步骤与教程可以参考以下视频，需要注意的一点就是<strong>库的安装路径不能出现中文</strong>，否则会有乱码。然后视频中下载了当时用不上的F1的pack，就没下，后面直接在MX里线上选择H7进行了下载，好在校园网这次可给力了一把，下载没出乱子。</p>
-<p><a class="link"   href="https://www.bilibili.com/video/BV1q4411d7RX?p=2&vd_source=df63b1518b81b99bf6c584903334107e" >B站参考视频，这时候看P2 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
-<p>安装好MX和H7的包之后，新建项目，可以根据芯片来创建，也可以根据ST官方开发板来进行创建，笔者竞赛申请的开发板以及已有的开发板为以下两款：</p>
-<p><a class="link"   href="https://www.st.com/zh/evaluation-tools/stm32h7b3i-dk.html" >STM32H7B3I-DK <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
-<p><a class="link"   href="https://www.st.com/zh/evaluation-tools/nucleo-h7a3zi-q.html" >NUCLEO-H7A3ZI-Q <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
-<p>创建好新的项目后，就可以看到MX的图形化配置界面，十分友好。然后在选择IDE时，就到了我们需要介绍的Keil的MDK的安装了。</p>
-<h3 id="插叙"><a href="#插叙" class="headerlink" title="插叙"></a>插叙</h3><p>在本节中，笔者提到了中文路径一事，在注册微软账户时，由于笔者注册了中文名，导致C盘用户文件夹为中文，在之前搭建VScode环境时就出过问题，这次MX的路径好在可以修改，但笔者在学习51时所安装的老版本Keil也遇到过乱码问题，所以这次查了大量方法，想从根本上解决该问题，功夫不负有心人，笔者找到了下面文章中的解决方法，该方法与网上其他方法的原理相同，但操作更为简单，只需粘贴执行几行命令，即可实现一个英文文件夹的镜像链接。</p>
-<p><a class="link"   href="https://answers.microsoft.com/zh-hans/windows/forum/all/%E4%BF%AE%E6%94%B9-windows/3c8cc397-e62a-4e3f-a113-96a342995982" >修改 Windows 用户账户文件夹路径，以改善应用程序兼容性 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
-<h2 id="Keil的MDK与51的共存"><a href="#Keil的MDK与51的共存" class="headerlink" title="Keil的MDK与51的共存"></a>Keil的MDK与51的共存</h2><p>笔者在之前就安装过Keil，但版本较老，这次也是卸载重装，主要参考了以下三个视频，建议都看完，就明白到底是要干个什么事了。</p>
-<p><a class="link"   href="https://www.bilibili.com/video/BV1q4411d7RX?p=1&vd_source=df63b1518b81b99bf6c584903334107e" >只看P1 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
-<p>这个视频里没有提供安装包资源，但对于整体流程讲的较为清晰，总结为下载Keil，并装上C51实现能对51的开发，装上MDK实现对32的开发。然后为了能够免费使用，需要那啥一下，视频中那个及其古早画风的黑色界面软件。</p>
-<p><a class="link"   href="https://www.bilibili.com/video/BV1ae4y1G7rW/?spm_id_from=333.788&vd_source=df63b1518b81b99bf6c584903334107e" >看完整个3P <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
-<p>这个视频讲得太细了，而且可以要到他的安装包资源，可以直接用他整理好的安装包进行安装搭建。按照教程就不会有错误。</p>
-<p><a class="link"   href="https://www.bilibili.com/video/BV1Ga4y1a7Xa/?vd_source=df63b1518b81b99bf6c584903334107e" >这个视频对于理解以上所有内容都有帮助 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
-<p>这个UP很接地气，也是便于理解上面的操作。</p>
-<p>到这里应该就能完成Keil的下载和MDK等的安装了，然后笔者其实忘记了在Keil中安装32的那些开发包，在后续的将代码从MX生成用MDK打开时，通过自带的一个installer才在线上较慢速度地下载完成。可以正常使用。关于创建工程以及将代码用Keil打开，可以看这个视频地前面一段<a class="link"   href="https://www.bilibili.com/video/BV1q4411d7RX?p=3&vd_source=df63b1518b81b99bf6c584903334107e" >可以看看P3和P2 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
-<hr>
-<p>至此笔者竞赛的初步需求就已经满足，关于STLink的安装，由于时间关系还未做，后续可能会补充。</p>
-<pre><code>本文由ZYiPan编写，技术有限，如有问题，请指正！
-</code></pre>
+    <title>2023上半年总结</title>
+    <url>/2023/07/05/diaryone/</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>26号考完最后一科到现在也算是期末平稳落地，自己又过了八天慢生活，遗憾的是武功山没按计划去爬，不过这周末约了js，能聊聊也不错，很久没见老班长了。<br>放假八天，权重文件搞出来了，也算有一点点成果，但不多。大学过半，2023年过半，一直觉得该写点总结，今日终于动笔，简单总结下这个学期，反思下2023这半年。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/8%7BD3~14%24IHLU(VF2Y4_CT)8.jpg"
+                     
+                ></p>
+<h2 id="生活的A面"><a href="#生活的A面" class="headerlink" title="生活的A面"></a>生活的A面</h2><p>这个学期终于有点像是大学生的体验了，不再只是简单的学习课本，做作业，考试。微机原理进行了汇编语言实验以及电子技术实践，都让我有很多体会。最重要一点，参加嵌入式竞赛，我闻到了点科研的味道。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/SMV%24OE7I515J%24MB9F242QRQ.jpg"
+                     
+                ></p>
+<p>2023年3月左右，本意是打算深耕于建为工作室的我，最终还是一上头跟着lx参加了这个预热半学期的嵌入式竞赛，自此写项目书、了解stm32、了解视觉算法，一扇崭新的大门向我打开。通过了学院的初筛，入驻实验室，最重要的是通过l老师认识了yj师兄，pz师姐以及帮助了许多的jl哥，跟随着他们，自己这小比赛因为涉及点深度学习的内容，甚至有了点科研的感觉。顺路打了场节能减排和职规赛，马马虎虎拿了点不上台面的奖。此间也算是有了一些stm32的基础知识，跑yolo运用roboflow的一些傻瓜式操作，但是目前学习都不深入，不懂原理，终究只是小打小闹罢了。还需要再接再厉。实验室里平时氛围一般，但近期光电赛临近提交，终于有了点攻坚的感觉，听着长我一届的学长说着我仅仅听过的一些词，调试着程序，终于意识到自己这半年其实真没学到什么东西，别说触摸科研，连学院做项目的合格水平都没达到。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E5%9B%BE%E7%89%8720230318160421.png"
+                     
+                ></p>
+<p>竞赛与实验室上还算费心，不用说还有部门工作和蛋疼的工作室，投入到学习学业的时间必然减少，但大学这种形式上的期末考试让我十分讨厌，不知怎的对期末真的不太上心，这总归不太好。我后续不断告诉自己，绩点还是很重要的，能往上刷的机会也不多了，好在目前靠着考前突击还维持在3以上。</p>
+<h2 id="生活的B面"><a href="#生活的B面" class="headerlink" title="生活的B面"></a>生活的B面</h2><p>半年来生活上仍然没有什么改进，懒懒散散。一直幻想自己成为一个自律有效率的人，但通常是自律不了半天时间，便想给自己放个假。半年前在22年最后一天，也写了下对23年的期望，希望自己能在今年结束的时候，细数自己一年的进步与成就。现在已经过了半年，生活上反正是没什么进步，成就的话，也不能完全算取得了。</p>
+<p>关于这方面的反思，我时不时就会来一次，无非就是自己哪里做的不好，哪里仍需要改进，但每当忙起来或者累了，又将之抛于脑后。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/5DZ4ZGIN%7DUKS3YFYAW~K5XM.jpg"
+                     
+                ></p>
+<p>和部门的三位相处还算融洽，熬夜加班个几次，革命友情也就来了。一些委员也着实让人省心，当时留任想的是自己能够给委员带来一些东西，自认为尽可能的能帮就帮了，但这半年真的让人费心的事有点多，可能没完成最初的预期。我一直觉得自己是个好为人师的人，有什么经验就希望能分享出去，有什么能避坑的点就提醒一下，但其实这些行为在一些人看来有些多余，我在认识到这点之后也在逐渐改正。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E5%9B%BE%E7%89%8720230705165113.jpg"
+                     
+                ></p>
+<p>和班里的人打交道总是缺乏热情，关系比较好的，也仅限自己的室友和几个人，能脱去团书的职务是我没想到的，但承接班长的工作也是我没有计划的，唉，总是喜欢操这些没有人愿意操的心，明明今年没有入选发展对象已经令人很寒心了，好在g书记真的很给力，部门那边申请的校级五四评优竟然悄咪咪通过了。</p>
+<p>湖南的天气无语到令人发狂，有下雨天的湿热，大晴天的燥热，有时候接连不断的大雨还会连续几天，总是能搞人心态。前两天可能是因为吹空调吹的太猛了而发烧，让我想起了lx这个学期因为身体原因而颇为不顺心，一直想要去锻炼，想要多注意点生活方式，尽量让自己健康些，发现自己这代人可能真的是有点网上说的“无病呻吟”，在20岁的年纪就开始“保温杯泡枸杞”，预防“老寒腿”，注意饮食，但又经常吃外卖，夜宵，熬夜。</p>
+<p>这学期和家里人通电话的次数也变少了，我不认为忙应当是减少联系的理由，不该把联系家里人当做一种负担，随着自己走出家门，和家人聚少离多，父母的关心和思念是弥足珍贵的。每次通电话都希望尽可能传达我过的还算不错的感觉，分享一下自己的成果，感觉子女和父母总是能以任何方式彼此理解。</p>
+<h2 id="未来一阵子的期望"><a href="#未来一阵子的期望" class="headerlink" title="未来一阵子的期望"></a>未来一阵子的期望</h2><p>这个暑假既然留校，希望自己能在stm32开发上学到一些真本事，而且两个竞赛的时间紧迫必须要做出点东西，不能浪费自己这个学期的工作。</p>
+<p>自从看了大疆大佬的一篇文章之后，我一直把英语当做一种工具来学，但这半年很少接触英语，考六级的机会不多了，也要抓紧。</p>
+<p>沾到了点科研的感觉，暂且不论目前人工智能方向的火热，不论未来深挖哪个方向，都让我感觉读研是很有必要的。即将步入大三，考研的一些东西也应当开始了解，下个学期没那么忙的话，要抓住考六级和刷绩点的机会。</p>
+<p>不管怎么说，希望自己终有一天能构建自己的精神世界，做一个情感丰富的人，有自己热爱的事物。在此之上，人将无所不能。</p>
 ]]></content>
       <tags>
-        <tag>STM32</tag>
-        <tag>环境搭建</tag>
+        <tag>杂记</tag>
       </tags>
   </entry>
   <entry>
