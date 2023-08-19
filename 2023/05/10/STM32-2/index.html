@@ -20,14 +20,14 @@
     
         <meta name="description" content="注意从本节开始，笔者开始使用工作室发放的板子，根据课程举一反三，自己根据自己板子的电路开始写代码了，跟课程里的有可能不一致。 GPIO输入按键是常见的输入设备，按下导通，松手断开，按键抖动是因为机械式弹簧片通断物理上就会有抖动，会抖5-10ms，要过滤他，最简单的就是通过延时 传感器模块原理都差不多，那些电阻的阻值会随着外界模拟量来改变，通常与定值电阻串联分压，得到模拟电压的输出，方便电路检测。还">
 <meta property="og:type" content="article">
-<meta property="og:title" content="STM32笔记（二）">
+<meta property="og:title" content="STM32学习笔记（二）——GPIO输入及C语言复习">
 <meta property="og:url" content="http://example.com/2023/05/10/STM32-2/index.html">
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="注意从本节开始，笔者开始使用工作室发放的板子，根据课程举一反三，自己根据自己板子的电路开始写代码了，跟课程里的有可能不一致。 GPIO输入按键是常见的输入设备，按下导通，松手断开，按键抖动是因为机械式弹簧片通断物理上就会有抖动，会抖5-10ms，要过滤他，最简单的就是通过延时 传感器模块原理都差不多，那些电阻的阻值会随着外界模拟量来改变，通常与定值电阻串联分压，得到模拟电压的输出，方便电路检测。还">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-10%20103638.jpg">
 <meta property="article:published_time" content="2023-05-10T04:06:28.000Z">
-<meta property="article:modified_time" content="2023-06-19T00:53:17.702Z">
+<meta property="article:modified_time" content="2023-08-06T01:59:16.026Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="STM32">
 <meta property="article:tag" content="学习笔记">
@@ -43,7 +43,7 @@
     
     <title>
         
-            STM32笔记（二） -
+            STM32学习笔记（二）——GPIO输入及C语言复习 -
         
         ZYiPan
     </title>
@@ -64,7 +64,7 @@
     <script id="hexo-configurations">
     let Global = window.Global || {};
     Global.hexo_config = {"hostname":"example.com","root":"/","language":"zh-CN","path":"search.xml"};
-    Global.theme_config = {"articles":{"style":{"font_size":"16px","line_height":1.5,"image_border_radius":"14px","image_alignment":"center","image_caption":false,"link_icon":true},"word_count":{"enable":true,"count":true,"min2read":true},"author_label":{"enable":true,"auto":false,"list":[""]},"code_block":{"copy":true,"style":"mac","font":{"enable":false,"family":null,"url":null}},"toc":{"enable":true,"max_depth":3,"number":false,"expand":true,"init_open":true},"copyright":true,"lazyload":true,"recommendation":{"enable":false,"title":"推荐阅读","limit":3,"placeholder":"/images/wallhaven-wqery6-light.webp","skip_dirs":[]}},"colors":{"primary":"#367df7","secondary":null},"global":{"fonts":{"chinese":{"enable":false,"family":null,"url":null},"english":{"enable":false,"family":null,"url":null}},"content_max_width":"1000px","sidebar_width":"210px","hover":{"shadow":false,"scale":true},"scroll_progress":{"bar":false,"percentage":true},"busuanzi_counter":{"enable":true,"site_pv":true,"site_uv":true,"post_pv":true},"pjax":true,"open_graph":true},"home_banner":{"enable":true,"image":{"light":"https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/4.jpg","dark":"https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/4.jpg"},"title":"PCB VISUAL","subtitle":{"text":["Machine vision-based PCBA production quality detector."],"hitokoto":{"enable":false,"api":"https://v1.hitokoto.cn"},"typing_speed":100,"backing_speed":80,"starting_delay":500,"backing_delay":1500,"loop":true,"smart_backspace":true},"text_color":{"light":"#d1d1b6","dark":"#d1d1b6"},"text_style":{"title_size":"2.8rem","subtitle_size":"1.5rem","line_height":1.2},"custom_font":{"enable":false,"family":null,"url":null},"social_links":{"enable":true,"links":{"github":"https://github.com/yipanzhu","instagram":null,"zhihu":"https://www.zhihu.com/people/ku-liao-jiao-ni","twitter":null,"email":"yipanzhu@outlook.com","fa-solid fa-c":"https://blog.csdn.net/weixin_63008006?spm=1000.2115.3001.5343"}}},"plugins":{"feed":{"enable":false},"aplayer":{"enable":false,"type":"fixed","audios":[{"name":null,"artist":null,"url":null,"cover":null}]},"mermaid":{"enable":false,"version":"9.3.0"}},"version":"2.1.2","navbar":{"auto_hide":false,"color":{"left":"#367df7","right":"#367df7","transparency":15},"links":{"Home":{"path":"/","icon":"fa-regular fa-house"},"Blogs":{"icon":"fa-light fa-pen-nib","submenus":{"archives":"https://yipanzhu.github.io/archives/","tags":"/tags/"}},"Github":{"path":"https://github.com/yipanzhu","icon":"fa-brands fa-github"},"About Me":{"path":"https://yipanzhu.github.io/about","icon":"fa-light fa-user"}},"search":{"enable":true,"preload":true}},"page_templates":{"friends_column":2,"tags_style":"cloud"},"home":{"sidebar":{"enable":true,"position":"left","first_item":"menu","announcement":null,"links":null},"article_date_format":"auto","categories":{"enable":true,"limit":3},"tags":{"enable":true,"limit":3}}};
+    Global.theme_config = {"articles":{"style":{"font_size":"16px","line_height":1.5,"image_border_radius":"14px","image_alignment":"center","image_caption":false,"link_icon":true},"word_count":{"enable":true,"count":true,"min2read":true},"author_label":{"enable":true,"auto":false,"list":[""]},"code_block":{"copy":true,"style":"mac","font":{"enable":false,"family":null,"url":null}},"toc":{"enable":true,"max_depth":3,"number":false,"expand":true,"init_open":true},"copyright":true,"lazyload":true,"recommendation":{"enable":false,"title":"推荐阅读","limit":3,"placeholder":"/images/wallhaven-wqery6-light.webp","skip_dirs":[]}},"colors":{"primary":"#367df7","secondary":null},"global":{"fonts":{"chinese":{"enable":false,"family":null,"url":null},"english":{"enable":false,"family":null,"url":null}},"content_max_width":"1000px","sidebar_width":"210px","hover":{"shadow":false,"scale":true},"scroll_progress":{"bar":false,"percentage":true},"busuanzi_counter":{"enable":true,"site_pv":true,"site_uv":true,"post_pv":true},"pjax":true,"open_graph":true},"home_banner":{"enable":true,"image":{"light":"https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/4.jpg","dark":"https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/4.jpg"},"title":"ZYiPan's Blog","subtitle":{"text":["游龙当归海，海不迎，我自来也！"],"hitokoto":{"enable":false,"api":"https://v1.hitokoto.cn"},"typing_speed":100,"backing_speed":80,"starting_delay":500,"backing_delay":1500,"loop":true,"smart_backspace":true},"text_color":{"light":"#d1d1b6","dark":"#d1d1b6"},"text_style":{"title_size":"2.8rem","subtitle_size":"1.5rem","line_height":1.2},"custom_font":{"enable":false,"family":null,"url":null},"social_links":{"enable":true,"links":{"github":"https://github.com/yipanzhu","instagram":null,"zhihu":"https://www.zhihu.com/people/ku-liao-jiao-ni","twitter":null,"email":"yipanzhu@outlook.com","fa-solid fa-c":"https://blog.csdn.net/weixin_63008006?spm=1000.2115.3001.5343"}}},"plugins":{"feed":{"enable":false},"aplayer":{"enable":false,"type":"fixed","audios":[{"name":null,"artist":null,"url":null,"cover":null}]},"mermaid":{"enable":false,"version":"9.3.0"}},"version":"2.1.2","navbar":{"auto_hide":false,"color":{"left":"#367df7","right":"#367df7","transparency":15},"links":{"Home":{"path":"/","icon":"fa-regular fa-house"},"Blogs":{"icon":"fa-light fa-pen-nib","submenus":{"archives":"https://yipanzhu.github.io/archives/","tags":"/tags/"}},"Github":{"path":"https://github.com/yipanzhu","icon":"fa-brands fa-github"},"About Me":{"path":"https://yipanzhu.github.io/about","icon":"fa-light fa-user"}},"search":{"enable":true,"preload":true}},"page_templates":{"friends_column":2,"tags_style":"cloud"},"home":{"sidebar":{"enable":true,"position":"left","first_item":"menu","announcement":null,"links":null},"article_date_format":"auto","categories":{"enable":true,"limit":3},"tags":{"enable":true,"limit":3}}};
     Global.language_ago = {"second":"%s 秒前","minute":"%s 分钟前","hour":"%s 小时前","day":"%s 天前","week":"%s 周前","month":"%s 个月前","year":"%s 年前"};
   </script>
     
@@ -325,7 +325,7 @@
             
             
                 <div class="article-title">
-                    <h1 class="article-title-regular">STM32笔记（二）</h1>
+                    <h1 class="article-title-regular">STM32学习笔记（二）——GPIO输入及C语言复习</h1>
                 </div>
             
                 
@@ -354,8 +354,8 @@
     
         <span class="article-date article-meta-item">
             <i class="fa-regular fa-wrench"></i>&nbsp;
-            <span class="desktop">2023-06-19 08:53:17</span>
-            <span class="mobile">2023-06-19 08:53</span>
+            <span class="desktop">2023-08-06 09:59:16</span>
+            <span class="mobile">2023-08-06 09:59</span>
             <span class="hover-info">更新</span>
         </span>
     
@@ -447,12 +447,12 @@
                 <div class="post-copyright-info">
                     <div class="article-copyright-info-container">
     <ul>
-        <li><strong>标题:</strong> STM32笔记（二）</li>
+        <li><strong>标题:</strong> STM32学习笔记（二）——GPIO输入及C语言复习</li>
         <li><strong>作者:</strong> 朱一攀</li>
         <li><strong>创建于:</strong> 2023-05-10 12:06:28</li>
         
             <li>
-                <strong>更新于:</strong> 2023-06-19 08:53:17
+                <strong>更新于:</strong> 2023-08-06 09:59:16
             </li>
         
         <li>
@@ -495,7 +495,7 @@
                                     <i class="fa-solid fa-chevron-left"></i>
                                 </span>
                                 <span class="title flex-center">
-                                    <span class="post-nav-title-item">STM32_3</span>
+                                    <span class="post-nav-title-item">STM32学习笔记（三）——GPIO输入代码实现</span>
                                     <span class="post-nav-item">上一篇</span>
                                 </span>
                             </a>
@@ -508,7 +508,7 @@
                             href="/2023/05/10/STM32-1/"
                             >
                                 <span class="title flex-center">
-                                    <span class="post-nav-title-item">STM32学习笔记（一）</span>
+                                    <span class="post-nav-title-item">STM32学习笔记（一）——GPIO输出</span>
                                     <span class="post-nav-item">下一篇</span>
                                 </span>
                                 <span class="right arrow-icon flex-center">
@@ -573,7 +573,7 @@
                 <div class="post-toc-wrap">
     <div class="post-toc">
         <div class="toc-title">此页目录</div>
-        <div class="page-title">STM32笔记（二）</div>
+        <div class="page-title">STM32学习笔记（二）——GPIO输入及C语言复习</div>
         <ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B3%A8%E6%84%8F"><span class="nav-text">注意</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GPIO%E8%BE%93%E5%85%A5"><span class="nav-text">GPIO输入</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#C%E8%AF%AD%E8%A8%80%E7%9F%A5%E8%AF%86%E5%A4%8D%E4%B9%A0"><span class="nav-text">C语言知识复习</span></a></li></ol>
 
     </div>

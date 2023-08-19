@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>STM32学习笔记（一）</title>
+    <title>STM32学习笔记（一）——GPIO输出</title>
     <url>/2023/05/10/STM32-1/</url>
     <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>简单写一下，主要是工作室的学习任务，老师要写一篇32的标准库教程应该是，笔者因为也有在学习项目所需的Hal库之前学习一下标准库的想法，所以帮老师也写一下教程。不完全是被抓壮丁了。然后主要是自己回顾所用的笔记，这里记录的多为代码，以及简单理论，这里所发表的不是教程，所以不是很详尽。</p>
 <p>关于看的教程就是B站江科大的视频，51就是看的他的，跟机构讲解完全不是一个模式，可学。</p>
@@ -101,7 +101,7 @@
       </tags>
   </entry>
   <entry>
-    <title>STM32笔记（二）</title>
+    <title>STM32学习笔记（二）——GPIO输入及C语言复习</title>
     <url>/2023/05/10/STM32-2/</url>
     <content><![CDATA[<h2 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h2><p>从本节开始，笔者开始使用工作室发放的板子，根据课程举一反三，自己根据自己板子的电路开始写代码了，跟课程里的有可能不一致。</p>
 <h2 id="GPIO输入"><a href="#GPIO输入" class="headerlink" title="GPIO输入"></a>GPIO输入</h2><p>按键是常见的输入设备，按下导通，松手断开，按键抖动是因为机械式弹簧片通断物理上就会有抖动，会抖5-10ms，要过滤他，最简单的就是通过延时</p>
@@ -355,7 +355,7 @@
       </tags>
   </entry>
   <entry>
-    <title>STM32_3</title>
+    <title>STM32学习笔记（三）——GPIO输入代码实现</title>
     <url>/2023/05/14/STM32-3/</url>
     <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>续前篇GPIO输入的理论部分，没什么好讲的，直接上代码书写部分吧，笔记一般都写在注释里了。</p>
 <p>这两天正值期中考试，这几个学期自己专业都没期中考试，在部门中理所当然多做了些工作，也算是从部门工作快开摆的末尾在奉献奉献吧。节能减排在没什么成果的情况下竟然能获得推入国赛的资格，好好珍惜，没有成果也要拼一把，如果不是炮灰，这不就发达了。</p>
@@ -363,7 +363,10 @@
 <p>由于是标准库，所以建文件夹并且添加文件夹不可少，用标准库的弊端这不就显现了。添加Hardware文件并添加，这个不过多讲了，相信以后做的多了也就会了。</p>
 <p>工程管理加组挪位置，工程选项加到头文件路径，在文件夹中添加.c文件.h文件，注意都加在该文件夹中，.c用来放驱动程序主体代码，.h放程序对外提供的函数或变量的声明。</p>
 <p>两个文件建好后，需要添加一些必要的头头，</p>
-<h2 id="在-c文件中，需要添加芯片的头文件，在-h文件中则是添加防止头文件重复包含的代码。"><a href="#在-c文件中，需要添加芯片的头文件，在-h文件中则是添加防止头文件重复包含的代码。" class="headerlink" title="在.c文件中，需要添加芯片的头文件，在.h文件中则是添加防止头文件重复包含的代码。"></a>在.c文件中，需要添加芯片的头文件，在.h文件中则是添加防止头文件重复包含的代码。<br><div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#ifndef __LED_H   //如果没有定义LED字符串</span><br><span class="line">#define __LED_H   //那么就定义这个字符串</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#endif  //这个和ifndef组成括号，同样注意文件以空行结尾</span><br><span class="line"></span><br></pre></td></tr></table></figure></div></h2><p>未完待续</p>
+<h2 id="在-c文件中，需要添加芯片的头文件，在-h文件中则是添加防止头文件重复包含的代码。"><a href="#在-c文件中，需要添加芯片的头文件，在-h文件中则是添加防止头文件重复包含的代码。" class="headerlink" title="在.c文件中，需要添加芯片的头文件，在.h文件中则是添加防止头文件重复包含的代码。"></a>在.c文件中，需要添加芯片的头文件，在.h文件中则是添加防止头文件重复包含的代码。<br><div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#ifndef __LED_H   //如果没有定义LED字符串</span><br><span class="line">#define __LED_H   //那么就定义这个字符串</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#endif  //这个和ifndef组成括号，同样注意文件以空行结尾</span><br><span class="line"></span><br></pre></td></tr></table></figure></div></h2><h2 id="按键控制LED代码"><a href="#按键控制LED代码" class="headerlink" title="按键控制LED代码"></a>按键控制LED代码</h2><p>附代码方便查询</p>
+<p>首先是LED初始化和点亮熄灭以及反转的封装代码</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;stm32f10x.h&quot;                  // Device header</span><br><span class="line"></span><br><span class="line">void LED_Init(void)</span><br><span class="line">&#123;</span><br><span class="line">	GPIO_InitTypeDef GPIO_InitStructure;//这是定义一个结构体变量</span><br><span class="line"></span><br><span class="line">	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA,ENABLE);  //还是初始化时钟，开启时钟</span><br><span class="line">	</span><br><span class="line">	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;//结构体的成员，Out_PP为推挽输出</span><br><span class="line">	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1 | GPIO_Pin_2;//选中1号口和2号口</span><br><span class="line">	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;//选择速度</span><br><span class="line">	GPIO_Init(GPIOA, &amp;GPIO_InitStructure);</span><br><span class="line">	</span><br><span class="line">	GPIO_SetBits(GPIOA, GPIO_Pin_1 | GPIO_Pin_2);//默认关闭</span><br><span class="line">	</span><br><span class="line">	</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void LED1_ON(void)</span><br><span class="line">&#123;</span><br><span class="line">	GPIO_ResetBits(GPIOA,GPIO_Pin_1);//点亮蓝LED</span><br><span class="line">&#125;</span><br><span class="line">void LED1_Turn1(void)</span><br><span class="line">&#123;</span><br><span class="line">	if(GPIO_ReadOutputDataBit(GPIOA, GPIO_Pin_1) == 0)//读取当前端口的输出状态，如果正在输出零，</span><br><span class="line">	&#123;</span><br><span class="line">		GPIO_SetBits(GPIOA,GPIO_Pin_1);//那么就将他置为1，令其反转</span><br><span class="line">	&#125;</span><br><span class="line">	else</span><br><span class="line">	&#123;</span><br><span class="line">		GPIO_ResetBits(GPIOA,GPIO_Pin_1);//否则相当于正在输出1，此时将他置为0</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void LED1_OFF(void)</span><br><span class="line">&#123;</span><br><span class="line">	GPIO_SetBits(GPIOA,GPIO_Pin_1);//熄灭蓝LED</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void LED2_ON(void)</span><br><span class="line">&#123;</span><br><span class="line">	GPIO_ResetBits(GPIOA,GPIO_Pin_2);//点亮彩LED</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void LED2_OFF(void)</span><br><span class="line">&#123;</span><br><span class="line">	GPIO_SetBits(GPIOA,GPIO_Pin_2);</span><br><span class="line">&#125;</span><br><span class="line">void LED2_Turn2(void)</span><br><span class="line">&#123;</span><br><span class="line">	if(GPIO_ReadOutputDataBit(GPIOA, GPIO_Pin_2) == 0)//读取当前端口的输出状态，如果正在输出零，</span><br><span class="line">	&#123;</span><br><span class="line">		GPIO_SetBits(GPIOA,GPIO_Pin_2);//那么就将他置为1，令其反转</span><br><span class="line">	&#125;</span><br><span class="line">	else</span><br><span class="line">	&#123;</span><br><span class="line">		GPIO_ResetBits(GPIOA,GPIO_Pin_2);//否则相当于正在输出1，此时将他置为0</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>
+
 ]]></content>
       <tags>
         <tag>STM32</tag>
