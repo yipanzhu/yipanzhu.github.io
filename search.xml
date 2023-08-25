@@ -366,7 +366,7 @@
 <h2 id="在-c文件中，需要添加芯片的头文件，在-h文件中则是添加防止头文件重复包含的代码。"><a href="#在-c文件中，需要添加芯片的头文件，在-h文件中则是添加防止头文件重复包含的代码。" class="headerlink" title="在.c文件中，需要添加芯片的头文件，在.h文件中则是添加防止头文件重复包含的代码。"></a>在.c文件中，需要添加芯片的头文件，在.h文件中则是添加防止头文件重复包含的代码。<br><div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#ifndef __LED_H   //如果没有定义LED字符串</span><br><span class="line">#define __LED_H   //那么就定义这个字符串</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#endif  //这个和ifndef组成括号，同样注意文件以空行结尾</span><br><span class="line"></span><br></pre></td></tr></table></figure></div></h2><h2 id="按键控制LED代码"><a href="#按键控制LED代码" class="headerlink" title="按键控制LED代码"></a>按键控制LED代码</h2><p>附代码方便查询</p>
 <p>首先是LED初始化和点亮熄灭以及反转的封装代码</p>
 <div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;stm32f10x.h&quot;                  // Device header</span><br><span class="line"></span><br><span class="line">void LED_Init(void)</span><br><span class="line">&#123;</span><br><span class="line">	GPIO_InitTypeDef GPIO_InitStructure;//这是定义一个结构体变量</span><br><span class="line"></span><br><span class="line">	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA,ENABLE);  //还是初始化时钟，开启时钟</span><br><span class="line">	</span><br><span class="line">	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;//结构体的成员，Out_PP为推挽输出</span><br><span class="line">	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1 | GPIO_Pin_2;//选中1号口和2号口</span><br><span class="line">	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;//选择速度</span><br><span class="line">	GPIO_Init(GPIOA, &amp;GPIO_InitStructure);</span><br><span class="line">	</span><br><span class="line">	GPIO_SetBits(GPIOA, GPIO_Pin_1 | GPIO_Pin_2);//默认关闭</span><br><span class="line">	</span><br><span class="line">	</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void LED1_ON(void)</span><br><span class="line">&#123;</span><br><span class="line">	GPIO_ResetBits(GPIOA,GPIO_Pin_1);//点亮蓝LED</span><br><span class="line">&#125;</span><br><span class="line">void LED1_Turn1(void)</span><br><span class="line">&#123;</span><br><span class="line">	if(GPIO_ReadOutputDataBit(GPIOA, GPIO_Pin_1) == 0)//读取当前端口的输出状态，如果正在输出零，</span><br><span class="line">	&#123;</span><br><span class="line">		GPIO_SetBits(GPIOA,GPIO_Pin_1);//那么就将他置为1，令其反转</span><br><span class="line">	&#125;</span><br><span class="line">	else</span><br><span class="line">	&#123;</span><br><span class="line">		GPIO_ResetBits(GPIOA,GPIO_Pin_1);//否则相当于正在输出1，此时将他置为0</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void LED1_OFF(void)</span><br><span class="line">&#123;</span><br><span class="line">	GPIO_SetBits(GPIOA,GPIO_Pin_1);//熄灭蓝LED</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void LED2_ON(void)</span><br><span class="line">&#123;</span><br><span class="line">	GPIO_ResetBits(GPIOA,GPIO_Pin_2);//点亮彩LED</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void LED2_OFF(void)</span><br><span class="line">&#123;</span><br><span class="line">	GPIO_SetBits(GPIOA,GPIO_Pin_2);</span><br><span class="line">&#125;</span><br><span class="line">void LED2_Turn2(void)</span><br><span class="line">&#123;</span><br><span class="line">	if(GPIO_ReadOutputDataBit(GPIOA, GPIO_Pin_2) == 0)//读取当前端口的输出状态，如果正在输出零，</span><br><span class="line">	&#123;</span><br><span class="line">		GPIO_SetBits(GPIOA,GPIO_Pin_2);//那么就将他置为1，令其反转</span><br><span class="line">	&#125;</span><br><span class="line">	else</span><br><span class="line">	&#123;</span><br><span class="line">		GPIO_ResetBits(GPIOA,GPIO_Pin_2);//否则相当于正在输出1，此时将他置为0</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>
-
+<p>这块感觉不用花太多时间了。</p>
 ]]></content>
       <tags>
         <tag>STM32</tag>
@@ -1042,6 +1042,118 @@
 ]]></content>
       <tags>
         <tag>杂记</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>STM32学习笔记（六）——中断</title>
+    <url>/2023/08/25/STM32-5-1/</url>
+    <content><![CDATA[<h2 id="中断系统"><a href="#中断系统" class="headerlink" title="中断系统"></a>中断系统</h2><p>中断是在主程序运行过程中，出现了特定的中断触发条件（中断源），使得CPU暂停正在运行的程序，转而去处理中断程序，处理完后又返回暂停位置继续运行。</p>
+<p>多个中断是有优先级之分的，中断是可以嵌套的。</p>
+<p>执行流程如下：<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825145320.jpg"
+                     
+                ></p>
+<h2 id="STM32的中断"><a href="#STM32的中断" class="headerlink" title="STM32的中断"></a>STM32的中断</h2><p>一般每个芯片都有不同数量的中断通道，F103包括EXTI（外部中断）、TIM（定时器）、ADC（模数转换器）、USART（串口）、SPI通信、I2C通信、RTC实时时钟等多个外设。</p>
+<p>使用NVIC统一管理中断，每个中断通道都有16哥可编程的优先级，可以对他们分组。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825150242.jpg"
+                     
+                ></p>
+<p>不放到CPU来处理这些中断排序了，让NVIC来搞，排好后直接按顺序送到CPU，CPU只去管处理。</p>
+<h2 id="NVIC优先级分组"><a href="#NVIC优先级分组" class="headerlink" title="NVIC优先级分组"></a>NVIC优先级分组</h2><p>看优先级寄存器的4位（0-15）决定，如下：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825150600.jpg"
+                     
+                ></p>
+<p>抢占优先级高的，可以决定是否有中断嵌套，为了将16个优先级分为抢占和响应两种优先级，上面提到的寄存器的四位是二进制，分别对应16个优先级，优先级是值越小，优先级越高，0是最高。</p>
+<p>这4位可以切分，如上图，位数不固定。</p>
+<h2 id="EXTI外部中断"><a href="#EXTI外部中断" class="headerlink" title="EXTI外部中断"></a>EXTI外部中断</h2><p>简单来说就是引脚电平变化，就申请中断。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825151255.jpg"
+                     
+                ></p>
+<p>触发方式有上图4种。注意PA1和PB2不能同时用。</p>
+<p>基本结构如下：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825152006.jpg"
+                     
+                ></p>
+<p>因为EXTI通道数只有16个GPIO的PIN，所以实际上有GPIOA、GPIOB他们都有16个引脚，这时就需要进行选择，AFIO就相当于一个数据选择器，它可以从接入的多个GPIO中选择其中一个然后接入后面的EXTI通道中，这也是为什么PA0和PB0不能同时用。</p>
+<p>这个结构图相当完美。</p>
+<p>EXTI框图如下：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825152909.jpg"
+                     
+                ></p>
+<p>左下角可以看出，既可以触发中断（左下角上面输出）又可以触发其他外设（左下角下面输出，也就是触发事件）。</p>
+<h2 id="本次例程所用的外部模块"><a href="#本次例程所用的外部模块" class="headerlink" title="本次例程所用的外部模块"></a>本次例程所用的外部模块</h2><h3 id="使用外部中断的好处"><a href="#使用外部中断的好处" class="headerlink" title="使用外部中断的好处"></a>使用外部中断的好处</h3><ul>
+<li>STM32获取外部驱动的突发信号，比如旋转编码器的输出信号</li>
+</ul>
+<h3 id="旋转编码器"><a href="#旋转编码器" class="headerlink" title="旋转编码器"></a>旋转编码器</h3><p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825155639.jpg"
+                     
+                ></p>
+<p>有光栅式编码的，只能通过透光和不透光来测量速度等，无法判断旋转方向。</p>
+<p>我们使用的是触点式旋转编码器，他能够有两相正交输出，即相位相差90度。可判断方向</p>
+<p>硬件电路如下：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825160349.jpg"
+                     
+                ></p>
+<p>理论部分结束。</p>
+<h2 id="代码部分"><a href="#代码部分" class="headerlink" title="代码部分"></a>代码部分</h2><div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;stm32f10x.h&quot;                  // Device header</span><br><span class="line">#include &quot;Delay.h&quot;</span><br><span class="line">uint16_t Countsensor_Count;</span><br><span class="line"></span><br><span class="line">void Countsensor_Init(void)</span><br><span class="line">&#123;	</span><br><span class="line">	GPIO_InitTypeDef GPIO_InitStructure;</span><br><span class="line">	EXTI_InitTypeDef EXTI_InitStructure;</span><br><span class="line">	NVIC_InitTypeDef NVIC_InitStructure;</span><br><span class="line">	</span><br><span class="line">	//首先配置时钟</span><br><span class="line">	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB,ENABLE);//开启GPIOB外设的时钟</span><br><span class="line">	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO,ENABLE);//开启AFIO，也就是数据选择器，选择数据给NVIC</span><br><span class="line">	</span><br><span class="line">	//NVIC和EXTI两个外设的时钟一直是开着的，不需要手动开启，</span><br><span class="line">	//NVIC是内核外设，内核外设都不用开，EXTI不知道为啥不开</span><br><span class="line">	</span><br><span class="line">	//然后配置GPIO</span><br><span class="line">	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;//对于外部中断，一般就是浮空输入、上拉输入、下拉输入</span><br><span class="line">	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_14;</span><br><span class="line">	GPIO_InitStructure.GPIO_Speed  = GPIO_Speed_50MHz;</span><br><span class="line">	GPIO_Init(GPIOB,&amp;GPIO_InitStructure);</span><br><span class="line">	</span><br><span class="line">	//接着配置AFIO</span><br><span class="line">	GPIO_EXTILineConfig(GPIO_PortSourceGPIOB,GPIO_PinSource14);//AFIO外部中断引脚选择，也就是选择GPIOB</span><br><span class="line">	</span><br><span class="line">	//之后配置EXTI</span><br><span class="line">	EXTI_InitStructure.EXTI_Line = EXTI_Line14;//选择EXTI的14号线路</span><br><span class="line">	EXTI_InitStructure.EXTI_LineCmd = ENABLE;//开启</span><br><span class="line">	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;//配置为中断模式</span><br><span class="line">	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising_Falling;//下降沿触发</span><br><span class="line">	EXTI_Init(&amp;EXTI_InitStructure);</span><br><span class="line">	</span><br><span class="line">	//最后配置NVIC</span><br><span class="line">	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);//确定分组</span><br><span class="line">	NVIC_InitStructure.NVIC_IRQChannel = EXTI15_10_IRQn;//指定通道</span><br><span class="line">	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;</span><br><span class="line">	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;</span><br><span class="line">	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;</span><br><span class="line">	NVIC_Init(&amp;NVIC_InitStructure);</span><br><span class="line">	//外部中断配置完成</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">uint16_t CountSensor_Get(void)</span><br><span class="line">&#123;</span><br><span class="line">	return Countsensor_Count;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void EXTI15_10_IRQHandler(void)</span><br><span class="line">&#123;</span><br><span class="line">	if (EXTI_GetITStatus(EXTI_Line14) == SET)</span><br><span class="line">	&#123;</span><br><span class="line">//		Delay_ms(500);</span><br><span class="line">		Countsensor_Count ++;</span><br><span class="line">//		Delay_ms(500);</span><br><span class="line">		EXTI_ClearITPendingBit(EXTI_Line14);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>]]></content>
+      <tags>
+        <tag>STM32</tag>
+        <tag>学习笔记</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>STM32学习笔记（五）——OLED调试工具</title>
+    <url>/2023/08/25/STM32-6/</url>
+    <content><![CDATA[<p>本节主要介绍STM32配合OLED屏幕进行调试的代码实现。</p>
+<h2 id="调试方式"><a href="#调试方式" class="headerlink" title="调试方式"></a>调试方式</h2><p>单片机调试一般有以下三种调试方式：</p>
+<ul>
+<li>串口调试：用串口通信，将调试信息发送到电脑端，便于显示</li>
+<li>显示屏调试：单片机没有屏幕就接一个屏幕，但只能显示简单内容</li>
+<li>Keil调试模式：借助编辑器的断点调式法</li>
+</ul>
+<h2 id="OLED简介"><a href="#OLED简介" class="headerlink" title="OLED简介"></a>OLED简介</h2><p>OLED都是自发光，不用像LCD需要背光。</p>
+<p>供电3-5.5V，通信协议：I2C&#x2F;SPI，分辨率是128*64</p>
+<h2 id="硬件电路"><a href="#硬件电路" class="headerlink" title="硬件电路"></a>硬件电路</h2><p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825093042.png"
+                     
+                ><br>SCL和SDA都是IIC通信引脚</p>
+<p>7引脚的是SPI通信的OLED模块，</p>
+<h2 id="OLED驱动函数"><a href="#OLED驱动函数" class="headerlink" title="OLED驱动函数"></a>OLED驱动函数</h2><p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825093530.png"
+                     
+                ></p>
+<p>4行16列的小区快，驱动函数常见的初始化等都有，UP封装较为全面。</p>
+<p>代码封装好了直接用这些函数就行。</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;stm32f10x.h&quot;</span><br><span class="line">#include &quot;Delay.h&quot;</span><br><span class="line">#include &quot;OLED.h&quot;</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">	OLED_Init();</span><br><span class="line">	</span><br><span class="line">	OLED_ShowChar(1,1,&#x27;A&#x27;);</span><br><span class="line">	OLED_ShowString(2,1,&quot;ZYiPan&quot;);</span><br><span class="line">	OLED_ShowNum(1,2,123,3);</span><br><span class="line">	</span><br><span class="line">	while (1)</span><br><span class="line">	&#123;</span><br><span class="line">		</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>]]></content>
+      <tags>
+        <tag>STM32</tag>
+        <tag>学习笔记</tag>
       </tags>
   </entry>
 </search>
