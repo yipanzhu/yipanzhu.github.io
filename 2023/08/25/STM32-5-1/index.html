@@ -25,21 +25,21 @@
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="中断系统中断是在主程序运行过程中，出现了特定的中断触发条件（中断源），使得CPU暂停正在运行的程序，转而去处理中断程序，处理完后又返回暂停位置继续运行。 多个中断是有优先级之分的，中断是可以嵌套的。 执行流程如下： STM32的中断一般每个芯片都有不同数量的中断通道，F103包括EXTI（外部中断）、TIM（定时器）、ADC（模数转换器）、USART（串口）、SPI通信、I2C通信、RTC实时时钟">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825145320.jpg">
-<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825150242.jpg">
-<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825150600.jpg">
-<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825151255.jpg">
-<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825152006.jpg">
-<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825152909.jpg">
-<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825155639.jpg">
-<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825160349.jpg">
+<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825145320.jpg">
+<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825150242.jpg">
+<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825150600.jpg">
+<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825151255.jpg">
+<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825152006.jpg">
+<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825152909.jpg">
+<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825155639.jpg">
+<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825160349.jpg">
 <meta property="article:published_time" content="2023-08-25T06:41:31.000Z">
-<meta property="article:modified_time" content="2023-08-27T06:49:08.458Z">
+<meta property="article:modified_time" content="2023-08-27T07:19:04.282Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="STM32">
 <meta property="article:tag" content="学习笔记">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825145320.jpg">
+<meta name="twitter:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825145320.jpg">
     
     <!--- Icon Part-->
     <link rel="icon" type="image/png" href="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/yipanzhu_Cyberpunk_postmodern_wasteland_32039757-f150-46f5-8e25-eb9d71b1555c.png" sizes="192x192">
@@ -115,454 +115,206 @@
     <div class="main-content-container">
 
         <div class="main-content-header">
-            $logo-title-font-size = 2rem
-$desktop-search-icon-font-size = 1.5rem
-$navbar-bar-line-height = 2.5px
-$logo-image-box-width = 46px
-
-@import "../../common/variables"
-
-.navbar-container {
-  font-family "Optima Medium", sans-serif
-  width 100%
-  height 100%
-  box-sizing border-box
-  display flex
-  align-items center
-  justify-content center
-  background $nav-color-bg
-  -webkit-backdrop-filter blur(10px)
-  backdrop-filter blur(10px)
-  padding-top $scroll-progress-bar-height
-
-  hover-style(false, 0, 0)
-
-  .navbar-content {
-    position relative
-    height 100%
-    width $main-content-width
-    max-width $content-max-width
-    display flex
-    flex-direction row
-    justify-content space-between
-    align-items center
-    z-index $z-index-5
-
-
-    &.has-home-banner {
-      max-width $content-max-width * 1.2
-    }
-
-    +redefine-tablet() {
-      width $main-content-width-tablet
-    }
-
-    +redefine-mobile() {
-      width $main-content-width-mobile
-    }
-
-    .left {
-      display flex
-      align-items center
-      transition-t("transform", "0", "0.2", "linear")
-
-      .navbar-shrink & {
-        transform scale(0.72)
-        transform-origin left
-      }
-
-
-      if (hexo-config('defaults.logo') && hexo-config('defaults.logo') != '') {
-        .logo-image {
-          width $logo-image-box-width
-          height $logo-image-box-width
-          margin-right 8px
-
-
-          +redefine-tablet() {
-            width $logo-image-box-width * 0.9
-            height $logo-image-box-width * 0.9
-          }
-
-          +redefine-mobile() {
-            width $logo-image-box-width * 0.8
-            height $logo-image-box-width * 0.8
-          }
-
-          img {
-            border-radius 6px
-            width 100%
-          }
-        }
-
-      }
-
-      .logo-title {
-        font-size $logo-title-font-size
-        font-family "Optima Bold", sans-serif
-        //letter-spacing 1px
-        line-height 1
-        color var(--first-text-color)
-
-        h1 {
-          margin 0
-          font-size $logo-title-font-size
-          font-family "Optima Bold", sans-serif
-          //letter-spacing 1px
-          line-height 1
-          color var(--first-text-color)
-
-          +redefine-tablet() {
-            font-size $logo-title-font-size * 0.9
-          }
-
-          +redefine-mobile() {
-            font-size $logo-title-font-size * 0.8
-          }
-
-        }
-
-        +redefine-tablet() {
-          font-size $logo-title-font-size * 0.9
-        }
-
-        +redefine-mobile() {
-          font-size $logo-title-font-size * 0.8
-        }
-      }
-
-    }
-
-
-    .right {
-
-      .desktop {
-
-        .navbar-list {
-          display flex
-          align-items center
-          
-
-          +redefine-tablet() {
-            display none
-          }
-
-
-          .navbar-item {
-            float left
-            //padding 5px
-            position relative
-            margin-left 30px
-            font-size 1rem
-            cursor pointer
-            color var(--default-text-color)
-
-            a {
-              display block
-              padding 5px
-            }
-
-            &:first-child {
-              margin-left 0
-            }
-
-            a .fa-chevron-down{
-              transform rotate(0deg)
-              transition transform 0.3s ease
-            }
-
-            &:hover a .fa-chevron-down{
-              transform rotate(180deg)
-            }
-
-            &:hover .has-dropdown{
-              &::after {
-                display none !important
-              }
-            }
-
-            &:hover a, .active {
-              &::after {
-                content ''
-                position absolute
-                bottom -5px
-                left 50%
-                width 100%
-                height 2px
-                transform translateX(-50%)
-                background var(--primary-color)
-                transition-t("transform, bottom", "0, 0", "0.2, 0.2", "linear, linear")
-
-                .navbar-shrink & {
-                  bottom -($navbar-shrink-height / 2 - 17)
-                }
-              }
-            }
+            <header class="navbar-container">
+    
+    <div class="navbar-content">
+        <div class="left">
             
+                <a class="logo-image" href="/">
+                    <img src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/20230430134343-removebg-preview.png">
+                </a>
+            
+            <a class="logo-title" href="/">
+                
+                ZYiPan&#39;s Blog
+                
+            </a>
+        </div>
+
+        <div class="right">
+            <!-- PC -->
+            <div class="desktop">
+                <ul class="navbar-list">
+                    
+                        
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class="" 
+                                    href="/"  >
+                                    
+                                        
+                                            <i class="fa-regular fa-house"></i>
+                                        
+                                        首页
+                                    
+                                </a>
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class="has-dropdown" 
+                                    href="#" onClick="return false;">
+                                    
+                                        
+                                            <i class="fa-light fa-pen-nib"></i>
+                                        
+                                        博客&nbsp;<i class="fa-solid fa-chevron-down"></i>
+                                    
+                                </a>
+                                <!-- Submenu -->
+                                
+                                    <ul class="sub-menu">
+                                    
+                                        <li>
+                                        <a target="_blank" rel="noopener" href="https://yipanzhu.github.io/archives/">寻迹
+                                        </a>
+                                        </li>
+                                    
+                                        <li>
+                                        <a href="/tags/">标签
+                                        </a>
+                                        </li>
+                                    
+                                    </ul>
+                                
+                            </li>
+                    
+                        
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class="" 
+                                    target="_blank" rel="noopener" href="https://github.com/yipanzhu"  >
+                                    
+                                        
+                                            <i class="fa-brands fa-github"></i>
+                                        
+                                        GITHUB
+                                    
+                                </a>
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class="" 
+                                    target="_blank" rel="noopener" href="https://yipanzhu.github.io/about"  >
+                                    
+                                        
+                                            <i class="fa-light fa-user"></i>
+                                        
+                                        关于我
+                                    
+                                </a>
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                    
+                        <li class="navbar-item search search-popup-trigger">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </li>
+                    
+                </ul>
+            </div>
+            <!-- Mobile -->
+            <div class="mobile">
+                
+                    <div class="icon-item search search-popup-trigger"><i class="fa-solid fa-magnifying-glass"></i></div>
+                
+                <div class="icon-item navbar-bar">
+                    <div class="navbar-bar-middle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile drawer -->
+    <div class="navbar-drawer">
+        <ul class="drawer-navbar-list">
+            
+                
+                    <li class="drawer-navbar-item flex-center">
+                        <a class="" 
+                        href="/"  >
+                             
+                                
+                                    <i class="fa-regular fa-house"></i>
+                                
+                                首页
+                            
+                        </a>
+                    </li>
+                    <!-- Submenu -->
+                    
+            
+                
+                    <li class="drawer-navbar-item flex-center">
+                        <a class="has-dropdown" 
+                        href="#" onClick="return false;">
+                            
+                                
+                                    <i class="fa-light fa-pen-nib"></i>
+                                
+                                博客&nbsp;<i class="fa-solid fa-chevron-down"></i>
+                            
+                        </a>
+                    </li>
+                    <!-- Submenu -->
+                              
+                        
+                            <li class="dropdown-item flex-center">
+                                <a class="dropdown-item" target="_blank" rel="noopener" href="https://yipanzhu.github.io/archives/">寻迹</a>
+                            </li>
+                        
+                            <li class="dropdown-item flex-center">
+                                <a class="dropdown-item" href="/tags/">标签</a>
+                            </li>
+                        
+                    
+            
+                
+                    <li class="drawer-navbar-item flex-center">
+                        <a class="" 
+                        target="_blank" rel="noopener" href="https://github.com/yipanzhu"  >
+                             
+                                
+                                    <i class="fa-brands fa-github"></i>
+                                
+                                GITHUB
+                            
+                        </a>
+                    </li>
+                    <!-- Submenu -->
+                    
+            
+                
+                    <li class="drawer-navbar-item flex-center">
+                        <a class="" 
+                        target="_blank" rel="noopener" href="https://yipanzhu.github.io/about"  >
+                             
+                                
+                                    <i class="fa-light fa-user"></i>
+                                
+                                关于我
+                            
+                        </a>
+                    </li>
+                    <!-- Submenu -->
+                    
             
 
-            &.search {
-              font-size $desktop-search-icon-font-size
-              margin-left 26px
+        </ul>
+    </div>
 
-              i {
-                color var(--default-text-color)
-              }
+    <div class="window-mask"></div>
 
-            }
+</header>
 
-            .sub-menu{
-              position absolute
-              right auto
-              left 50%
-              -webkit-transform translate(-50%, 0)
-              -o-transform translate(-50%, 0)
-              transform translate(-50%, 0)
-              margin-top 0px
-              width auto
-              text-align: center;
-              list-style:none;
-              padding 0 10px 
-              border-radius $redefine-border-radius-large
-              //visibility hidden
-              
-
-              max-height 0px
-              overflow hidden
-              transition-t("all", "0", "0.2", "linear") 
-
-              li a {
-                white-space nowrap
-                color var(--default-text-color)
-                font-size 1rem
-                padding 3px 15px
-                display block
-                text-align center
-                border-radius 8px
-                transition-t("all", "0", "0.2", "linear")
-
-                &:hover {
-                  color var(--primary-color)
-                  background-color var(--third-background-color)
-                }
-              }
-            }
-
-          }
-
-        }
-
-        .navbar-list .navbar-item:hover .sub-menu{
-          //visibility visible
-          max-height 500px
-          transition-t("all", "0", "0.2", "ease")
-          redefine-container(false, 0, 0, 10px, 5px)
-        }
-        
-      }
-
-
-      .mobile {
-        display flex
-        justify-content space-between
-        align-items center
-
-        .icon-item {
-          display none
-          position relative
-          cursor pointer
-          font-size 18px
-          margin-left 12px
-          width 20px
-          height 20px
-          color var(--default-text-color)
-
-          i {
-            color var(--default-text-color)
-          }
-
-          &:first-child {
-            margin-left 0
-          }
-
-          +redefine-tablet() {
-            display flex
-            justify-content center
-            align-items center
-          }
-        }
-
-        .navbar-bar {
-
-          .navbar-bar-middle {
-            width 18px
-            height $navbar-bar-line-height
-            position relative
-            background var(--default-text-color)
-
-            .navbar-drawer-show & {
-              background transparent
-            }
-
-
-            &::before, &::after {
-              content ''
-              position absolute
-              left 0
-              width 100%
-              height $navbar-bar-line-height
-              background var(--default-text-color)
-              transition-t("transform", "0", "0.38", "ease")
-            }
-
-
-            &::before {
-              top -6px
-
-              .navbar-drawer-show & {
-                transform translateY(6px) rotate(45deg)
-              }
-            }
-
-
-            &::after {
-              bottom -6px
-
-              .navbar-drawer-show & {
-                transform translateY(-6px) rotate(-45deg)
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-
-  .navbar-drawer {
-    width 100%
-    padding $navbar-height 0 20px 0
-    position absolute
-    top 0
-    left 0
-    transform scaleY(0)
-    transform-origin top
-    z-index $z-index-2
-    background var(--background-color)
-    transition-t("transform", "0", "0.38", "ease")
-
-    .navbar-drawer-show & {
-      transform scaleY(1)
-    }
-
-    .drawer-navbar-list {
-      display flex
-      flex-direction column
-      justify-content flex-start
-      align-items center
-
-      .drawer-navbar-item {
-        font-family: "Optima Bold", sans-serif
-        font-size 1rem
-        margin 6px 0
-        height 32px
-
-        a {
-          padding 6px 20px
-          border-radius 20px
-          color var(--default-text-color)
-
-          &:hover {
-            color var(--second-text-color)
-            border 1px solid var(--default-text-color)
-          }
-
-
-          &.active {
-            border 1px solid var(--default-text-color)
-            color var(--second-text-color)
-          }
-        }
-
-        .has-dropdown {
-          font-family: "Optima Bold", sans-serif
-        }
-
-        a .fa-chevron-down{
-          transform rotate(0deg)
-          transition transform 0.3s ease
-        }
-
-        &:hover a .fa-chevron-down{
-          transform rotate(180deg)
-        }
-
-        &:hover .has-dropdown{
-          &::after {
-            display none !important
-          }
-        }
-      }
-
-      .dropdown-item {
-        font-size 1rem
-        margin 6px 0
-        height 16px
-
-        a {
-          padding 6px 20px
-          border-radius 20px
-          color var(--default-text-color)
-
-          &:hover {
-            color var(--second-text-color)
-            border 1px solid var(--default-text-color)
-          }
-
-
-          &.active {
-            border 1px solid var(--default-text-color)
-            color var(--second-text-color)
-          }
-        }
-      }
-
-      .sub-menu{
-        position relative
-        margin-top 8px
-        width 100%
-        text-align: center;
-        list-style: none;
-        padding 0 10px 
-        border-radius $redefine-border-radius-large
-        //float left
-      }
-    }
-  }
-
-
-  .window-mask {
-    position absolute
-    top 0
-    width 100%
-    height 100vh
-    background rgba(0, 0, 0, 0.4)
-    z-index $z-index-1
-    visibility hidden
-    opacity 0
-    transition-t("transform, opacity", "0, 0", "0.38, 0.38", "ease, ease")
-
-    .navbar-drawer-show & {
-      visibility visible
-      opacity 1
-    }
-  }
-
-}
-
-.navbar-drawer-show {
-  overflow hidden
-}
 
         </div>
 
@@ -609,8 +361,8 @@ $logo-image-box-width = 46px
     
         <span class="article-date article-meta-item">
             <i class="fa-regular fa-wrench"></i>&nbsp;
-            <span class="desktop">2023-08-27 14:49:08</span>
-            <span class="mobile">2023-08-27 14:49</span>
+            <span class="desktop">2023-08-27 15:19:04</span>
+            <span class="mobile">2023-08-27 15:19</span>
             <span class="hover-info">更新</span>
         </span>
     
@@ -658,7 +410,7 @@ $logo-image-box-width = 46px
 <p>执行流程如下：<br><img  
                      lazyload
                      src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825145320.jpg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825145320.jpg"
                      
                 ></p>
 <h2 id="STM32的中断"><a href="#STM32的中断" class="headerlink" title="STM32的中断"></a>STM32的中断</h2><p>一般每个芯片都有不同数量的中断通道，F103包括EXTI（外部中断）、TIM（定时器）、ADC（模数转换器）、USART（串口）、SPI通信、I2C通信、RTC实时时钟等多个外设。</p>
@@ -666,7 +418,7 @@ $logo-image-box-width = 46px
 <p><img  
                      lazyload
                      src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825150242.jpg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825150242.jpg"
                      
                 ></p>
 <p>不放到CPU来处理这些中断排序了，让NVIC来搞，排好后直接按顺序送到CPU，CPU只去管处理。</p>
@@ -674,7 +426,7 @@ $logo-image-box-width = 46px
 <p><img  
                      lazyload
                      src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825150600.jpg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825150600.jpg"
                      
                 ></p>
 <p>抢占优先级高的，可以决定是否有中断嵌套，为了将16个优先级分为抢占和响应两种优先级，上面提到的寄存器的四位是二进制，分别对应16个优先级，优先级是值越小，优先级越高，0是最高。</p>
@@ -683,7 +435,7 @@ $logo-image-box-width = 46px
 <p><img  
                      lazyload
                      src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825151255.jpg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825151255.jpg"
                      
                 ></p>
 <p>触发方式有上图4种。注意PA1和PB2不能同时用。</p>
@@ -691,7 +443,7 @@ $logo-image-box-width = 46px
 <p><img  
                      lazyload
                      src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825152006.jpg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825152006.jpg"
                      
                 ></p>
 <p>因为EXTI通道数只有16个GPIO的PIN，所以实际上有GPIOA、GPIOB他们都有16个引脚，这时就需要进行选择，AFIO就相当于一个数据选择器，它可以从接入的多个GPIO中选择其中一个然后接入后面的EXTI通道中，这也是为什么PA0和PB0不能同时用。</p>
@@ -700,7 +452,7 @@ $logo-image-box-width = 46px
 <p><img  
                      lazyload
                      src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825152909.jpg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825152909.jpg"
                      
                 ></p>
 <p>左下角可以看出，既可以触发中断（左下角上面输出）又可以触发其他外设（左下角下面输出，也就是触发事件）。</p>
@@ -710,7 +462,7 @@ $logo-image-box-width = 46px
 <h3 id="旋转编码器"><a href="#旋转编码器" class="headerlink" title="旋转编码器"></a>旋转编码器</h3><p><img  
                      lazyload
                      src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825155639.jpg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825155639.jpg"
                      
                 ></p>
 <p>有光栅式编码的，只能通过透光和不透光来测量速度等，无法判断旋转方向。</p>
@@ -719,7 +471,7 @@ $logo-image-box-width = 46px
 <p><img  
                      lazyload
                      src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825160349.jpg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825160349.jpg"
                      
                 ></p>
 <p>理论部分结束。</p>
@@ -745,7 +497,7 @@ $logo-image-box-width = 46px
         <li><strong>创建于:</strong> 2023-08-25 14:41:31</li>
         
             <li>
-                <strong>更新于:</strong> 2023-08-27 14:49:08
+                <strong>更新于:</strong> 2023-08-27 15:19:04
             </li>
         
         <li>

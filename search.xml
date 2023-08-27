@@ -1052,7 +1052,7 @@
 <p>执行流程如下：<br><img  
                      lazyload
                      src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825145320.jpg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825145320.jpg"
                      
                 ></p>
 <h2 id="STM32的中断"><a href="#STM32的中断" class="headerlink" title="STM32的中断"></a>STM32的中断</h2><p>一般每个芯片都有不同数量的中断通道，F103包括EXTI（外部中断）、TIM（定时器）、ADC（模数转换器）、USART（串口）、SPI通信、I2C通信、RTC实时时钟等多个外设。</p>
@@ -1060,7 +1060,7 @@
 <p><img  
                      lazyload
                      src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825150242.jpg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825150242.jpg"
                      
                 ></p>
 <p>不放到CPU来处理这些中断排序了，让NVIC来搞，排好后直接按顺序送到CPU，CPU只去管处理。</p>
@@ -1068,7 +1068,7 @@
 <p><img  
                      lazyload
                      src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825150600.jpg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825150600.jpg"
                      
                 ></p>
 <p>抢占优先级高的，可以决定是否有中断嵌套，为了将16个优先级分为抢占和响应两种优先级，上面提到的寄存器的四位是二进制，分别对应16个优先级，优先级是值越小，优先级越高，0是最高。</p>
@@ -1077,7 +1077,7 @@
 <p><img  
                      lazyload
                      src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825151255.jpg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825151255.jpg"
                      
                 ></p>
 <p>触发方式有上图4种。注意PA1和PB2不能同时用。</p>
@@ -1085,7 +1085,7 @@
 <p><img  
                      lazyload
                      src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825152006.jpg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825152006.jpg"
                      
                 ></p>
 <p>因为EXTI通道数只有16个GPIO的PIN，所以实际上有GPIOA、GPIOB他们都有16个引脚，这时就需要进行选择，AFIO就相当于一个数据选择器，它可以从接入的多个GPIO中选择其中一个然后接入后面的EXTI通道中，这也是为什么PA0和PB0不能同时用。</p>
@@ -1094,7 +1094,7 @@
 <p><img  
                      lazyload
                      src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825152909.jpg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825152909.jpg"
                      
                 ></p>
 <p>左下角可以看出，既可以触发中断（左下角上面输出）又可以触发其他外设（左下角下面输出，也就是触发事件）。</p>
@@ -1104,7 +1104,7 @@
 <h3 id="旋转编码器"><a href="#旋转编码器" class="headerlink" title="旋转编码器"></a>旋转编码器</h3><p><img  
                      lazyload
                      src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825155639.jpg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825155639.jpg"
                      
                 ></p>
 <p>有光栅式编码的，只能通过透光和不透光来测量速度等，无法判断旋转方向。</p>
@@ -1113,7 +1113,7 @@
 <p><img  
                      lazyload
                      src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825160349.jpg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825160349.jpg"
                      
                 ></p>
 <p>理论部分结束。</p>
@@ -1148,14 +1148,14 @@
 <h2 id="硬件电路"><a href="#硬件电路" class="headerlink" title="硬件电路"></a>硬件电路</h2><p><img  
                      lazyload
                      src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825093042.png"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825093042.png"
                      
                 ><br>SCL和SDA都是IIC通信引脚</p>
 <p>7引脚的是SPI通信的OLED模块，</p>
 <h2 id="OLED驱动函数"><a href="#OLED驱动函数" class="headerlink" title="OLED驱动函数"></a>OLED驱动函数</h2><p><img  
                      lazyload
                      src="/images/loading.svg"
-                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230825093530.png"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825093530.png"
                      
                 ></p>
 <p>4行16列的小区快，驱动函数常见的初始化等都有，UP封装较为全面。</p>
