@@ -13,18 +13,33 @@
     
     <!--- Seo Part-->
     
-    <link rel="canonical" href="http://example.com/archives/2023/08/"/>
+    <link rel="canonical" href="http://example.com/2023/09/04/stm32-6-2/"/>
     <meta name="robots" content="index,follow">
     <meta name="googlebot" content="index,follow">
     <meta name="revisit-after" content="1 days">
     
-        <meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
-<meta property="og:url" content="http://example.com/archives/2023/08/index.html">
+        <meta name="description" content="输出比较简介OC（Output Compare输出比较），输出比较是通过比较CNT（时基单元中的计数器）与CCR（捕获&#x2F;比较寄存器）值的关系，来实现对输出电平进行置1、置0或反转的操作，用于输出一定频率的波形。  补充点英文IC（Input Capture输入捕获），CC（Capture&#x2F;Compare输入捕获和输出比较的单元）  每个高级定时器和通用定时器都拥有4个输出比较通">
+<meta property="og:type" content="article">
+<meta property="og:title" content="STM32学习笔记（八）——TIM输出比较">
+<meta property="og:url" content="http://example.com/2023/09/04/STM32-6-2/index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="输出比较简介OC（Output Compare输出比较），输出比较是通过比较CNT（时基单元中的计数器）与CCR（捕获&#x2F;比较寄存器）值的关系，来实现对输出电平进行置1、置0或反转的操作，用于输出一定频率的波形。  补充点英文IC（Input Capture输入捕获），CC（Capture&#x2F;Compare输入捕获和输出比较的单元）  每个高级定时器和通用定时器都拥有4个输出比较通">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230905154254.jpg">
+<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230905161432.jpg">
+<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230905162355.jpg">
+<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230906134346.jpg">
+<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230906135158.jpg">
+<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230906173900.jpg">
+<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230906174327.jpg">
+<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230906174901.jpg">
+<meta property="article:published_time" content="2023-09-04T11:22:22.000Z">
+<meta property="article:modified_time" content="2023-09-06T11:54:35.535Z">
 <meta property="article:author" content="John Doe">
+<meta property="article:tag" content="STM32">
+<meta property="article:tag" content="学习笔记">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230905154254.jpg">
     
     <!--- Icon Part-->
     <link rel="icon" type="image/png" href="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/yipanzhu_Cyberpunk_postmodern_wasteland_32039757-f150-46f5-8e25-eb9d71b1555c.png" sizes="192x192">
@@ -35,7 +50,7 @@
     
     <title>
         
-            归档: 2023/8 -
+            STM32学习笔记（八）——TIM输出比较 -
         
         ZYiPan&#39;s Blog
     </title>
@@ -311,126 +326,306 @@
 
                 
                     <div class="fade-in-down-animation">
-    <div class="archive-container ">
-        
-<div class="archive-list-container">
+    <div class="post-page-container">
+        <div class="article-content-container">
+
+            
+            
+                <div class="article-title">
+                    <h1 class="article-title-regular">STM32学习笔记（八）——TIM输出比较</h1>
+                </div>
+            
+                
+            
+
+            
+                <div class="article-header">
+                    <div class="avatar">
+                        <img src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/mianju2023-04-30%20140959.jpg">
+                    </div>
+                    <div class="info">
+                        <div class="author">
+                            <span class="name">朱一攀</span>
+                            
+                                <span class="author-label"></span>
+                            
+                        </div>
+                        <div class="meta-info">
+                            <div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        <i class="fa-regular fa-pen-fancy"></i>&nbsp;
+        <span class="desktop">2023-09-04 19:22:22</span>
+        <span class="mobile">2023-09-04 19:22</span>
+        <span class="hover-info">创建</span>
+    </span>
     
-        <section class="archive-item">
-            <div class="archive-item-header">
-                <span class="archive-year">2023</span>
-                <span class="archive-year-post-count">[17]</span>
-            </div>
-            <ul class="article-list">
-              
-              <li class="article-item" date-is='09-11'>
-                <a href="/2023/09/11/Openmmlab/">
-                  <span class="article-title">OpenMMLab介绍&amp;安装MMSegmentation</span>
-                </a>
-              </li>
-              
-              <li class="article-item" date-is='09-04'>
-                <a href="/2023/09/04/STM32-6-2/">
-                  <span class="article-title">STM32学习笔记（八）——TIM输出比较</span>
-                </a>
-              </li>
-              
-              <li class="article-item" date-is='08-27'>
-                <a href="/2023/08/27/STM32-6-1/">
-                  <span class="article-title">STM32学习笔记（七）——TIM定时器中断</span>
-                </a>
-              </li>
-              
-              <li class="article-item" date-is='08-25'>
-                <a href="/2023/08/25/STM32-5-1/">
-                  <span class="article-title">STM32学习笔记（六）——中断</span>
-                </a>
-              </li>
-              
-              <li class="article-item" date-is='08-25'>
-                <a href="/2023/08/25/STM32-6/">
-                  <span class="article-title">STM32学习笔记（五）——OLED调试工具</span>
-                </a>
-              </li>
-              
-              <li class="article-item" date-is='08-24'>
-                <a href="/2023/08/24/the-sixth/">
-                  <span class="article-title">第六届嵌入式芯片与系统设计竞赛参赛记录</span>
-                </a>
-              </li>
-              
-              <li class="article-item" date-is='07-24'>
-                <a href="/2023/07/24/python/">
-                  <span class="article-title">python必要基础知识</span>
-                </a>
-              </li>
-              
-              <li class="article-item" date-is='07-22'>
-                <a href="/2023/07/22/tool/">
-                  <span class="article-title">线上工具整理备用</span>
-                </a>
-              </li>
-              
-              <li class="article-item" date-is='07-17'>
-                <a href="/2023/07/17/project/">
-                  <span class="article-title">基于机器视觉的在线高速PCBA生产质量检测器</span>
-                </a>
-              </li>
-              
-              <li class="article-item" date-is='07-05'>
-                <a href="/2023/07/05/diaryone/">
-                  <span class="article-title">2023上半年总结</span>
-                </a>
-              </li>
-              
-              <li class="article-item" date-is='05-28'>
-                <a href="/2023/05/28/STM32-3-1/">
-                  <span class="article-title">STM32笔记（四）——Flash模拟EEPROM</span>
-                </a>
-              </li>
-              
-              <li class="article-item" date-is='05-14'>
-                <a href="/2023/05/14/STM32-3/">
-                  <span class="article-title">STM32学习笔记（三）——GPIO输入代码实现</span>
-                </a>
-              </li>
-              
-              <li class="article-item" date-is='05-10'>
-                <a href="/2023/05/10/STM32-2/">
-                  <span class="article-title">STM32学习笔记（二）——GPIO输入及C语言复习</span>
-                </a>
-              </li>
-              
-              <li class="article-item" date-is='05-10'>
-                <a href="/2023/05/10/STM32-1/">
-                  <span class="article-title">STM32学习笔记（一）——GPIO输出</span>
-                </a>
-              </li>
-              
-              <li class="article-item" date-is='04-30'>
-                <a href="/2023/04/30/test-my-site/">
-                  <span class="article-title">STM32环境搭建并实现C51与MDK共存（Hal开发）</span>
-                </a>
-              </li>
-              
-              <li class="article-item" date-is='04-30'>
-                <a href="/2023/04/30/hello-world/">
-                  <span class="article-title">Anaconda+PyTorch深度学习环境搭建</span>
-                </a>
-              </li>
-              
-              <li class="article-item" date-is='04-30'>
-                <a href="/2023/04/30/Hexo-Github%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2/">
-                  <span class="article-title">Hexo+Github搭建个人博客</span>
-                </a>
-              </li>
-              
+        <span class="article-date article-meta-item">
+            <i class="fa-regular fa-wrench"></i>&nbsp;
+            <span class="desktop">2023-09-06 19:54:35</span>
+            <span class="mobile">2023-09-06 19:54</span>
+            <span class="hover-info">更新</span>
+        </span>
+    
+
+    
+    
+        <span class="article-tags article-meta-item">
+            <i class="fa-regular fa-tags"></i>&nbsp;
+            <ul>
+                
+                    <li>
+                        <a href="/tags/STM32/">STM32</a>&nbsp;
+                    </li>
+                
+                    <li>
+                        | <a href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a>&nbsp;
+                    </li>
+                
             </ul>
-        </section>
+        </span>
+    
+
+    
+    
+        <span class="article-wordcount article-meta-item">
+            <i class="fa-regular fa-typewriter"></i>&nbsp;<span>1.6k 字</span>
+        </span>
+    
+    
+        <span class="article-min2read article-meta-item">
+            <i class="fa-regular fa-clock"></i>&nbsp;<span>5 分钟</span>
+        </span>
+    
     
 </div>
 
+                        </div>
+                    </div>
+                </div>
+            
+
+            <div class="article-content markdown-body">
+                <h2 id="输出比较简介"><a href="#输出比较简介" class="headerlink" title="输出比较简介"></a>输出比较简介</h2><p>OC（Output Compare输出比较），输出比较是通过比较CNT（时基单元中的计数器）与CCR（捕获&#x2F;比较寄存器）值的关系，来实现对输出电平进行置1、置0或反转的操作，用于输出一定频率的波形。</p>
+<blockquote>
+<p>补充点英文IC（Input Capture输入捕获），CC（Capture&#x2F;Compare输入捕获和输出比较的单元）</p>
+</blockquote>
+<p>每个高级定时器和通用定时器都拥有4个输出比较通道，高级定时器的前三个额外拥有死区生成和互补输出的功能。</p>
+<p>以上设计结构的部分都可以从通用定时器和高级定时器的结构图上辅助理解。</p>
+<h2 id="PWM简介"><a href="#PWM简介" class="headerlink" title="PWM简介"></a>PWM简介</h2><p>PWM（Pulse Width Modulation）脉冲宽度调制，PWM波是一个数字输出，由连续的高低电平信号组成，在具有惯性的系统中，可以通过对一系列脉冲的宽度进行调制，来等效地获得所需要地模拟参量，用于电机控速等领域。</p>
+<p>也就是本身是数字信号，通过调制宽度来等效实现一个模拟信号。比如，通过调制宽度，来控制电机不断地通电断电，将电机维持在一个中等速度，当然这个“不断”是非常快地一个闪变。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230905154254.jpg"
+                     
+                ></p>
+<p>就如上方左图，通过不断变换的方波，能等效为连续的模拟量。</p>
+<p>重要的PWM参数：</p>
+<ul>
+<li>频率 &#x3D; 1&#x2F;Ts</li>
+<li>占空比 &#x3D; Ton&#x2F;Ts</li>
+<li>分辨率 &#x3D; 占空比变化步距</li>
+</ul>
+<p>对照上方的右图，占空比是高电平的时间比上周期时间的百分比，占空比越小，等效的模拟电压越趋近于低电平。有一点比较好，等效关系是线性的，高电平5V，低电平0V，此时50%的占空比就是中间电压——2.5V，20%就是1&#x2F;5也就是1V，最后一个分辨率，指的是跳变的步距，比方说1%-&gt;2%-&gt;3%，这种步距就是1%。描述的就是占空比变换的细密程度。</p>
+<h2 id="定时器输出比较模块输出PWM波的原理"><a href="#定时器输出比较模块输出PWM波的原理" class="headerlink" title="定时器输出比较模块输出PWM波的原理"></a>定时器输出比较模块输出PWM波的原理</h2><p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230905161432.jpg"
+                     
+                ></p>
+<p>上图为通用定时器的输出比较电路的结构，左边是CNT计数器和CCR1第一路的捕获&#x2F;比较寄存器，二者进行比较，当CNT&gt;CCR1或者CNT&#x3D;CCR1时，给输出模式控制器传一个信号，然后控制器改变它输出的OC1REF（参考信号）的高低电平，这个信号可以前往主模式控制器，即可以映射到主模式的TRGO上面去，但主要去向还是下面这路，走到了一个极性选择的电路，给这块的寄存器写0，电平不反转，写一就会通过非门反转，即选择要不要翻转电平信号，最后这块是输出使能电路，选择要不要输出，引出的OC1引脚就是CH1通道的引脚。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230905162355.jpg"
+                     
+                ></p>
+<p>怎样通过控制器来选择输出比较的模式见上表各个模式的描述。</p>
+<p>冻结模式，REF保持，用于暂停一段时间输出；下面三个模式中的前两个，都是“匹配时置”，所以电平仅会置一下下，是一次性的，用处不大；而匹配时电平反转就有用了，记一个CRR为0，当CNT达到重装值一重装，CNT为0，即可反转一次电平，可以用来输出占空比50%的波形，至于有效无效可以看作高与低；</p>
+<p>接着是两个强制电平，和冻结模式差不多，如果想暂停输出，并且维持一段高电平或者低电平，就可以用这两个；</p>
+<p>模式1和模式2最为关键，可以输出频率和占空比都可调的PWM波，基本思想都差不多，分析下向上计数的，</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230906134346.jpg"
+                     
+                ></p>
+<p>看下上面这个结构图，左上角还是时基单元和运行控制部分，包含了时钟源选择，这里都是定时器结构不再赘述，我们说CNT计数器是一直在不断运行的，到达重装值就重装计数，它下面就是输出比较单元，总共有4路，最开始是需要自己设置的CCR比较寄存器，不断与CNT比较，接着就是模式控制器，假设为模式1，对照右上的图得以理解，REF就是可调PWM，经过使能，输出即可。</p>
+<h2 id="参数计算"><a href="#参数计算" class="headerlink" title="参数计算"></a>参数计算</h2><p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230906135158.jpg"
+                     
+                ></p>
+<p>下面绿的就是输出的PWM波，它的周期对应着计数器从零到重装值的一个溢出更新周期，所以PWM的频率就等于计数器更新频率，公式解读为，预分频器的值&#x2F;预分频器加一也就是实际分频系数的值，这一步一除，其实是CK_CNT的值，再除以（重装值+1），得到的就是重装即更新事件的频率-&gt;PWM的频率</p>
+<p>第二个公式PWM占空比，在图中的累加的情况下，CCR的值&#x2F;（ARR+1）就是高电平占的比例，即占空比。</p>
+<p>第三个分辨率，占空比变化的步距，看步距，先明确变化的范围，CCR的变化范围取决于ARR+1，所以分辨率就是占空比最小的步距即1&#x2F;(ARR+1)。</p>
+<p>另有高级定时器可做了解。<a class="link"   target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1th411z7sn/?p=15&spm_id_from=pageDriver&vd_source=df63b1518b81b99bf6c584903334107e" >视频的25:54 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<h2 id="外部设备"><a href="#外部设备" class="headerlink" title="外部设备"></a>外部设备</h2><h3 id="舵机"><a href="#舵机" class="headerlink" title="舵机"></a>舵机</h3><p>舵机是一种根据输入PWM信号占空比来控制输出角度的装置，对信号要求为：周期20ms，高电平宽度为0.5ms~2.5ms。套件中用到了SG90型号舵机，有三根输入线，两根电源，一根PWM信号。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230906173900.jpg"
+                     
+                ></p>
+<h3 id="直流电机"><a href="#直流电机" class="headerlink" title="直流电机"></a>直流电机</h3><p>需要外挂驱动器。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230906174327.jpg"
+                     
+                ></p>
+<p>TB6612有两路推挽的电路，可以控制电流的流向，内部电路如下：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230906174901.jpg"
+                     
+                ></p>
+<p>VM是电机电源的正极，要求是一个大电流电源（4.5-10V），和电机额定电压保持一致，VCC就是控制器相同的电源（STM32就是3.3V），内部GND都是相通的，接一个就行。AO1、AO2和BO1、BO2就是两路电机的输出，PWMA、AIN2和AIN1就是A路电机的控制端，PWMA引脚接PWM信号输出端，这几个脚接GPIO即可。注意右下角的电平与控制关系。</p>
+
+            </div>
+
+            
+                <div class="post-copyright-info">
+                    <div class="article-copyright-info-container">
+    <ul>
+        <li><strong>标题:</strong> STM32学习笔记（八）——TIM输出比较</li>
+        <li><strong>作者:</strong> 朱一攀</li>
+        <li><strong>创建于:</strong> 2023-09-04 19:22:22</li>
+        
+            <li>
+                <strong>更新于:</strong> 2023-09-06 19:54:35
+            </li>
+        
+        <li>
+            <strong>链接:</strong> https://redefine.ohevan.com/2023/09/04/STM32-6-2/
+        </li>
+        <li>
+            <strong>版权声明:</strong> 本文章采用 <a class="license" target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">CC BY-NC-SA 4.0</a> 进行许可。
+        </li>
+    </ul>
+</div>
+
+                </div>
+            
+
+            
+                <ul class="post-tags-box">
+                    
+                        <li class="tag-item">
+                            <a href="/tags/STM32/">#STM32</a>&nbsp;
+                        </li>
+                    
+                        <li class="tag-item">
+                            <a href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">#学习笔记</a>&nbsp;
+                        </li>
+                    
+                </ul>
+            
+
+            
+
+            
+                <div class="article-nav">
+                    
+                        <div class="article-prev">
+                            <a class="prev"
+                            rel="prev"
+                            href="/2023/09/11/Openmmlab/"
+                            >
+                                <span class="left arrow-icon flex-center">
+                                    <i class="fa-solid fa-chevron-left"></i>
+                                </span>
+                                <span class="title flex-center">
+                                    <span class="post-nav-title-item">OpenMMLab介绍&amp;安装MMSegmentation</span>
+                                    <span class="post-nav-item">上一篇</span>
+                                </span>
+                            </a>
+                        </div>
+                    
+                    
+                        <div class="article-next">
+                            <a class="next"
+                            rel="next"
+                            href="/2023/08/27/STM32-6-1/"
+                            >
+                                <span class="title flex-center">
+                                    <span class="post-nav-title-item">STM32学习笔记（七）——TIM定时器中断</span>
+                                    <span class="post-nav-item">下一篇</span>
+                                </span>
+                                <span class="right arrow-icon flex-center">
+                                    <i class="fa-solid fa-chevron-right"></i>
+                                </span>
+                            </a>
+                        </div>
+                    
+                </div>
+            
+
+
+            
+                <div class="comment-container">
+                    <div class="comments-container">
+    <div id="comment-anchor"></div>
+    <div class="comment-area-title">
+        <i class="fa-solid fa-comments"></i>&nbsp;评论
+    </div>
+    
+
+        
+            
+ 
+    <div id="waline"></div>
+    <script type="module"  data-pjax>
+        import { init } from 'https://evan.beee.top/js/waline.mjs';
+
+        function loadWaline() {
+            init({
+                el: '#waline',
+                serverURL: 'https://example.example.com',
+                lang: 'zh-CN',
+                dark: 'body[class~="dark-mode"]',
+                requiredMeta: ['nick','mail'], // cannot customize by theme config, change it yourself
+            });
+        }
+
+        if ('true') {
+            const loadWalineTimeout = setTimeout(() => {
+                loadWaline();
+                clearTimeout(loadWalineTimeout);
+            }, 1000);
+        } else {
+            window.addEventListener('DOMContentLoaded', loadWaline);
+        }
+        
+    </script>
+
+
+
+        
+    
+</div>
+
+                </div>
+            
+        </div>
+
+        
+            <div class="toc-content-container">
+                <div class="post-toc-wrap">
+    <div class="post-toc">
+        <div class="toc-title">此页目录</div>
+        <div class="page-title">STM32学习笔记（八）——TIM输出比较</div>
+        <ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BE%93%E5%87%BA%E6%AF%94%E8%BE%83%E7%AE%80%E4%BB%8B"><span class="nav-text">输出比较简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PWM%E7%AE%80%E4%BB%8B"><span class="nav-text">PWM简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9A%E6%97%B6%E5%99%A8%E8%BE%93%E5%87%BA%E6%AF%94%E8%BE%83%E6%A8%A1%E5%9D%97%E8%BE%93%E5%87%BAPWM%E6%B3%A2%E7%9A%84%E5%8E%9F%E7%90%86"><span class="nav-text">定时器输出比较模块输出PWM波的原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E6%95%B0%E8%AE%A1%E7%AE%97"><span class="nav-text">参数计算</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%96%E9%83%A8%E8%AE%BE%E5%A4%87"><span class="nav-text">外部设备</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%88%B5%E6%9C%BA"><span class="nav-text">舵机</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%B4%E6%B5%81%E7%94%B5%E6%9C%BA"><span class="nav-text">直流电机</span></a></li></ol></li></ol>
+
     </div>
 </div>
+            </div>
+        
+    </div>
+</div>
+
 
                 
 
@@ -492,6 +687,27 @@
         </div>
     </div>
 
+    
+        <div class="post-tools">
+            <div class="post-tools-container">
+    <ul class="article-tools-list">
+        <!-- TOC aside toggle -->
+        
+            <li class="right-bottom-tools page-aside-toggle">
+                <i class="fa-regular fa-outdent"></i>
+            </li>
+        
+
+        <!-- go comment -->
+        
+            <li class="go-comment">
+                <i class="fa-regular fa-comments"></i>
+            </li>
+        
+    </ul>
+</div>
+
+        </div>
     
 
     <div class="right-side-tools-container">
@@ -635,6 +851,16 @@
 
 
 <div class="post-scripts pjax">
+    
+        
+<script src="/js/tools/tocToggle.js"></script>
+
+<script src="/js/libs/anime.min.js"></script>
+
+<script src="/js/layouts/toc.js"></script>
+
+<script src="/js/plugins/tabs.js"></script>
+
     
 </div>
 

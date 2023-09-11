@@ -1339,4 +1339,121 @@
         <tag>学习笔记</tag>
       </tags>
   </entry>
+  <entry>
+    <title>OpenMMLab介绍&amp;安装MMSegmentation</title>
+    <url>/2023/09/11/Openmmlab/</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>笔者参加了23年9月的组队学习任务，特此记录学习笔记，以及作为打卡链接。</p>
+<h2 id="OpenMMLab介绍"><a href="#OpenMMLab介绍" class="headerlink" title="OpenMMLab介绍"></a>OpenMMLab介绍</h2><p>近年来以深度学习为代表的人工智能技术得到飞速发展，在计算机视觉、强化学习等领域产生了很多成果，而开发深度学习算法就离不开框架。途中诞生了许多深度学习的框架，Pytorch等。而OpenMMLab就是一个由国人主导的，在国际上有影响力的计算机视觉开源算法体系。</p>
+<p>OpenMMLab已经累计开源了30多个视觉算法库，2400个预训练模型，涵盖各类计算机视觉任务，全部开源。</p>
+<p>MMDetection是目标检测、实例分割和全景分割，，优点在于复现等方便，模型库将前沿的必读的论文等都整理成了学习路径等。</p>
+<p>MMYOLO目标检测算法，收录了多个版本YOLO等。</p>
+<p>还有MMRotate、MMSegmentation等多个库。以及对应部署过程的MMDeploy工具箱。</p>
+<h2 id="语义分割"><a href="#语义分割" class="headerlink" title="语义分割"></a>语义分割</h2><h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p>语义分割任务是要将图像按照物体的类别分割成不同的区域，相当于对每个像素进行分类。语义就是指类别。提取像素信息呢，十分精准。</p>
+<p>语义分割是视觉解决的基础任务之一。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230911171403.png"
+                     
+                ></p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230911171521.jpg"
+                     
+                ></p>
+<h3 id="语义分割标注格式"><a href="#语义分割标注格式" class="headerlink" title="语义分割标注格式"></a>语义分割标注格式</h3><p>格式为和图像等尺寸的整数掩膜图像——和图像一样大小的矩阵，矩阵中的值是用于区分的0~N种类的数字。</p>
+]]></content>
+      <tags>
+        <tag>学习笔记</tag>
+        <tag>算法</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>STM32学习笔记（八）——TIM输出比较</title>
+    <url>/2023/09/04/STM32-6-2/</url>
+    <content><![CDATA[<h2 id="输出比较简介"><a href="#输出比较简介" class="headerlink" title="输出比较简介"></a>输出比较简介</h2><p>OC（Output Compare输出比较），输出比较是通过比较CNT（时基单元中的计数器）与CCR（捕获&#x2F;比较寄存器）值的关系，来实现对输出电平进行置1、置0或反转的操作，用于输出一定频率的波形。</p>
+<blockquote>
+<p>补充点英文IC（Input Capture输入捕获），CC（Capture&#x2F;Compare输入捕获和输出比较的单元）</p>
+</blockquote>
+<p>每个高级定时器和通用定时器都拥有4个输出比较通道，高级定时器的前三个额外拥有死区生成和互补输出的功能。</p>
+<p>以上设计结构的部分都可以从通用定时器和高级定时器的结构图上辅助理解。</p>
+<h2 id="PWM简介"><a href="#PWM简介" class="headerlink" title="PWM简介"></a>PWM简介</h2><p>PWM（Pulse Width Modulation）脉冲宽度调制，PWM波是一个数字输出，由连续的高低电平信号组成，在具有惯性的系统中，可以通过对一系列脉冲的宽度进行调制，来等效地获得所需要地模拟参量，用于电机控速等领域。</p>
+<p>也就是本身是数字信号，通过调制宽度来等效实现一个模拟信号。比如，通过调制宽度，来控制电机不断地通电断电，将电机维持在一个中等速度，当然这个“不断”是非常快地一个闪变。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230905154254.jpg"
+                     
+                ></p>
+<p>就如上方左图，通过不断变换的方波，能等效为连续的模拟量。</p>
+<p>重要的PWM参数：</p>
+<ul>
+<li>频率 &#x3D; 1&#x2F;Ts</li>
+<li>占空比 &#x3D; Ton&#x2F;Ts</li>
+<li>分辨率 &#x3D; 占空比变化步距</li>
+</ul>
+<p>对照上方的右图，占空比是高电平的时间比上周期时间的百分比，占空比越小，等效的模拟电压越趋近于低电平。有一点比较好，等效关系是线性的，高电平5V，低电平0V，此时50%的占空比就是中间电压——2.5V，20%就是1&#x2F;5也就是1V，最后一个分辨率，指的是跳变的步距，比方说1%-&gt;2%-&gt;3%，这种步距就是1%。描述的就是占空比变换的细密程度。</p>
+<h2 id="定时器输出比较模块输出PWM波的原理"><a href="#定时器输出比较模块输出PWM波的原理" class="headerlink" title="定时器输出比较模块输出PWM波的原理"></a>定时器输出比较模块输出PWM波的原理</h2><p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230905161432.jpg"
+                     
+                ></p>
+<p>上图为通用定时器的输出比较电路的结构，左边是CNT计数器和CCR1第一路的捕获&#x2F;比较寄存器，二者进行比较，当CNT&gt;CCR1或者CNT&#x3D;CCR1时，给输出模式控制器传一个信号，然后控制器改变它输出的OC1REF（参考信号）的高低电平，这个信号可以前往主模式控制器，即可以映射到主模式的TRGO上面去，但主要去向还是下面这路，走到了一个极性选择的电路，给这块的寄存器写0，电平不反转，写一就会通过非门反转，即选择要不要翻转电平信号，最后这块是输出使能电路，选择要不要输出，引出的OC1引脚就是CH1通道的引脚。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230905162355.jpg"
+                     
+                ></p>
+<p>怎样通过控制器来选择输出比较的模式见上表各个模式的描述。</p>
+<p>冻结模式，REF保持，用于暂停一段时间输出；下面三个模式中的前两个，都是“匹配时置”，所以电平仅会置一下下，是一次性的，用处不大；而匹配时电平反转就有用了，记一个CRR为0，当CNT达到重装值一重装，CNT为0，即可反转一次电平，可以用来输出占空比50%的波形，至于有效无效可以看作高与低；</p>
+<p>接着是两个强制电平，和冻结模式差不多，如果想暂停输出，并且维持一段高电平或者低电平，就可以用这两个；</p>
+<p>模式1和模式2最为关键，可以输出频率和占空比都可调的PWM波，基本思想都差不多，分析下向上计数的，</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230906134346.jpg"
+                     
+                ></p>
+<p>看下上面这个结构图，左上角还是时基单元和运行控制部分，包含了时钟源选择，这里都是定时器结构不再赘述，我们说CNT计数器是一直在不断运行的，到达重装值就重装计数，它下面就是输出比较单元，总共有4路，最开始是需要自己设置的CCR比较寄存器，不断与CNT比较，接着就是模式控制器，假设为模式1，对照右上的图得以理解，REF就是可调PWM，经过使能，输出即可。</p>
+<h2 id="参数计算"><a href="#参数计算" class="headerlink" title="参数计算"></a>参数计算</h2><p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230906135158.jpg"
+                     
+                ></p>
+<p>下面绿的就是输出的PWM波，它的周期对应着计数器从零到重装值的一个溢出更新周期，所以PWM的频率就等于计数器更新频率，公式解读为，预分频器的值&#x2F;预分频器加一也就是实际分频系数的值，这一步一除，其实是CK_CNT的值，再除以（重装值+1），得到的就是重装即更新事件的频率-&gt;PWM的频率</p>
+<p>第二个公式PWM占空比，在图中的累加的情况下，CCR的值&#x2F;（ARR+1）就是高电平占的比例，即占空比。</p>
+<p>第三个分辨率，占空比变化的步距，看步距，先明确变化的范围，CCR的变化范围取决于ARR+1，所以分辨率就是占空比最小的步距即1&#x2F;(ARR+1)。</p>
+<p>另有高级定时器可做了解。<a class="link"   href="https://www.bilibili.com/video/BV1th411z7sn/?p=15&spm_id_from=pageDriver&vd_source=df63b1518b81b99bf6c584903334107e" >视频的25:54 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<h2 id="外部设备"><a href="#外部设备" class="headerlink" title="外部设备"></a>外部设备</h2><h3 id="舵机"><a href="#舵机" class="headerlink" title="舵机"></a>舵机</h3><p>舵机是一种根据输入PWM信号占空比来控制输出角度的装置，对信号要求为：周期20ms，高电平宽度为0.5ms~2.5ms。套件中用到了SG90型号舵机，有三根输入线，两根电源，一根PWM信号。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230906173900.jpg"
+                     
+                ></p>
+<h3 id="直流电机"><a href="#直流电机" class="headerlink" title="直流电机"></a>直流电机</h3><p>需要外挂驱动器。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230906174327.jpg"
+                     
+                ></p>
+<p>TB6612有两路推挽的电路，可以控制电流的流向，内部电路如下：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230906174901.jpg"
+                     
+                ></p>
+<p>VM是电机电源的正极，要求是一个大电流电源（4.5-10V），和电机额定电压保持一致，VCC就是控制器相同的电源（STM32就是3.3V），内部GND都是相通的，接一个就行。AO1、AO2和BO1、BO2就是两路电机的输出，PWMA、AIN2和AIN1就是A路电机的控制端，PWMA引脚接PWM信号输出端，这几个脚接GPIO即可。注意右下角的电平与控制关系。</p>
+]]></content>
+      <tags>
+        <tag>STM32</tag>
+        <tag>学习笔记</tag>
+      </tags>
+  </entry>
 </search>
