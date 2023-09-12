@@ -1363,6 +1363,8 @@
                      
                 ></p>
 <h3 id="语义分割标注格式"><a href="#语义分割标注格式" class="headerlink" title="语义分割标注格式"></a>语义分割标注格式</h3><p>格式为和图像等尺寸的整数掩膜图像——和图像一样大小的矩阵，矩阵中的值是用于区分的0~N种类的数字。</p>
+<h3 id="语义分割应用场景"><a href="#语义分割应用场景" class="headerlink" title="语义分割应用场景"></a>语义分割应用场景</h3><p>当不存在“实例”概念，只需要每个像素分类，用语义分割（目标大片，尖细分布，轮廓不规则时），比如裂纹、农田遥感、金属金相，血管等。</p>
+<h2 id="安装MMSegmentation"><a href="#安装MMSegmentation" class="headerlink" title="安装MMSegmentation"></a>安装MMSegmentation</h2><p>基于云GPU以及notebook上的代码框架，已经成功配置完成。</p>
 ]]></content>
       <tags>
         <tag>学习笔记</tag>
