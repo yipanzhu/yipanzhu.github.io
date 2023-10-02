@@ -18,17 +18,19 @@
     <meta name="googlebot" content="index,follow">
     <meta name="revisit-after" content="1 days">
     
-        <meta name="description" content="前言笔者参加了23年9月的组队学习任务，特此记录学习笔记，以及作为打卡链接。 OpenMMLab介绍近年来以深度学习为代表的人工智能技术得到飞速发展，在计算机视觉、强化学习等领域产生了很多成果，而开发深度学习算法就离不开框架。途中诞生了许多深度学习的框架，Pytorch等。而OpenMMLab就是一个由国人主导的，在国际上有影响力的计算机视觉开源算法体系。 OpenMMLab已经累计开源了30多个">
+        <meta name="description" content="前言笔者参加了23年9月的组队学习任务，特此记录学习笔记，以及作为打卡链接。 笔记资料来源  OpenMMLab介绍近年来以深度学习为代表的人工智能技术得到飞速发展，在计算机视觉、强化学习等领域产生了很多成果，而开发深度学习算法就离不开框架。途中诞生了许多深度学习的框架，Pytorch等。而OpenMMLab就是一个由国人主导的，在国际上有影响力的计算机视觉开源算法体系，其整理好的各类论文、提供的">
 <meta property="og:type" content="article">
 <meta property="og:title" content="OpenMMLab介绍&amp;安装MMSegmentation">
 <meta property="og:url" content="http://example.com/2023/09/11/Openmmlab/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="前言笔者参加了23年9月的组队学习任务，特此记录学习笔记，以及作为打卡链接。 OpenMMLab介绍近年来以深度学习为代表的人工智能技术得到飞速发展，在计算机视觉、强化学习等领域产生了很多成果，而开发深度学习算法就离不开框架。途中诞生了许多深度学习的框架，Pytorch等。而OpenMMLab就是一个由国人主导的，在国际上有影响力的计算机视觉开源算法体系。 OpenMMLab已经累计开源了30多个">
+<meta property="og:description" content="前言笔者参加了23年9月的组队学习任务，特此记录学习笔记，以及作为打卡链接。 笔记资料来源  OpenMMLab介绍近年来以深度学习为代表的人工智能技术得到飞速发展，在计算机视觉、强化学习等领域产生了很多成果，而开发深度学习算法就离不开框架。途中诞生了许多深度学习的框架，Pytorch等。而OpenMMLab就是一个由国人主导的，在国际上有影响力的计算机视觉开源算法体系，其整理好的各类论文、提供的">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230911171403.png">
 <meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230911171521.jpg">
+<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/20230914210404.jpg">
+<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/20230914211346.jpg">
 <meta property="article:published_time" content="2023-09-11T08:11:31.000Z">
-<meta property="article:modified_time" content="2023-09-12T10:43:29.512Z">
+<meta property="article:modified_time" content="2023-09-15T11:53:25.969Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="学习笔记">
 <meta property="article:tag" content="算法">
@@ -109,206 +111,454 @@
     <div class="main-content-container">
 
         <div class="main-content-header">
-            <header class="navbar-container">
-    
-    <div class="navbar-content">
-        <div class="left">
-            
-                <a class="logo-image" href="/">
-                    <img src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/20230430134343-removebg-preview.png">
-                </a>
-            
-            <a class="logo-title" href="/">
-                
-                ZYiPan&#39;s Blog
-                
-            </a>
-        </div>
+            $logo-title-font-size = 2rem
+$desktop-search-icon-font-size = 1.5rem
+$navbar-bar-line-height = 2.5px
+$logo-image-box-width = 46px
 
-        <div class="right">
-            <!-- PC -->
-            <div class="desktop">
-                <ul class="navbar-list">
-                    
-                        
-                            <li class="navbar-item">
-                                <!-- Menu -->
-                                <a class="" 
-                                    href="/"  >
-                                    
-                                        
-                                            <i class="fa-regular fa-house"></i>
-                                        
-                                        首页
-                                    
-                                </a>
-                                <!-- Submenu -->
-                                
-                            </li>
-                    
-                        
-                            <li class="navbar-item">
-                                <!-- Menu -->
-                                <a class="has-dropdown" 
-                                    href="#" onClick="return false;">
-                                    
-                                        
-                                            <i class="fa-light fa-pen-nib"></i>
-                                        
-                                        博客&nbsp;<i class="fa-solid fa-chevron-down"></i>
-                                    
-                                </a>
-                                <!-- Submenu -->
-                                
-                                    <ul class="sub-menu">
-                                    
-                                        <li>
-                                        <a target="_blank" rel="noopener" href="https://yipanzhu.github.io/archives/">寻迹
-                                        </a>
-                                        </li>
-                                    
-                                        <li>
-                                        <a href="/tags/">标签
-                                        </a>
-                                        </li>
-                                    
-                                    </ul>
-                                
-                            </li>
-                    
-                        
-                            <li class="navbar-item">
-                                <!-- Menu -->
-                                <a class="" 
-                                    target="_blank" rel="noopener" href="https://github.com/yipanzhu"  >
-                                    
-                                        
-                                            <i class="fa-brands fa-github"></i>
-                                        
-                                        GITHUB
-                                    
-                                </a>
-                                <!-- Submenu -->
-                                
-                            </li>
-                    
-                        
-                            <li class="navbar-item">
-                                <!-- Menu -->
-                                <a class="" 
-                                    target="_blank" rel="noopener" href="https://yipanzhu.github.io/about"  >
-                                    
-                                        
-                                            <i class="fa-light fa-user"></i>
-                                        
-                                        关于我
-                                    
-                                </a>
-                                <!-- Submenu -->
-                                
-                            </li>
-                    
-                    
-                        <li class="navbar-item search search-popup-trigger">
-                            <i class="fa-solid fa-magnifying-glass"></i>
-                        </li>
-                    
-                </ul>
-            </div>
-            <!-- Mobile -->
-            <div class="mobile">
-                
-                    <div class="icon-item search search-popup-trigger"><i class="fa-solid fa-magnifying-glass"></i></div>
-                
-                <div class="icon-item navbar-bar">
-                    <div class="navbar-bar-middle"></div>
-                </div>
-            </div>
-        </div>
-    </div>
+@import "../../common/variables"
 
-    <!-- Mobile drawer -->
-    <div class="navbar-drawer">
-        <ul class="drawer-navbar-list">
+.navbar-container {
+  font-family "Optima Medium", sans-serif
+  width 100%
+  height 100%
+  box-sizing border-box
+  display flex
+  align-items center
+  justify-content center
+  background $nav-color-bg
+  -webkit-backdrop-filter blur(10px)
+  backdrop-filter blur(10px)
+  padding-top $scroll-progress-bar-height
+
+  hover-style(false, 0, 0)
+
+  .navbar-content {
+    position relative
+    height 100%
+    width $main-content-width
+    max-width $content-max-width
+    display flex
+    flex-direction row
+    justify-content space-between
+    align-items center
+    z-index $z-index-5
+
+
+    &.has-home-banner {
+      max-width $content-max-width * 1.2
+    }
+
+    +redefine-tablet() {
+      width $main-content-width-tablet
+    }
+
+    +redefine-mobile() {
+      width $main-content-width-mobile
+    }
+
+    .left {
+      display flex
+      align-items center
+      transition-t("transform", "0", "0.2", "linear")
+
+      .navbar-shrink & {
+        transform scale(0.72)
+        transform-origin left
+      }
+
+
+      if (hexo-config('defaults.logo') && hexo-config('defaults.logo') != '') {
+        .logo-image {
+          width $logo-image-box-width
+          height $logo-image-box-width
+          margin-right 8px
+
+
+          +redefine-tablet() {
+            width $logo-image-box-width * 0.9
+            height $logo-image-box-width * 0.9
+          }
+
+          +redefine-mobile() {
+            width $logo-image-box-width * 0.8
+            height $logo-image-box-width * 0.8
+          }
+
+          img {
+            border-radius 6px
+            width 100%
+          }
+        }
+
+      }
+
+      .logo-title {
+        font-size $logo-title-font-size
+        font-family "Optima Bold", sans-serif
+        //letter-spacing 1px
+        line-height 1
+        color var(--first-text-color)
+
+        h1 {
+          margin 0
+          font-size $logo-title-font-size
+          font-family "Optima Bold", sans-serif
+          //letter-spacing 1px
+          line-height 1
+          color var(--first-text-color)
+
+          +redefine-tablet() {
+            font-size $logo-title-font-size * 0.9
+          }
+
+          +redefine-mobile() {
+            font-size $logo-title-font-size * 0.8
+          }
+
+        }
+
+        +redefine-tablet() {
+          font-size $logo-title-font-size * 0.9
+        }
+
+        +redefine-mobile() {
+          font-size $logo-title-font-size * 0.8
+        }
+      }
+
+    }
+
+
+    .right {
+
+      .desktop {
+
+        .navbar-list {
+          display flex
+          align-items center
+          
+
+          +redefine-tablet() {
+            display none
+          }
+
+
+          .navbar-item {
+            float left
+            //padding 5px
+            position relative
+            margin-left 30px
+            font-size 1rem
+            cursor pointer
+            color var(--default-text-color)
+
+            a {
+              display block
+              padding 5px
+            }
+
+            &:first-child {
+              margin-left 0
+            }
+
+            a .fa-chevron-down{
+              transform rotate(0deg)
+              transition transform 0.3s ease
+            }
+
+            &:hover a .fa-chevron-down{
+              transform rotate(180deg)
+            }
+
+            &:hover .has-dropdown{
+              &::after {
+                display none !important
+              }
+            }
+
+            &:hover a, .active {
+              &::after {
+                content ''
+                position absolute
+                bottom -5px
+                left 50%
+                width 100%
+                height 2px
+                transform translateX(-50%)
+                background var(--primary-color)
+                transition-t("transform, bottom", "0, 0", "0.2, 0.2", "linear, linear")
+
+                .navbar-shrink & {
+                  bottom -($navbar-shrink-height / 2 - 17)
+                }
+              }
+            }
             
-                
-                    <li class="drawer-navbar-item flex-center">
-                        <a class="" 
-                        href="/"  >
-                             
-                                
-                                    <i class="fa-regular fa-house"></i>
-                                
-                                首页
-                            
-                        </a>
-                    </li>
-                    <!-- Submenu -->
-                    
-            
-                
-                    <li class="drawer-navbar-item flex-center">
-                        <a class="has-dropdown" 
-                        href="#" onClick="return false;">
-                            
-                                
-                                    <i class="fa-light fa-pen-nib"></i>
-                                
-                                博客&nbsp;<i class="fa-solid fa-chevron-down"></i>
-                            
-                        </a>
-                    </li>
-                    <!-- Submenu -->
-                              
-                        
-                            <li class="dropdown-item flex-center">
-                                <a class="dropdown-item" target="_blank" rel="noopener" href="https://yipanzhu.github.io/archives/">寻迹</a>
-                            </li>
-                        
-                            <li class="dropdown-item flex-center">
-                                <a class="dropdown-item" href="/tags/">标签</a>
-                            </li>
-                        
-                    
-            
-                
-                    <li class="drawer-navbar-item flex-center">
-                        <a class="" 
-                        target="_blank" rel="noopener" href="https://github.com/yipanzhu"  >
-                             
-                                
-                                    <i class="fa-brands fa-github"></i>
-                                
-                                GITHUB
-                            
-                        </a>
-                    </li>
-                    <!-- Submenu -->
-                    
-            
-                
-                    <li class="drawer-navbar-item flex-center">
-                        <a class="" 
-                        target="_blank" rel="noopener" href="https://yipanzhu.github.io/about"  >
-                             
-                                
-                                    <i class="fa-light fa-user"></i>
-                                
-                                关于我
-                            
-                        </a>
-                    </li>
-                    <!-- Submenu -->
-                    
             
 
-        </ul>
-    </div>
+            &.search {
+              font-size $desktop-search-icon-font-size
+              margin-left 26px
 
-    <div class="window-mask"></div>
+              i {
+                color var(--default-text-color)
+              }
 
-</header>
+            }
 
+            .sub-menu{
+              position absolute
+              right auto
+              left 50%
+              -webkit-transform translate(-50%, 0)
+              -o-transform translate(-50%, 0)
+              transform translate(-50%, 0)
+              margin-top 0px
+              width auto
+              text-align: center;
+              list-style:none;
+              padding 0 10px 
+              border-radius $redefine-border-radius-large
+              //visibility hidden
+              
+
+              max-height 0px
+              overflow hidden
+              transition-t("all", "0", "0.2", "linear") 
+
+              li a {
+                white-space nowrap
+                color var(--default-text-color)
+                font-size 1rem
+                padding 3px 15px
+                display block
+                text-align center
+                border-radius 8px
+                transition-t("all", "0", "0.2", "linear")
+
+                &:hover {
+                  color var(--primary-color)
+                  background-color var(--third-background-color)
+                }
+              }
+            }
+
+          }
+
+        }
+
+        .navbar-list .navbar-item:hover .sub-menu{
+          //visibility visible
+          max-height 500px
+          transition-t("all", "0", "0.2", "ease")
+          redefine-container(false, 0, 0, 10px, 5px)
+        }
+        
+      }
+
+
+      .mobile {
+        display flex
+        justify-content space-between
+        align-items center
+
+        .icon-item {
+          display none
+          position relative
+          cursor pointer
+          font-size 18px
+          margin-left 12px
+          width 20px
+          height 20px
+          color var(--default-text-color)
+
+          i {
+            color var(--default-text-color)
+          }
+
+          &:first-child {
+            margin-left 0
+          }
+
+          +redefine-tablet() {
+            display flex
+            justify-content center
+            align-items center
+          }
+        }
+
+        .navbar-bar {
+
+          .navbar-bar-middle {
+            width 18px
+            height $navbar-bar-line-height
+            position relative
+            background var(--default-text-color)
+
+            .navbar-drawer-show & {
+              background transparent
+            }
+
+
+            &::before, &::after {
+              content ''
+              position absolute
+              left 0
+              width 100%
+              height $navbar-bar-line-height
+              background var(--default-text-color)
+              transition-t("transform", "0", "0.38", "ease")
+            }
+
+
+            &::before {
+              top -6px
+
+              .navbar-drawer-show & {
+                transform translateY(6px) rotate(45deg)
+              }
+            }
+
+
+            &::after {
+              bottom -6px
+
+              .navbar-drawer-show & {
+                transform translateY(-6px) rotate(-45deg)
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+
+  .navbar-drawer {
+    width 100%
+    padding $navbar-height 0 20px 0
+    position absolute
+    top 0
+    left 0
+    transform scaleY(0)
+    transform-origin top
+    z-index $z-index-2
+    background var(--background-color)
+    transition-t("transform", "0", "0.38", "ease")
+
+    .navbar-drawer-show & {
+      transform scaleY(1)
+    }
+
+    .drawer-navbar-list {
+      display flex
+      flex-direction column
+      justify-content flex-start
+      align-items center
+
+      .drawer-navbar-item {
+        font-family: "Optima Bold", sans-serif
+        font-size 1rem
+        margin 6px 0
+        height 32px
+
+        a {
+          padding 6px 20px
+          border-radius 20px
+          color var(--default-text-color)
+
+          &:hover {
+            color var(--second-text-color)
+            border 1px solid var(--default-text-color)
+          }
+
+
+          &.active {
+            border 1px solid var(--default-text-color)
+            color var(--second-text-color)
+          }
+        }
+
+        .has-dropdown {
+          font-family: "Optima Bold", sans-serif
+        }
+
+        a .fa-chevron-down{
+          transform rotate(0deg)
+          transition transform 0.3s ease
+        }
+
+        &:hover a .fa-chevron-down{
+          transform rotate(180deg)
+        }
+
+        &:hover .has-dropdown{
+          &::after {
+            display none !important
+          }
+        }
+      }
+
+      .dropdown-item {
+        font-size 1rem
+        margin 6px 0
+        height 16px
+
+        a {
+          padding 6px 20px
+          border-radius 20px
+          color var(--default-text-color)
+
+          &:hover {
+            color var(--second-text-color)
+            border 1px solid var(--default-text-color)
+          }
+
+
+          &.active {
+            border 1px solid var(--default-text-color)
+            color var(--second-text-color)
+          }
+        }
+      }
+
+      .sub-menu{
+        position relative
+        margin-top 8px
+        width 100%
+        text-align: center;
+        list-style: none;
+        padding 0 10px 
+        border-radius $redefine-border-radius-large
+        //float left
+      }
+    }
+  }
+
+
+  .window-mask {
+    position absolute
+    top 0
+    width 100%
+    height 100vh
+    background rgba(0, 0, 0, 0.4)
+    z-index $z-index-1
+    visibility hidden
+    opacity 0
+    transition-t("transform, opacity", "0, 0", "0.38, 0.38", "ease, ease")
+
+    .navbar-drawer-show & {
+      visibility visible
+      opacity 1
+    }
+  }
+
+}
+
+.navbar-drawer-show {
+  overflow hidden
+}
 
         </div>
 
@@ -355,8 +605,8 @@
     
         <span class="article-date article-meta-item">
             <i class="fa-regular fa-wrench"></i>&nbsp;
-            <span class="desktop">2023-09-12 18:43:29</span>
-            <span class="mobile">2023-09-12 18:43</span>
+            <span class="desktop">2023-09-15 19:53:25</span>
+            <span class="mobile">2023-09-15 19:53</span>
             <span class="hover-info">更新</span>
         </span>
     
@@ -382,12 +632,12 @@
     
     
         <span class="article-wordcount article-meta-item">
-            <i class="fa-regular fa-typewriter"></i>&nbsp;<span>475 字</span>
+            <i class="fa-regular fa-typewriter"></i>&nbsp;<span>953 字</span>
         </span>
     
     
         <span class="article-min2read article-meta-item">
-            <i class="fa-regular fa-clock"></i>&nbsp;<span>1 分钟</span>
+            <i class="fa-regular fa-clock"></i>&nbsp;<span>3 分钟</span>
         </span>
     
     
@@ -400,12 +650,13 @@
 
             <div class="article-content markdown-body">
                 <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>笔者参加了23年9月的组队学习任务，特此记录学习笔记，以及作为打卡链接。</p>
-<h2 id="OpenMMLab介绍"><a href="#OpenMMLab介绍" class="headerlink" title="OpenMMLab介绍"></a>OpenMMLab介绍</h2><p>近年来以深度学习为代表的人工智能技术得到飞速发展，在计算机视觉、强化学习等领域产生了很多成果，而开发深度学习算法就离不开框架。途中诞生了许多深度学习的框架，Pytorch等。而OpenMMLab就是一个由国人主导的，在国际上有影响力的计算机视觉开源算法体系。</p>
+<p><a class="link"   target="_blank" rel="noopener" href="https://github.com/TommyZihao/MMSegmentation_Tutorials" >笔记资料来源 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<h2 id="OpenMMLab介绍"><a href="#OpenMMLab介绍" class="headerlink" title="OpenMMLab介绍"></a>OpenMMLab介绍</h2><p>近年来以深度学习为代表的人工智能技术得到飞速发展，在计算机视觉、强化学习等领域产生了很多成果，而开发深度学习算法就离不开框架。途中诞生了许多深度学习的框架，Pytorch等。而OpenMMLab就是一个由国人主导的，在国际上有影响力的计算机视觉开源算法体系，其整理好的各类论文、提供的案例为学习者提供方便。</p>
 <p>OpenMMLab已经累计开源了30多个视觉算法库，2400个预训练模型，涵盖各类计算机视觉任务，全部开源。</p>
 <p>MMDetection是目标检测、实例分割和全景分割，，优点在于复现等方便，模型库将前沿的必读的论文等都整理成了学习路径等。</p>
 <p>MMYOLO目标检测算法，收录了多个版本YOLO等。</p>
 <p>还有MMRotate、MMSegmentation等多个库。以及对应部署过程的MMDeploy工具箱。</p>
-<h2 id="语义分割"><a href="#语义分割" class="headerlink" title="语义分割"></a>语义分割</h2><h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p>语义分割任务是要将图像按照物体的类别分割成不同的区域，相当于对每个像素进行分类。语义就是指类别。提取像素信息呢，十分精准。</p>
+<h2 id="语义分割"><a href="#语义分割" class="headerlink" title="语义分割"></a>语义分割</h2><h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p>语义分割任务是要将图像按照物体的类别分割成不同的区域，相当于对每个像素进行分类。语义就是指类别。提取像素信息，十分精准。</p>
 <p>语义分割是视觉解决的基础任务之一。</p>
 <p><img  
                      lazyload
@@ -419,9 +670,33 @@
                      data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230911171521.jpg"
                      
                 ></p>
-<h3 id="语义分割标注格式"><a href="#语义分割标注格式" class="headerlink" title="语义分割标注格式"></a>语义分割标注格式</h3><p>格式为和图像等尺寸的整数掩膜图像——和图像一样大小的矩阵，矩阵中的值是用于区分的0~N种类的数字。</p>
-<h3 id="语义分割应用场景"><a href="#语义分割应用场景" class="headerlink" title="语义分割应用场景"></a>语义分割应用场景</h3><p>当不存在“实例”概念，只需要每个像素分类，用语义分割（目标大片，尖细分布，轮廓不规则时），比如裂纹、农田遥感、金属金相，血管等。</p>
-<h2 id="安装MMSegmentation"><a href="#安装MMSegmentation" class="headerlink" title="安装MMSegmentation"></a>安装MMSegmentation</h2><p>基于云GPU以及notebook上的代码框架，已经成功配置完成。</p>
+<p>上面两个图很好的说明了视觉各类任务的区别所在。</p>
+<h3 id="语义分割标注格式"><a href="#语义分割标注格式" class="headerlink" title="语义分割标注格式"></a>语义分割标注格式</h3><p>格式为和图像等尺寸的整数掩膜（Int mask）图像——和图像一样大小的矩阵，矩阵中的值是用于区分像素的0~N种类的数字。</p>
+<h3 id="语义分割应用场景"><a href="#语义分割应用场景" class="headerlink" title="语义分割应用场景"></a>语义分割应用场景</h3><p>当不存在“实例”概念，只需要每个像素分类，用语义分割（目标大片，尖细分布，轮廓不规则时），比如裂纹、农田遥感、金属金相，血管等。腾讯会议的背景替换，核磁共振影像等等。</p>
+<p>如果不存在“实例”概念，只需要每个像素分类，用语义分割；</p>
+<p>如果需要区分“实例”，用实例分割脑部肿瘤、细胞核、汽车、行人、动物。</p>
+<p>如果需要目标检测预测框（计数、追踪、流量统计），用实例分割目标检测本身就是“实例级”，关键点检测可以视为特殊的“实例分割”。</p>
+<p>现在可以用AI指定替换图中的内容进行P图。</p>
+<h3 id="语义分割算法演进"><a href="#语义分割算法演进" class="headerlink" title="语义分割算法演进"></a>语义分割算法演进</h3><p>代表性的语义分割算法有2015CVRR的FCN，医疗影像中广泛使用的UNet，MMSegmentation模型库都进行了很全面的整理和复现，还有一些骨干网络。SAM算法能够很快自动将物体标注出来。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/20230914210404.jpg"
+                     
+                ></p>
+<h3 id="语义分割数据集"><a href="#语义分割数据集" class="headerlink" title="语义分割数据集"></a>语义分割数据集</h3><p><a class="link"   target="_blank" rel="noopener" href="https://paperswithcode.com/sota" >数据集榜单 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a>，，还有一些工具包和库，建议挑Star高的。ADE20K、Cityscapes等都是常用的benchmark。</p>
+<h3 id="语义分割评估指标"><a href="#语义分割评估指标" class="headerlink" title="语义分割评估指标"></a>语义分割评估指标</h3><p>和分类很像，大致如图：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/20230914211346.jpg"
+                     
+                ></p>
+<h2 id="标注自己的数据集"><a href="#标注自己的数据集" class="headerlink" title="标注自己的数据集"></a>标注自己的数据集</h2><h3 id="标注前"><a href="#标注前" class="headerlink" title="标注前"></a>标注前</h3><p>下载标注软件Labelme并配置完成。</p>
+<p><a class="link"   target="_blank" rel="noopener" href="https://github.com/wkentaro/labelme" >Labelme <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a>，大大帮助提高标注效率。</p>
+<p>在项目中安装对应版本。打开程序后，点击File取消勾选Save With Image Data这一项，否则会包含原始的源文件使得标注文件很大，再勾选上Save Automatically自动保存。</p>
+<p>用labelme打开存有所有需要标注的文件夹，即可导入图片开始标注，在edit里选择标注方式，比如点划线，将物体包囊起来，起一个名字，ctrl+s保存后，本地就会出现一个json文件。</p>
+<h3 id="标注中"><a href="#标注中" class="headerlink" title="标注中"></a>标注中</h3><h3 id="标注后"><a href="#标注后" class="headerlink" title="标注后"></a>标注后</h3><h2 id="安装MMSegmentation"><a href="#安装MMSegmentation" class="headerlink" title="安装MMSegmentation"></a>安装MMSegmentation</h2><p>基于云GPU以及notebook上的代码框架，已经成功配置完成。</p>
 
             </div>
 
@@ -434,7 +709,7 @@
         <li><strong>创建于:</strong> 2023-09-11 16:11:31</li>
         
             <li>
-                <strong>更新于:</strong> 2023-09-12 18:43:29
+                <strong>更新于:</strong> 2023-09-15 19:53:25
             </li>
         
         <li>
@@ -467,6 +742,21 @@
 
             
                 <div class="article-nav">
+                    
+                        <div class="article-prev">
+                            <a class="prev"
+                            rel="prev"
+                            href="/2023/10/02/firstmonth/"
+                            >
+                                <span class="left arrow-icon flex-center">
+                                    <i class="fa-solid fa-chevron-left"></i>
+                                </span>
+                                <span class="title flex-center">
+                                    <span class="post-nav-title-item">大三第一个月</span>
+                                    <span class="post-nav-item">上一篇</span>
+                                </span>
+                            </a>
+                        </div>
                     
                     
                         <div class="article-next">
@@ -541,7 +831,7 @@
     <div class="post-toc">
         <div class="toc-title">此页目录</div>
         <div class="page-title">OpenMMLab介绍&amp;安装MMSegmentation</div>
-        <ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OpenMMLab%E4%BB%8B%E7%BB%8D"><span class="nav-text">OpenMMLab介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%AD%E4%B9%89%E5%88%86%E5%89%B2"><span class="nav-text">语义分割</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%AD%E4%B9%89%E5%88%86%E5%89%B2%E6%A0%87%E6%B3%A8%E6%A0%BC%E5%BC%8F"><span class="nav-text">语义分割标注格式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%AD%E4%B9%89%E5%88%86%E5%89%B2%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-text">语义分割应用场景</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85MMSegmentation"><span class="nav-text">安装MMSegmentation</span></a></li></ol>
+        <ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OpenMMLab%E4%BB%8B%E7%BB%8D"><span class="nav-text">OpenMMLab介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%AD%E4%B9%89%E5%88%86%E5%89%B2"><span class="nav-text">语义分割</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%AD%E4%B9%89%E5%88%86%E5%89%B2%E6%A0%87%E6%B3%A8%E6%A0%BC%E5%BC%8F"><span class="nav-text">语义分割标注格式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%AD%E4%B9%89%E5%88%86%E5%89%B2%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-text">语义分割应用场景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%AD%E4%B9%89%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E6%BC%94%E8%BF%9B"><span class="nav-text">语义分割算法演进</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%AD%E4%B9%89%E5%88%86%E5%89%B2%E6%95%B0%E6%8D%AE%E9%9B%86"><span class="nav-text">语义分割数据集</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%AD%E4%B9%89%E5%88%86%E5%89%B2%E8%AF%84%E4%BC%B0%E6%8C%87%E6%A0%87"><span class="nav-text">语义分割评估指标</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%87%E6%B3%A8%E8%87%AA%E5%B7%B1%E7%9A%84%E6%95%B0%E6%8D%AE%E9%9B%86"><span class="nav-text">标注自己的数据集</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%87%E6%B3%A8%E5%89%8D"><span class="nav-text">标注前</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%87%E6%B3%A8%E4%B8%AD"><span class="nav-text">标注中</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%87%E6%B3%A8%E5%90%8E"><span class="nav-text">标注后</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85MMSegmentation"><span class="nav-text">安装MMSegmentation</span></a></li></ol>
 
     </div>
 </div>

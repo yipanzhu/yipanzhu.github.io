@@ -1343,12 +1343,13 @@
     <title>OpenMMLab介绍&amp;安装MMSegmentation</title>
     <url>/2023/09/11/Openmmlab/</url>
     <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>笔者参加了23年9月的组队学习任务，特此记录学习笔记，以及作为打卡链接。</p>
-<h2 id="OpenMMLab介绍"><a href="#OpenMMLab介绍" class="headerlink" title="OpenMMLab介绍"></a>OpenMMLab介绍</h2><p>近年来以深度学习为代表的人工智能技术得到飞速发展，在计算机视觉、强化学习等领域产生了很多成果，而开发深度学习算法就离不开框架。途中诞生了许多深度学习的框架，Pytorch等。而OpenMMLab就是一个由国人主导的，在国际上有影响力的计算机视觉开源算法体系。</p>
+<p><a class="link"   href="https://github.com/TommyZihao/MMSegmentation_Tutorials" >笔记资料来源 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<h2 id="OpenMMLab介绍"><a href="#OpenMMLab介绍" class="headerlink" title="OpenMMLab介绍"></a>OpenMMLab介绍</h2><p>近年来以深度学习为代表的人工智能技术得到飞速发展，在计算机视觉、强化学习等领域产生了很多成果，而开发深度学习算法就离不开框架。途中诞生了许多深度学习的框架，Pytorch等。而OpenMMLab就是一个由国人主导的，在国际上有影响力的计算机视觉开源算法体系，其整理好的各类论文、提供的案例为学习者提供方便。</p>
 <p>OpenMMLab已经累计开源了30多个视觉算法库，2400个预训练模型，涵盖各类计算机视觉任务，全部开源。</p>
 <p>MMDetection是目标检测、实例分割和全景分割，，优点在于复现等方便，模型库将前沿的必读的论文等都整理成了学习路径等。</p>
 <p>MMYOLO目标检测算法，收录了多个版本YOLO等。</p>
 <p>还有MMRotate、MMSegmentation等多个库。以及对应部署过程的MMDeploy工具箱。</p>
-<h2 id="语义分割"><a href="#语义分割" class="headerlink" title="语义分割"></a>语义分割</h2><h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p>语义分割任务是要将图像按照物体的类别分割成不同的区域，相当于对每个像素进行分类。语义就是指类别。提取像素信息呢，十分精准。</p>
+<h2 id="语义分割"><a href="#语义分割" class="headerlink" title="语义分割"></a>语义分割</h2><h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p>语义分割任务是要将图像按照物体的类别分割成不同的区域，相当于对每个像素进行分类。语义就是指类别。提取像素信息，十分精准。</p>
 <p>语义分割是视觉解决的基础任务之一。</p>
 <p><img  
                      lazyload
@@ -1362,9 +1363,33 @@
                      data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230911171521.jpg"
                      
                 ></p>
-<h3 id="语义分割标注格式"><a href="#语义分割标注格式" class="headerlink" title="语义分割标注格式"></a>语义分割标注格式</h3><p>格式为和图像等尺寸的整数掩膜图像——和图像一样大小的矩阵，矩阵中的值是用于区分的0~N种类的数字。</p>
-<h3 id="语义分割应用场景"><a href="#语义分割应用场景" class="headerlink" title="语义分割应用场景"></a>语义分割应用场景</h3><p>当不存在“实例”概念，只需要每个像素分类，用语义分割（目标大片，尖细分布，轮廓不规则时），比如裂纹、农田遥感、金属金相，血管等。</p>
-<h2 id="安装MMSegmentation"><a href="#安装MMSegmentation" class="headerlink" title="安装MMSegmentation"></a>安装MMSegmentation</h2><p>基于云GPU以及notebook上的代码框架，已经成功配置完成。</p>
+<p>上面两个图很好的说明了视觉各类任务的区别所在。</p>
+<h3 id="语义分割标注格式"><a href="#语义分割标注格式" class="headerlink" title="语义分割标注格式"></a>语义分割标注格式</h3><p>格式为和图像等尺寸的整数掩膜（Int mask）图像——和图像一样大小的矩阵，矩阵中的值是用于区分像素的0~N种类的数字。</p>
+<h3 id="语义分割应用场景"><a href="#语义分割应用场景" class="headerlink" title="语义分割应用场景"></a>语义分割应用场景</h3><p>当不存在“实例”概念，只需要每个像素分类，用语义分割（目标大片，尖细分布，轮廓不规则时），比如裂纹、农田遥感、金属金相，血管等。腾讯会议的背景替换，核磁共振影像等等。</p>
+<p>如果不存在“实例”概念，只需要每个像素分类，用语义分割；</p>
+<p>如果需要区分“实例”，用实例分割脑部肿瘤、细胞核、汽车、行人、动物。</p>
+<p>如果需要目标检测预测框（计数、追踪、流量统计），用实例分割目标检测本身就是“实例级”，关键点检测可以视为特殊的“实例分割”。</p>
+<p>现在可以用AI指定替换图中的内容进行P图。</p>
+<h3 id="语义分割算法演进"><a href="#语义分割算法演进" class="headerlink" title="语义分割算法演进"></a>语义分割算法演进</h3><p>代表性的语义分割算法有2015CVRR的FCN，医疗影像中广泛使用的UNet，MMSegmentation模型库都进行了很全面的整理和复现，还有一些骨干网络。SAM算法能够很快自动将物体标注出来。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/20230914210404.jpg"
+                     
+                ></p>
+<h3 id="语义分割数据集"><a href="#语义分割数据集" class="headerlink" title="语义分割数据集"></a>语义分割数据集</h3><p><a class="link"   href="https://paperswithcode.com/sota" >数据集榜单 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a>，，还有一些工具包和库，建议挑Star高的。ADE20K、Cityscapes等都是常用的benchmark。</p>
+<h3 id="语义分割评估指标"><a href="#语义分割评估指标" class="headerlink" title="语义分割评估指标"></a>语义分割评估指标</h3><p>和分类很像，大致如图：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/20230914211346.jpg"
+                     
+                ></p>
+<h2 id="标注自己的数据集"><a href="#标注自己的数据集" class="headerlink" title="标注自己的数据集"></a>标注自己的数据集</h2><h3 id="标注前"><a href="#标注前" class="headerlink" title="标注前"></a>标注前</h3><p>下载标注软件Labelme并配置完成。</p>
+<p><a class="link"   href="https://github.com/wkentaro/labelme" >Labelme <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a>，大大帮助提高标注效率。</p>
+<p>在项目中安装对应版本。打开程序后，点击File取消勾选Save With Image Data这一项，否则会包含原始的源文件使得标注文件很大，再勾选上Save Automatically自动保存。</p>
+<p>用labelme打开存有所有需要标注的文件夹，即可导入图片开始标注，在edit里选择标注方式，比如点划线，将物体包囊起来，起一个名字，ctrl+s保存后，本地就会出现一个json文件。</p>
+<h3 id="标注中"><a href="#标注中" class="headerlink" title="标注中"></a>标注中</h3><h3 id="标注后"><a href="#标注后" class="headerlink" title="标注后"></a>标注后</h3><h2 id="安装MMSegmentation"><a href="#安装MMSegmentation" class="headerlink" title="安装MMSegmentation"></a>安装MMSegmentation</h2><p>基于云GPU以及notebook上的代码框架，已经成功配置完成。</p>
 ]]></content>
       <tags>
         <tag>学习笔记</tag>
@@ -1456,6 +1481,44 @@
       <tags>
         <tag>STM32</tag>
         <tag>学习笔记</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>大三第一个月</title>
+    <url>/2023/10/02/firstmonth/</url>
+    <content><![CDATA[<p>23年9月4号，大三学期开始。我知道大三的重要性，所以在暑期留校多日稳住心里后，开学几天就如大一新生，踌躇满志。很明显，越是同时想抓的越多，越是难以坚持，期间lyj焦虑到失眠，我曾表示关心，同时表达自己心中的不知所措。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/0ABVR2%7BJYDQ_NF5EPBG2%60UI_tmb.jpg"
+                     
+                ></p>
+<p>开学前明确了下这个学期的任务，过六级，刷绩点，技术吃透，带带比赛。看着虽然不多，但实践起来，每一样的压力堆积起来，又会让人想要摆烂，再加上本来计划学习一下语义分割，但却因为工作室突然的联系而心烦意乱，心一燥，就没有什么事能踏实做好。国庆中秋双节放假前夕，浮躁的很，课程胡乱跟一下，然后将两个比赛报上名。放假，开摆。</p>
+<p>感冒，加上放假休息三天，终于回过些神来，仔细想想问题所在。要想刷绩点，好好学习，一定不能懒惰，这一定要做好心理预期，而不是想娱乐就娱乐。英语学习，贵在坚持，复习六级，也要复习全面，这也十分不容易。学习技术更是要花时间心思，按部就班，一蹴而就很困难。别被别人打乱了阵脚。比赛要学会任务下放与管理。主要问题在于不想放下假期里的娱乐习惯，还希望能够获得不错的收益，哪有这种美事。也就是说，当你写下一个学期的目标，它不只是一段文字，首先要看到他背后需要付出什么，接着就是承受代价并坚持。</p>
+<p>这让我想到了国庆放假前一周的周末，和wq，ss去夜爬武功山，旅行前已经做好了累成狗的准备，但真真切切去了，还是感觉难以承受，好在最后咬牙坚持下来，并且成功看到了日出。但回来两三天后，小腿的疼痛才得以缓解。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20231002101634.jpg"
+                     
+                ></p>
+<p>说到此行，简单进行一点记录。晚上十点多到达江西萍乡站，打车去游客中心坐免费大巴到达登山口，门票不急着买，接着就是爬爬爬爬，穿过云海的山路部分十分潮湿。金顶上人头攒动，难以落脚，最后在草甸上席地而坐，五点多了，等待日出。下山之痛，难以言表，不再形容。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20231002101701.jpg"
+                     
+                ></p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/JS6IFGQ%40MA53TVRO%5D7NKXYR_tmb.jpg"
+                     
+                ></p>
+<p>说回目前的困扰，首先要下定决心，努力一把，真正踏实下来，去做好规划的每一项，不要浮躁，不要心急。然后就是升学的困扰，保研率增高，绩点要再冲一把，考研也要抓，多定几个学校。但还是说慢慢来了解，别心急。要有自己的节奏。<br>记录就到这，主要想记一下开学这一月来的心路历程，相较于前两年，大三想的确实变多了，但不应该浮躁，更应该踏实走好每一步。</p>
+]]></content>
+      <tags>
+        <tag>杂记</tag>
       </tags>
   </entry>
 </search>
