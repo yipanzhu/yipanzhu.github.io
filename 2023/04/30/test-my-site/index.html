@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="Hexo Theme Redefine">
+    
+    <meta name="author" content="朱一攀">
+    <!-- preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://evan.beee.top" crossorigin>
+    
+    <!--- Seo Part-->
+    
+    <link rel="canonical" href="http://example.com/2023/04/30/test-my-site/"/>
+    <meta name="robots" content="index,follow">
+    <meta name="googlebot" content="index,follow">
+    <meta name="revisit-after" content="1 days">
+    
+        <meta name="description" content="前言笔者由于竞赛需要，最近开始学习STM32H7系列芯片，由于之前并没有学习过32，且51也是较早时期学习，对于一些概念一知半解，没有得到很好的吸收，所以在基础较差的情况下，现在搭建32的环境也是一波三折。特此记录，以供自己队友查看，自己水平有限，但其中整理的一些资料如果对其他人也能带来帮助，定会更好。 支持环境简介意法半导体基于32位ARM Cortex-M 内核的STM32系列微控制器得到了一">
+<meta property="og:type" content="article">
+<meta property="og:title" content="STM32环境搭建并实现C51与MDK共存（Hal开发）">
+<meta property="og:url" content="http://example.com/2023/04/30/test-my-site/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="前言笔者由于竞赛需要，最近开始学习STM32H7系列芯片，由于之前并没有学习过32，且51也是较早时期学习，对于一些概念一知半解，没有得到很好的吸收，所以在基础较差的情况下，现在搭建32的环境也是一波三折。特此记录，以供自己队友查看，自己水平有限，但其中整理的一些资料如果对其他人也能带来帮助，定会更好。 支持环境简介意法半导体基于32位ARM Cortex-M 内核的STM32系列微控制器得到了一">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-04-30T10:27:00.000Z">
+<meta property="article:modified_time" content="2023-04-30T10:29:30.855Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="STM32">
+<meta property="article:tag" content="环境搭建">
+<meta name="twitter:card" content="summary">
+    
+    <!--- Icon Part-->
+    <link rel="icon" type="image/png" href="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/yipanzhu_Cyberpunk_postmodern_wasteland_32039757-f150-46f5-8e25-eb9d71b1555c.png" sizes="192x192">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/yipanzhu_Cyberpunk_postmodern_wasteland_32039757-f150-46f5-8e25-eb9d71b1555c.png">
+    <meta name="theme-color" content="#367df7">
+    <link rel="shortcut icon" href="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/yipanzhu_Cyberpunk_postmodern_wasteland_32039757-f150-46f5-8e25-eb9d71b1555c.png">
+    <!--- Page Info-->
+    
+    <title>
+        
+            STM32环境搭建并实现C51与MDK共存（Hal开发） -
+        
+        ZYiPan&#39;s Blog
+    </title>
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    
+<link rel="stylesheet" href="/assets/fonts.css">
+
+    <!--- Font Part-->
+    
+    
+    
+    
+
+    <!--- Inject Part-->
+    
+    <script id="hexo-configurations">
+    let Global = window.Global || {};
+    Global.hexo_config = {"hostname":"example.com","root":"/","language":"zh-CN","path":"search.xml"};
+    Global.theme_config = {"articles":{"style":{"font_size":"16px","line_height":1.5,"image_border_radius":"14px","image_alignment":"center","image_caption":false,"link_icon":true},"word_count":{"enable":true,"count":true,"min2read":true},"author_label":{"enable":true,"auto":false,"list":[""]},"code_block":{"copy":true,"style":"mac","font":{"enable":false,"family":null,"url":null}},"toc":{"enable":true,"max_depth":3,"number":false,"expand":true,"init_open":true},"copyright":true,"lazyload":true,"recommendation":{"enable":false,"title":"推荐阅读","limit":3,"placeholder":"/images/wallhaven-wqery6-light.webp","skip_dirs":[]}},"colors":{"primary":"#367df7","secondary":null},"global":{"fonts":{"chinese":{"enable":false,"family":null,"url":null},"english":{"enable":false,"family":null,"url":null}},"content_max_width":"1000px","sidebar_width":"210px","hover":{"shadow":false,"scale":true},"scroll_progress":{"bar":false,"percentage":false},"busuanzi_counter":{"enable":false,"site_pv":false,"site_uv":false,"post_pv":false},"pjax":true,"open_graph":true},"home_banner":{"enable":true,"image":{"light":"https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/toutu.jpg","dark":"https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/toutu.jpg"},"title":"一攀の吐槽","subtitle":{"text":["错的不是我，而是这个世界。"],"hitokoto":{"enable":false,"api":"https://v1.hitokoto.cn"},"typing_speed":200,"backing_speed":80,"starting_delay":500,"backing_delay":1500,"loop":true,"smart_backspace":true},"text_color":{"light":"#d1d1b6","dark":"#d1d1b6"},"text_style":{"title_size":"2.8rem","subtitle_size":"1.5rem","line_height":1.2},"custom_font":{"enable":false,"family":null,"url":null},"social_links":{"enable":true,"links":{"github":"https://github.com/yipanzhu","instagram":null,"zhihu":"https://www.zhihu.com/people/ku-liao-jiao-ni","twitter":null,"email":"yipanzhu@outlook.com","fa-solid fa-c":"https://blog.csdn.net/weixin_63008006?spm=1000.2115.3001.5343"}}},"plugins":{"feed":{"enable":false},"aplayer":{"enable":false,"type":"fixed","audios":[{"name":null,"artist":null,"url":null,"cover":null}]},"mermaid":{"enable":false,"version":"9.3.0"}},"version":"2.1.2","navbar":{"auto_hide":false,"color":{"left":"#367df7","right":"#367df7","transparency":15},"links":{"Home":{"path":"/","icon":"fa-regular fa-house"},"Blogs":{"icon":"fa-light fa-pen-nib","submenus":{"archives":"https://yipanzhu.github.io/archives/","tags":"/tags/"}},"Github":{"path":"https://github.com/yipanzhu","icon":"fa-brands fa-github"},"About Me":{"path":"https://yipanzhu.github.io/about","icon":"fa-light fa-user"}},"search":{"enable":true,"preload":true}},"page_templates":{"friends_column":2,"tags_style":"cloud"},"home":{"sidebar":{"enable":true,"position":"left","first_item":"menu","announcement":null,"links":null},"article_date_format":"auto","categories":{"enable":true,"limit":3},"tags":{"enable":true,"limit":3}}};
+    Global.language_ago = {"second":"%s 秒前","minute":"%s 分钟前","hour":"%s 小时前","day":"%s 天前","week":"%s 周前","month":"%s 个月前","year":"%s 年前"};
+  </script>
+    
+    <!--- Fontawesome Part-->
+    
+<link rel="stylesheet" href="/fontawesome/fontawesome.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/brands.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/solid.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/regular.min.css">
+
+    
+    
+    
+    
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+<div class="progress-bar-container">
+    
+
+    
+        <span class="pjax-progress-bar"></span>
+        <span class="pjax-progress-icon">
+            <i class="fa-solid fa-circle-notch fa-spin"></i>
+        </span>
+    
+</div>
+
+
+<main class="page-container">
+
+    
+
+    <div class="main-content-container">
+
+        <div class="main-content-header">
+            <header class="navbar-container">
+    
+    <div class="navbar-content">
+        <div class="left">
+            
+                <a class="logo-image" href="/">
+                    <img src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/20230430134343-removebg-preview.png">
+                </a>
+            
+            <a class="logo-title" href="/">
+                
+                ZYiPan&#39;s Blog
+                
+            </a>
+        </div>
+
+        <div class="right">
+            <!-- PC -->
+            <div class="desktop">
+                <ul class="navbar-list">
+                    
+                        
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class="" 
+                                    href="/"  >
+                                    
+                                        
+                                            <i class="fa-regular fa-house"></i>
+                                        
+                                        首页
+                                    
+                                </a>
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class="has-dropdown" 
+                                    href="#" onClick="return false;">
+                                    
+                                        
+                                            <i class="fa-light fa-pen-nib"></i>
+                                        
+                                        博客&nbsp;<i class="fa-solid fa-chevron-down"></i>
+                                    
+                                </a>
+                                <!-- Submenu -->
+                                
+                                    <ul class="sub-menu">
+                                    
+                                        <li>
+                                        <a target="_blank" rel="noopener" href="https://yipanzhu.github.io/archives/">寻迹
+                                        </a>
+                                        </li>
+                                    
+                                        <li>
+                                        <a href="/tags/">标签
+                                        </a>
+                                        </li>
+                                    
+                                    </ul>
+                                
+                            </li>
+                    
+                        
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class="" 
+                                    target="_blank" rel="noopener" href="https://github.com/yipanzhu"  >
+                                    
+                                        
+                                            <i class="fa-brands fa-github"></i>
+                                        
+                                        GITHUB
+                                    
+                                </a>
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class="" 
+                                    target="_blank" rel="noopener" href="https://yipanzhu.github.io/about"  >
+                                    
+                                        
+                                            <i class="fa-light fa-user"></i>
+                                        
+                                        关于我
+                                    
+                                </a>
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                    
+                        <li class="navbar-item search search-popup-trigger">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </li>
+                    
+                </ul>
+            </div>
+            <!-- Mobile -->
+            <div class="mobile">
+                
+                    <div class="icon-item search search-popup-trigger"><i class="fa-solid fa-magnifying-glass"></i></div>
+                
+                <div class="icon-item navbar-bar">
+                    <div class="navbar-bar-middle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile drawer -->
+    <div class="navbar-drawer">
+        <ul class="drawer-navbar-list">
+            
+                
+                    <li class="drawer-navbar-item flex-center">
+                        <a class="" 
+                        href="/"  >
+                             
+                                
+                                    <i class="fa-regular fa-house"></i>
+                                
+                                首页
+                            
+                        </a>
+                    </li>
+                    <!-- Submenu -->
+                    
+            
+                
+                    <li class="drawer-navbar-item flex-center">
+                        <a class="has-dropdown" 
+                        href="#" onClick="return false;">
+                            
+                                
+                                    <i class="fa-light fa-pen-nib"></i>
+                                
+                                博客&nbsp;<i class="fa-solid fa-chevron-down"></i>
+                            
+                        </a>
+                    </li>
+                    <!-- Submenu -->
+                              
+                        
+                            <li class="dropdown-item flex-center">
+                                <a class="dropdown-item" target="_blank" rel="noopener" href="https://yipanzhu.github.io/archives/">寻迹</a>
+                            </li>
+                        
+                            <li class="dropdown-item flex-center">
+                                <a class="dropdown-item" href="/tags/">标签</a>
+                            </li>
+                        
+                    
+            
+                
+                    <li class="drawer-navbar-item flex-center">
+                        <a class="" 
+                        target="_blank" rel="noopener" href="https://github.com/yipanzhu"  >
+                             
+                                
+                                    <i class="fa-brands fa-github"></i>
+                                
+                                GITHUB
+                            
+                        </a>
+                    </li>
+                    <!-- Submenu -->
+                    
+            
+                
+                    <li class="drawer-navbar-item flex-center">
+                        <a class="" 
+                        target="_blank" rel="noopener" href="https://yipanzhu.github.io/about"  >
+                             
+                                
+                                    <i class="fa-light fa-user"></i>
+                                
+                                关于我
+                            
+                        </a>
+                    </li>
+                    <!-- Submenu -->
+                    
+            
+
+        </ul>
+    </div>
+
+    <div class="window-mask"></div>
+
+</header>
+
+
+        </div>
+
+        <div class="main-content-body">
+
+            
+
+            <div class="main-content">
+
+                
+                    <div class="fade-in-down-animation">
+    <div class="post-page-container">
+        <div class="article-content-container">
+
+            
+            
+                <div class="article-title">
+                    <h1 class="article-title-regular">STM32环境搭建并实现C51与MDK共存（Hal开发）</h1>
+                </div>
+            
+                
+            
+
+            
+                <div class="article-header">
+                    <div class="avatar">
+                        <img src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/mianju2023-04-30%20140959.jpg">
+                    </div>
+                    <div class="info">
+                        <div class="author">
+                            <span class="name">朱一攀</span>
+                            
+                                <span class="author-label"></span>
+                            
+                        </div>
+                        <div class="meta-info">
+                            <div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        <i class="fa-regular fa-pen-fancy"></i>&nbsp;
+        <span class="desktop">2023-04-30 18:27</span>
+        <span class="mobile">2023-04-30 18:27</span>
+        <span class="hover-info">创建</span>
+    </span>
+    
+        <span class="article-date article-meta-item">
+            <i class="fa-regular fa-wrench"></i>&nbsp;
+            <span class="desktop">2023-04-30 18:29:30</span>
+            <span class="mobile">2023-04-30 18:29</span>
+            <span class="hover-info">更新</span>
+        </span>
+    
+
+    
+    
+        <span class="article-tags article-meta-item">
+            <i class="fa-regular fa-tags"></i>&nbsp;
+            <ul>
+                
+                    <li>
+                        <a href="/tags/STM32/">STM32</a>&nbsp;
+                    </li>
+                
+                    <li>
+                        | <a href="/tags/%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">环境搭建</a>&nbsp;
+                    </li>
+                
+            </ul>
+        </span>
+    
+
+    
+    
+        <span class="article-wordcount article-meta-item">
+            <i class="fa-regular fa-typewriter"></i>&nbsp;<span>1.4k 字</span>
+        </span>
+    
+    
+        <span class="article-min2read article-meta-item">
+            <i class="fa-regular fa-clock"></i>&nbsp;<span>4 分钟</span>
+        </span>
+    
+    
+</div>
+
+                        </div>
+                    </div>
+                </div>
+            
+
+            <div class="article-content markdown-body">
+                <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>笔者由于竞赛需要，最近开始学习STM32H7系列芯片，由于之前并没有学习过32，且51也是较早时期学习，对于一些概念一知半解，没有得到很好的吸收，所以在基础较差的情况下，现在搭建32的环境也是一波三折。特此记录，以供自己队友查看，自己水平有限，但其中整理的一些资料如果对其他人也能带来帮助，定会更好。</p>
+<h2 id="支持环境简介"><a href="#支持环境简介" class="headerlink" title="支持环境简介"></a>支持环境简介</h2><p>意法半导体基于32位ARM Cortex-M 内核的STM32系列微控制器得到了一整套软件工具的支持。它整合了传统集成式开发环境IDE和主要第三方提供的C&#x2F;C++编译器和调试器，并以ST的创新工具作为补充，比如STM32CubeMX，Cube.AI等。</p>
+<p>常用的IDE就笔者目前了解到的有ST自家的STM32CubeIDE、CLion、VScode配合插件，也有用IAR的，以及今天我要详细介绍的Keil。</p>
+<p>笔者目前使用CubeMX图形化界面进行MCU选型以及引脚配置，配合Keil进行代码编译调试，笔者水平有限，且仍在学习中，如有错误还请批评指正。这篇文章也只是便于队友搭环境所记录，更偏向于各方有参考意义的资料整合。</p>
+<h2 id="CubeMX安装与配置"><a href="#CubeMX安装与配置" class="headerlink" title="CubeMX安装与配置"></a>CubeMX安装与配置</h2><p>这是官网对于自家生态下的软件介绍：</p>
+<blockquote>
+<p>STM32CubeMX是STM32Cube工具家族中的一员，从MCU&#x2F;MPU选型，引脚配置，系统时钟以及外设时钟设置，到外设参数配置，中间件参数配置，它给STM32开发者们提供了一种简单，方便，并且直观的方式来完成这些工作。所有的配置完成后，它还可以根据所选的IDE生成对应的工程和初始化C代码。</p>
+</blockquote>
+<p><a class="link"   target="_blank" rel="noopener" href="https://www.stmcu.com.cn/" >ST中文官网 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>关于CubeMX的安装，官网中就能够直接进行下载<a class="link"   target="_blank" rel="noopener" href="https://www.stmcu.com.cn/Designresource/detail/software/711627" >Windows点击下载 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>下载好安装包后，具体的安装步骤与教程可以参考以下视频，需要注意的一点就是<strong>库的安装路径不能出现中文</strong>，否则会有乱码。然后视频中下载了当时用不上的F1的pack，就没下，后面直接在MX里线上选择H7进行了下载，好在校园网这次可给力了一把，下载没出乱子。</p>
+<p><a class="link"   target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1q4411d7RX?p=2&vd_source=df63b1518b81b99bf6c584903334107e" >B站参考视频，这时候看P2 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>安装好MX和H7的包之后，新建项目，可以根据芯片来创建，也可以根据ST官方开发板来进行创建，笔者竞赛申请的开发板以及已有的开发板为以下两款：</p>
+<p><a class="link"   target="_blank" rel="noopener" href="https://www.st.com/zh/evaluation-tools/stm32h7b3i-dk.html" >STM32H7B3I-DK <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><a class="link"   target="_blank" rel="noopener" href="https://www.st.com/zh/evaluation-tools/nucleo-h7a3zi-q.html" >NUCLEO-H7A3ZI-Q <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>创建好新的项目后，就可以看到MX的图形化配置界面，十分友好。然后在选择IDE时，就到了我们需要介绍的Keil的MDK的安装了。</p>
+<h3 id="插叙"><a href="#插叙" class="headerlink" title="插叙"></a>插叙</h3><p>在本节中，笔者提到了中文路径一事，在注册微软账户时，由于笔者注册了中文名，导致C盘用户文件夹为中文，在之前搭建VScode环境时就出过问题，这次MX的路径好在可以修改，但笔者在学习51时所安装的老版本Keil也遇到过乱码问题，所以这次查了大量方法，想从根本上解决该问题，功夫不负有心人，笔者找到了下面文章中的解决方法，该方法与网上其他方法的原理相同，但操作更为简单，只需粘贴执行几行命令，即可实现一个英文文件夹的镜像链接。</p>
+<p><a class="link"   target="_blank" rel="noopener" href="https://answers.microsoft.com/zh-hans/windows/forum/all/%E4%BF%AE%E6%94%B9-windows/3c8cc397-e62a-4e3f-a113-96a342995982" >修改 Windows 用户账户文件夹路径，以改善应用程序兼容性 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<h2 id="Keil的MDK与51的共存"><a href="#Keil的MDK与51的共存" class="headerlink" title="Keil的MDK与51的共存"></a>Keil的MDK与51的共存</h2><p>笔者在之前就安装过Keil，但版本较老，这次也是卸载重装，主要参考了以下三个视频，建议都看完，就明白到底是要干个什么事了。</p>
+<p><a class="link"   target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1q4411d7RX?p=1&vd_source=df63b1518b81b99bf6c584903334107e" >只看P1 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>这个视频里没有提供安装包资源，但对于整体流程讲的较为清晰，总结为下载Keil，并装上C51实现能对51的开发，装上MDK实现对32的开发。然后为了能够免费使用，需要那啥一下，视频中那个及其古早画风的黑色界面软件。</p>
+<p><a class="link"   target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1ae4y1G7rW/?spm_id_from=333.788&vd_source=df63b1518b81b99bf6c584903334107e" >看完整个3P <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>这个视频讲得太细了，而且可以要到他的安装包资源，可以直接用他整理好的安装包进行安装搭建。按照教程就不会有错误。</p>
+<p><a class="link"   target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1Ga4y1a7Xa/?vd_source=df63b1518b81b99bf6c584903334107e" >这个视频对于理解以上所有内容都有帮助 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>这个UP很接地气，也是便于理解上面的操作。</p>
+<p>到这里应该就能完成Keil的下载和MDK等的安装了，然后笔者其实忘记了在Keil中安装32的那些开发包，在后续的将代码从MX生成用MDK打开时，通过自带的一个installer才在线上较慢速度地下载完成。可以正常使用。关于创建工程以及将代码用Keil打开，可以看这个视频地前面一段<a class="link"   target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1q4411d7RX?p=3&vd_source=df63b1518b81b99bf6c584903334107e" >可以看看P3和P2 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<hr>
+<p>至此笔者竞赛的初步需求就已经满足，关于STLink的安装，由于时间关系还未做，后续可能会补充。</p>
+<pre><code>本文由ZYiPan编写，技术有限，如有问题，请指正！
+</code></pre>
+
+            </div>
+
+            
+                <div class="post-copyright-info">
+                    <div class="article-copyright-info-container">
+    <ul>
+        <li><strong>标题:</strong> STM32环境搭建并实现C51与MDK共存（Hal开发）</li>
+        <li><strong>作者:</strong> 朱一攀</li>
+        <li><strong>创建于:</strong> 2023-04-30 18:27:00</li>
+        
+            <li>
+                <strong>更新于:</strong> 2023-04-30 18:29:30
+            </li>
+        
+        <li>
+            <strong>链接:</strong> https://redefine.ohevan.com/2023/04/30/test-my-site/
+        </li>
+        <li>
+            <strong>版权声明:</strong> 本文章采用 <a class="license" target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">CC BY-NC-SA 4.0</a> 进行许可。
+        </li>
+    </ul>
+</div>
+
+                </div>
+            
+
+            
+                <ul class="post-tags-box">
+                    
+                        <li class="tag-item">
+                            <a href="/tags/STM32/">#STM32</a>&nbsp;
+                        </li>
+                    
+                        <li class="tag-item">
+                            <a href="/tags/%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">#环境搭建</a>&nbsp;
+                        </li>
+                    
+                </ul>
+            
+
+            
+
+            
+                <div class="article-nav">
+                    
+                        <div class="article-prev">
+                            <a class="prev"
+                            rel="prev"
+                            href="/2023/05/10/STM32-1/"
+                            >
+                                <span class="left arrow-icon flex-center">
+                                    <i class="fa-solid fa-chevron-left"></i>
+                                </span>
+                                <span class="title flex-center">
+                                    <span class="post-nav-title-item">STM32学习笔记（一）——GPIO输出</span>
+                                    <span class="post-nav-item">上一篇</span>
+                                </span>
+                            </a>
+                        </div>
+                    
+                    
+                        <div class="article-next">
+                            <a class="next"
+                            rel="next"
+                            href="/2023/04/30/hello-world/"
+                            >
+                                <span class="title flex-center">
+                                    <span class="post-nav-title-item">Anaconda+PyTorch深度学习环境搭建</span>
+                                    <span class="post-nav-item">下一篇</span>
+                                </span>
+                                <span class="right arrow-icon flex-center">
+                                    <i class="fa-solid fa-chevron-right"></i>
+                                </span>
+                            </a>
+                        </div>
+                    
+                </div>
+            
+
+
+            
+                <div class="comment-container">
+                    <div class="comments-container">
+    <div id="comment-anchor"></div>
+    <div class="comment-area-title">
+        <i class="fa-solid fa-comments"></i>&nbsp;评论
+    </div>
+    
+
+        
+            
+ 
+    <div id="waline"></div>
+    <script type="module"  data-pjax>
+        import { init } from 'https://evan.beee.top/js/waline.mjs';
+
+        function loadWaline() {
+            init({
+                el: '#waline',
+                serverURL: 'https://example.example.com',
+                lang: 'zh-CN',
+                dark: 'body[class~="dark-mode"]',
+                requiredMeta: ['nick','mail'], // cannot customize by theme config, change it yourself
+            });
+        }
+
+        if ('true') {
+            const loadWalineTimeout = setTimeout(() => {
+                loadWaline();
+                clearTimeout(loadWalineTimeout);
+            }, 1000);
+        } else {
+            window.addEventListener('DOMContentLoaded', loadWaline);
+        }
+        
+    </script>
+
+
+
+        
+    
+</div>
+
+                </div>
+            
+        </div>
+
+        
+            <div class="toc-content-container">
+                <div class="post-toc-wrap">
+    <div class="post-toc">
+        <div class="toc-title">此页目录</div>
+        <div class="page-title">STM32环境搭建并实现C51与MDK共存（Hal开发）</div>
+        <ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%94%AF%E6%8C%81%E7%8E%AF%E5%A2%83%E7%AE%80%E4%BB%8B"><span class="nav-text">支持环境简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CubeMX%E5%AE%89%E8%A3%85%E4%B8%8E%E9%85%8D%E7%BD%AE"><span class="nav-text">CubeMX安装与配置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8F%92%E5%8F%99"><span class="nav-text">插叙</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Keil%E7%9A%84MDK%E4%B8%8E51%E7%9A%84%E5%85%B1%E5%AD%98"><span class="nav-text">Keil的MDK与51的共存</span></a></li></ol>
+
+    </div>
+</div>
+            </div>
+        
+    </div>
+</div>
+
+
+                
+
+            </div>
+            
+            
+
+        </div>
+
+        <div class="main-content-footer">
+            <footer class="footer">
+    <div class="info-container">
+        <div class="copyright-info">
+            &copy;
+            
+              <span>2023</span>
+              -
+            
+            2024&nbsp;&nbsp;<i class="fa-solid fa-heart fa-beat" style="--fa-animation-duration: 0.5s; color: #f54545"></i>&nbsp;&nbsp;<a href="/">朱一攀</a>
+        </div>
+        
+        <div class="theme-info info-item">
+            <span class="powered-by-container">由 <?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg version="1.1" id="圖層_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="1rem" height="1rem" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve"><path fill="#0E83CD" d="M256.4,25.8l-200,115.5L56,371.5l199.6,114.7l200-115.5l0.4-230.2L256.4,25.8z M349,354.6l-18.4,10.7l-18.6-11V275H200v79.6l-18.4,10.7l-18.6-11v-197l18.5-10.6l18.5,10.8V237h112v-79.6l18.5-10.6l18.5,10.8V354.6z"/></svg><a target="_blank" href="https://hexo.io">Hexo</a> 驱动</span>
+                <br>
+            <span class="theme-version-container">主题&nbsp;<a class="theme-version" target="_blank" href="https://github.com/EvanNotFound/hexo-theme-redefine">Redefine v2.1.2</a>
+        </div>
+        
+        
+        
+            <div id="start_div" style="display:none">
+                2023/4/19 20:44:00
+            </div>
+            <div>
+                博客已运行 <span class="odometer" id="runtime_days" ></span> 天 <span class="odometer" id="runtime_hours"></span> 小时 <span class="odometer" id="runtime_minutes"></span> 分钟 <span class="odometer" id="runtime_seconds"></span> 秒
+            </div>
+        
+        
+        
+            <script async data-pjax>
+                try {
+                    function odometer_init() {
+                    const elements = document.querySelectorAll('.odometer');
+                    elements.forEach(el => {
+                        new Odometer({
+                            el,
+                            format: '( ddd).dd',
+                            duration: 200
+                        });
+                    });
+                    }
+                    odometer_init();
+                } catch (error) {}
+            </script>
+        
+        
+        
+    </div>  
+</footer>
+        </div>
+    </div>
+
+    
+        <div class="post-tools">
+            <div class="post-tools-container">
+    <ul class="article-tools-list">
+        <!-- TOC aside toggle -->
+        
+            <li class="right-bottom-tools page-aside-toggle">
+                <i class="fa-regular fa-outdent"></i>
+            </li>
+        
+
+        <!-- go comment -->
+        
+            <li class="go-comment">
+                <i class="fa-regular fa-comments"></i>
+            </li>
+        
+    </ul>
+</div>
+
+        </div>
+    
+
+    <div class="right-side-tools-container">
+        <div class="side-tools-container">
+    <ul class="hidden-tools-list">
+        <li class="right-bottom-tools tool-font-adjust-plus flex-center">
+            <i class="fa-regular fa-magnifying-glass-plus"></i>
+        </li>
+
+        <li class="right-bottom-tools tool-font-adjust-minus flex-center">
+            <i class="fa-regular fa-magnifying-glass-minus"></i>
+        </li>
+
+        <li class="right-bottom-tools tool-expand-width flex-center">
+            <i class="fa-regular fa-expand"></i>
+        </li>
+
+        <li class="right-bottom-tools tool-dark-light-toggle flex-center">
+            <i class="fa-regular fa-moon"></i>
+        </li>
+
+        <!-- rss -->
+        
+
+        
+            <li class="right-bottom-tools tool-scroll-to-top flex-center">
+                <i class="fa-regular fa-arrow-up"></i>
+            </li>
+        
+
+        <li class="right-bottom-tools tool-scroll-to-bottom flex-center">
+            <i class="fa-regular fa-arrow-down"></i>
+        </li>
+    </ul>
+
+    <ul class="visible-tools-list">
+        <li class="right-bottom-tools toggle-tools-list flex-center">
+            <i class="fa-regular fa-cog fa-spin"></i>
+        </li>
+        
+        
+    </ul>
+</div>
+
+    </div>
+
+    <div class="image-viewer-container">
+    <img src="">
+</div>
+
+
+    
+        <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+          <span class="search-input-field-pre">
+            <i class="fa-solid fa-keyboard"></i>
+          </span>
+            <div class="search-input-container">
+                <input autocomplete="off"
+                       autocorrect="off"
+                       autocapitalize="off"
+                       placeholder="搜索..."
+                       spellcheck="false"
+                       type="search"
+                       class="search-input"
+                >
+            </div>
+            <span class="popup-btn-close">
+                <i class="fa-solid fa-times"></i>
+            </span>
+        </div>
+        <div id="search-result">
+            <div id="no-result">
+                <i class="fa-solid fa-spinner fa-spin-pulse fa-5x fa-fw"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+
+
+</main>
+
+
+
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/main.js"></script>
+
+<script src="/js/layouts/navbarShrink.js"></script>
+
+<script src="/js/tools/scrollTopBottom.js"></script>
+
+<script src="/js/tools/lightDarkSwitch.js"></script>
+
+
+
+    
+<script src="/js/tools/localSearch.js"></script>
+
+
+
+
+    
+<script src="/js/tools/codeBlock.js"></script>
+
+
+
+
+    
+<script src="/js/layouts/lazyload.js"></script>
+
+
+
+
+    
+<script src="/js/tools/runtime.js"></script>
+
+    
+<script src="/js/layouts/odometer.min.js"></script>
+
+    
+<link rel="stylesheet" href="/assets/odometer-theme-minimal.css">
+
+
+
+
+  
+<script src="/js/libs/Typed.min.js"></script>
+
+  
+<script src="/js/plugins/typed.js"></script>
+
+
+
+
+
+
+
+<div class="post-scripts pjax">
+    
+        
+<script src="/js/tools/tocToggle.js"></script>
+
+<script src="/js/libs/anime.min.js"></script>
+
+<script src="/js/layouts/toc.js"></script>
+
+<script src="/js/plugins/tabs.js"></script>
+
+    
+</div>
+
+
+    
+<script src="/js/libs/pjax.min.js"></script>
+
+<script>
+    window.addEventListener('DOMContentLoaded', () => {
+        window.pjax = new Pjax({
+            selectors: [
+                'head title',
+                '.page-container',
+                '.pjax',
+            ],
+            history: true,
+            debug: false,
+            cacheBust: false,
+            timeout: 0,
+            analytics: false,
+            currentUrlFullReload: false,
+            scrollRestoration: false,
+            // scrollTo: true,
+        });
+
+        document.addEventListener('pjax:send', () => {
+            Global.utils.pjaxProgressBarStart();
+        });
+
+        document.addEventListener('pjax:complete', () => {
+            Global.utils.pjaxProgressBarEnd();
+            window.pjax.executeScripts(document.querySelectorAll('script[data-pjax], .pjax script'));
+            Global.refresh();
+        });
+    });
+</script>
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="Hexo Theme Redefine">
+    
+    <meta name="author" content="朱一攀">
+    <!-- preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://evan.beee.top" crossorigin>
+    
+    <!--- Seo Part-->
+    
+    <link rel="canonical" href="http://example.com/2023/07/17/project/"/>
+    <meta name="robots" content="index,follow">
+    <meta name="googlebot" content="index,follow">
+    <meta name="revisit-after" content="1 days">
+    
+        <meta name="description" content="设计概述 1.1设计目的 随着电子技术的发展，电子产品中的印制板组件（PCBA）越来越复杂，在元件数目较多的PCBA生产过程中，很容易出现元件的漏焊、缺件、错件等可靠性问题，制约电子设备的生产效益。本项目基于STM32H7系列MCU设计，使用摄像头扫描生产线上的PCBA，通过视觉算法快速准确地检测元件的焊接缺陷，提供给维修人员针对性维修，从而降低焊接错误而导致的废品率，节省产能，同时减少电子垃圾，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="基于机器视觉的在线高速PCBA生产质量检测器">
+<meta property="og:url" content="http://example.com/2023/07/17/project/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="设计概述 1.1设计目的 随着电子技术的发展，电子产品中的印制板组件（PCBA）越来越复杂，在元件数目较多的PCBA生产过程中，很容易出现元件的漏焊、缺件、错件等可靠性问题，制约电子设备的生产效益。本项目基于STM32H7系列MCU设计，使用摄像头扫描生产线上的PCBA，通过视觉算法快速准确地检测元件的焊接缺陷，提供给维修人员针对性维修，从而降低焊接错误而导致的废品率，节省产能，同时减少电子垃圾，">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E5%9B%BE%E7%89%8720230717091339.jpg">
+<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E5%9B%BE%E7%89%8720230717095652.jpg">
+<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230717085917.png">
+<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230717093134.png">
+<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230717093234.png">
+<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230717093147.png">
+<meta property="article:published_time" content="2023-07-17T03:06:04.000Z">
+<meta property="article:modified_time" content="2023-07-18T12:11:32.266Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="项目">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E5%9B%BE%E7%89%8720230717091339.jpg">
+    
+    <!--- Icon Part-->
+    <link rel="icon" type="image/png" href="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/yipanzhu_Cyberpunk_postmodern_wasteland_32039757-f150-46f5-8e25-eb9d71b1555c.png" sizes="192x192">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/yipanzhu_Cyberpunk_postmodern_wasteland_32039757-f150-46f5-8e25-eb9d71b1555c.png">
+    <meta name="theme-color" content="#367df7">
+    <link rel="shortcut icon" href="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/yipanzhu_Cyberpunk_postmodern_wasteland_32039757-f150-46f5-8e25-eb9d71b1555c.png">
+    <!--- Page Info-->
+    
+    <title>
+        
+            基于机器视觉的在线高速PCBA生产质量检测器 -
+        
+        ZYiPan&#39;s Blog
+    </title>
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    
+<link rel="stylesheet" href="/assets/fonts.css">
+
+    <!--- Font Part-->
+    
+    
+    
+    
+
+    <!--- Inject Part-->
+    
+    <script id="hexo-configurations">
+    let Global = window.Global || {};
+    Global.hexo_config = {"hostname":"example.com","root":"/","language":"zh-CN","path":"search.xml"};
+    Global.theme_config = {"articles":{"style":{"font_size":"16px","line_height":1.5,"image_border_radius":"14px","image_alignment":"center","image_caption":false,"link_icon":true},"word_count":{"enable":true,"count":true,"min2read":true},"author_label":{"enable":true,"auto":false,"list":[""]},"code_block":{"copy":true,"style":"mac","font":{"enable":false,"family":null,"url":null}},"toc":{"enable":true,"max_depth":3,"number":false,"expand":true,"init_open":true},"copyright":true,"lazyload":true,"recommendation":{"enable":false,"title":"推荐阅读","limit":3,"placeholder":"/images/wallhaven-wqery6-light.webp","skip_dirs":[]}},"colors":{"primary":"#367df7","secondary":null},"global":{"fonts":{"chinese":{"enable":false,"family":null,"url":null},"english":{"enable":false,"family":null,"url":null}},"content_max_width":"1000px","sidebar_width":"210px","hover":{"shadow":false,"scale":true},"scroll_progress":{"bar":false,"percentage":false},"busuanzi_counter":{"enable":false,"site_pv":false,"site_uv":false,"post_pv":false},"pjax":true,"open_graph":true},"home_banner":{"enable":true,"image":{"light":"https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/toutu.jpg","dark":"https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/toutu.jpg"},"title":"一攀の吐槽","subtitle":{"text":["错的不是我，而是这个世界。"],"hitokoto":{"enable":false,"api":"https://v1.hitokoto.cn"},"typing_speed":200,"backing_speed":80,"starting_delay":500,"backing_delay":1500,"loop":true,"smart_backspace":true},"text_color":{"light":"#d1d1b6","dark":"#d1d1b6"},"text_style":{"title_size":"2.8rem","subtitle_size":"1.5rem","line_height":1.2},"custom_font":{"enable":false,"family":null,"url":null},"social_links":{"enable":true,"links":{"github":"https://github.com/yipanzhu","instagram":null,"zhihu":"https://www.zhihu.com/people/ku-liao-jiao-ni","twitter":null,"email":"yipanzhu@outlook.com","fa-solid fa-c":"https://blog.csdn.net/weixin_63008006?spm=1000.2115.3001.5343"}}},"plugins":{"feed":{"enable":false},"aplayer":{"enable":false,"type":"fixed","audios":[{"name":null,"artist":null,"url":null,"cover":null}]},"mermaid":{"enable":false,"version":"9.3.0"}},"version":"2.1.2","navbar":{"auto_hide":false,"color":{"left":"#367df7","right":"#367df7","transparency":15},"links":{"Home":{"path":"/","icon":"fa-regular fa-house"},"Blogs":{"icon":"fa-light fa-pen-nib","submenus":{"archives":"https://yipanzhu.github.io/archives/","tags":"/tags/"}},"Github":{"path":"https://github.com/yipanzhu","icon":"fa-brands fa-github"},"About Me":{"path":"https://yipanzhu.github.io/about","icon":"fa-light fa-user"}},"search":{"enable":true,"preload":true}},"page_templates":{"friends_column":2,"tags_style":"cloud"},"home":{"sidebar":{"enable":true,"position":"left","first_item":"menu","announcement":null,"links":null},"article_date_format":"auto","categories":{"enable":true,"limit":3},"tags":{"enable":true,"limit":3}}};
+    Global.language_ago = {"second":"%s 秒前","minute":"%s 分钟前","hour":"%s 小时前","day":"%s 天前","week":"%s 周前","month":"%s 个月前","year":"%s 年前"};
+  </script>
+    
+    <!--- Fontawesome Part-->
+    
+<link rel="stylesheet" href="/fontawesome/fontawesome.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/brands.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/solid.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/regular.min.css">
+
+    
+    
+    
+    
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+<div class="progress-bar-container">
+    
+
+    
+        <span class="pjax-progress-bar"></span>
+        <span class="pjax-progress-icon">
+            <i class="fa-solid fa-circle-notch fa-spin"></i>
+        </span>
+    
+</div>
+
+
+<main class="page-container">
+
+    
+
+    <div class="main-content-container">
+
+        <div class="main-content-header">
+            <header class="navbar-container">
+    
+    <div class="navbar-content">
+        <div class="left">
+            
+                <a class="logo-image" href="/">
+                    <img src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/20230430134343-removebg-preview.png">
+                </a>
+            
+            <a class="logo-title" href="/">
+                
+                ZYiPan&#39;s Blog
+                
+            </a>
+        </div>
+
+        <div class="right">
+            <!-- PC -->
+            <div class="desktop">
+                <ul class="navbar-list">
+                    
+                        
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class="" 
+                                    href="/"  >
+                                    
+                                        
+                                            <i class="fa-regular fa-house"></i>
+                                        
+                                        首页
+                                    
+                                </a>
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class="has-dropdown" 
+                                    href="#" onClick="return false;">
+                                    
+                                        
+                                            <i class="fa-light fa-pen-nib"></i>
+                                        
+                                        博客&nbsp;<i class="fa-solid fa-chevron-down"></i>
+                                    
+                                </a>
+                                <!-- Submenu -->
+                                
+                                    <ul class="sub-menu">
+                                    
+                                        <li>
+                                        <a target="_blank" rel="noopener" href="https://yipanzhu.github.io/archives/">寻迹
+                                        </a>
+                                        </li>
+                                    
+                                        <li>
+                                        <a href="/tags/">标签
+                                        </a>
+                                        </li>
+                                    
+                                    </ul>
+                                
+                            </li>
+                    
+                        
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class="" 
+                                    target="_blank" rel="noopener" href="https://github.com/yipanzhu"  >
+                                    
+                                        
+                                            <i class="fa-brands fa-github"></i>
+                                        
+                                        GITHUB
+                                    
+                                </a>
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class="" 
+                                    target="_blank" rel="noopener" href="https://yipanzhu.github.io/about"  >
+                                    
+                                        
+                                            <i class="fa-light fa-user"></i>
+                                        
+                                        关于我
+                                    
+                                </a>
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                    
+                        <li class="navbar-item search search-popup-trigger">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </li>
+                    
+                </ul>
+            </div>
+            <!-- Mobile -->
+            <div class="mobile">
+                
+                    <div class="icon-item search search-popup-trigger"><i class="fa-solid fa-magnifying-glass"></i></div>
+                
+                <div class="icon-item navbar-bar">
+                    <div class="navbar-bar-middle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile drawer -->
+    <div class="navbar-drawer">
+        <ul class="drawer-navbar-list">
+            
+                
+                    <li class="drawer-navbar-item flex-center">
+                        <a class="" 
+                        href="/"  >
+                             
+                                
+                                    <i class="fa-regular fa-house"></i>
+                                
+                                首页
+                            
+                        </a>
+                    </li>
+                    <!-- Submenu -->
+                    
+            
+                
+                    <li class="drawer-navbar-item flex-center">
+                        <a class="has-dropdown" 
+                        href="#" onClick="return false;">
+                            
+                                
+                                    <i class="fa-light fa-pen-nib"></i>
+                                
+                                博客&nbsp;<i class="fa-solid fa-chevron-down"></i>
+                            
+                        </a>
+                    </li>
+                    <!-- Submenu -->
+                              
+                        
+                            <li class="dropdown-item flex-center">
+                                <a class="dropdown-item" target="_blank" rel="noopener" href="https://yipanzhu.github.io/archives/">寻迹</a>
+                            </li>
+                        
+                            <li class="dropdown-item flex-center">
+                                <a class="dropdown-item" href="/tags/">标签</a>
+                            </li>
+                        
+                    
+            
+                
+                    <li class="drawer-navbar-item flex-center">
+                        <a class="" 
+                        target="_blank" rel="noopener" href="https://github.com/yipanzhu"  >
+                             
+                                
+                                    <i class="fa-brands fa-github"></i>
+                                
+                                GITHUB
+                            
+                        </a>
+                    </li>
+                    <!-- Submenu -->
+                    
+            
+                
+                    <li class="drawer-navbar-item flex-center">
+                        <a class="" 
+                        target="_blank" rel="noopener" href="https://yipanzhu.github.io/about"  >
+                             
+                                
+                                    <i class="fa-light fa-user"></i>
+                                
+                                关于我
+                            
+                        </a>
+                    </li>
+                    <!-- Submenu -->
+                    
+            
+
+        </ul>
+    </div>
+
+    <div class="window-mask"></div>
+
+</header>
+
+
+        </div>
+
+        <div class="main-content-body">
+
+            
+
+            <div class="main-content">
+
+                
+                    <div class="fade-in-down-animation">
+    <div class="post-page-container">
+        <div class="article-content-container">
+
+            
+            
+                <div class="article-title">
+                    <h1 class="article-title-regular">基于机器视觉的在线高速PCBA生产质量检测器</h1>
+                </div>
+            
+                
+            
+
+            
+                <div class="article-header">
+                    <div class="avatar">
+                        <img src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/mianju2023-04-30%20140959.jpg">
+                    </div>
+                    <div class="info">
+                        <div class="author">
+                            <span class="name">朱一攀</span>
+                            
+                                <span class="author-label"></span>
+                            
+                        </div>
+                        <div class="meta-info">
+                            <div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        <i class="fa-regular fa-pen-fancy"></i>&nbsp;
+        <span class="desktop">2023-07-17 11:06:04</span>
+        <span class="mobile">2023-07-17 11:06</span>
+        <span class="hover-info">创建</span>
+    </span>
+    
+        <span class="article-date article-meta-item">
+            <i class="fa-regular fa-wrench"></i>&nbsp;
+            <span class="desktop">2023-07-18 20:11:32</span>
+            <span class="mobile">2023-07-18 20:11</span>
+            <span class="hover-info">更新</span>
+        </span>
+    
+
+    
+    
+        <span class="article-tags article-meta-item">
+            <i class="fa-regular fa-tags"></i>&nbsp;
+            <ul>
+                
+                    <li>
+                        <a href="/tags/%E9%A1%B9%E7%9B%AE/">项目</a>&nbsp;
+                    </li>
+                
+            </ul>
+        </span>
+    
+
+    
+    
+        <span class="article-wordcount article-meta-item">
+            <i class="fa-regular fa-typewriter"></i>&nbsp;<span>2.5k 字</span>
+        </span>
+    
+    
+        <span class="article-min2read article-meta-item">
+            <i class="fa-regular fa-clock"></i>&nbsp;<span>8 分钟</span>
+        </span>
+    
+    
+</div>
+
+                        </div>
+                    </div>
+                </div>
+            
+
+            <div class="article-content markdown-body">
+                <h2 id="设计概述"><a href="#设计概述" class="headerlink" title="设计概述"></a>设计概述</h2><p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E5%9B%BE%E7%89%8720230717091339.jpg"
+                     
+                ></p>
+<p>1.1设计目的</p>
+<p>随着电子技术的发展，电子产品中的印制板组件（PCBA）越来越复杂，在元件数目较多的PCBA生产过程中，很容易出现元件的漏焊、缺件、错件等可靠性问题，制约电子设备的生产效益。本项目基于STM32H7系列MCU设计，使用摄像头扫描生产线上的PCBA，通过视觉算法快速准确地检测元件的焊接缺陷，提供给维修人员针对性维修，从而降低焊接错误而导致的废品率，节省产能，同时减少电子垃圾，实现经济、环境的双重收益，为电子产品的生产提供更好的保障。</p>
+<p>1.2应用领域</p>
+<p>本项目的应用领域主要在电子制造业，可包含各个环节，例如PCB板制造商、电子组装厂、OEM厂商等。因为PCBA加工制程比较繁琐，需经过许多复杂的工序，所以在加工过程中难免会因为人员的疏忽，或是机器故障而导致产品出现焊接质量问题，本项目可以帮助企业通过识别和定位PCB板焊接过程中的错误，提高生产效率和产品质量。</p>
+<p>1.3主要技术特点</p>
+<p>本项目设计基于STM32H7B3I-DK开发板套件，该套件用作用户应用程序开发的参考设计，本团队正是在此套件上开发了一套简洁易用的GUI，同时控制部署了YOLOv2视觉检测算法的Maix-II-Dock摄像头套件，检测生产线上PCB板元件的缺焊漏焊、极性反向等焊接问题。成功将深度学习的AI模型部署到嵌入式设备来运行，同时配合简约的UI，实现低学习成本操作，便于电子制造业工人上手使用。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E5%9B%BE%E7%89%8720230717095652.jpg"
+                     
+                ></p>
+<p>1.4关键性能指标<br>GUI操作简捷流畅，共设置10套屏幕页面进行交互，配置图片演示以及文字提示，便于操作人员直接使用触控操作，控制设备实现轻量化检测。</p>
+<p>团队为使视觉算法检测准确，多次进行数据集采集补充，训练模型时数据集达到3000余张，每项标注达6000例。也尝试更换标注方案，训练不同版本的算法模型，尝试进行移植部署处理。下图为模型的准确度曲线。</p>
+<p>团队搭配使用Maix-II-Dock摄像头模块，有特有的AI硬件加速特性，配合部署YOLO视觉算法，实现在线快速检测。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230717085917.png"
+                     
+                ></p>
+<p>1.5主要创新点</p>
+<p>(1)准确高效识别元件状态与电路板的焊接状态</p>
+<p>传统的PCBA故障检测需要人工仔细观察PCB板上密集微小的元器件，并依据一定的经验来判断是否有明显的元件损坏或焊接缺陷，效率极低。而本项目可通过摄像头利用视觉算法检测元件与电路板焊接状态是否异常，定位异常数据并进行明显的标注，便于后续的故障维修。</p>
+<p>(2)在线质量检测</p>
+<p>传统的PCB板维修过程中，维修师傅需要在检测完电路板的故障后立即开始维修，不能高效便捷地记录故障位置。对此团队拟设计云端存储功能，可以将采集到的PCB板故障数据详细编号并传输至云端保存，实现数据真实备份存储，维修方案更加灵活，同时企业可以将后台大量的数据作为改进生产工艺的参考。团队已针对此功能尝试开发网站。</p>
+<p>(3)低耗能绿色生产，从源头上减少电子垃圾产生</p>
+<p>本项目通过实现对PCB装配件生产过程中的质量检测自动化和智能化，减少了人工检测的需求，同时也能够降低产品的废品率和损失率，进而减少资源的浪费和环境污染。</p>
+<h2 id="系统组成"><a href="#系统组成" class="headerlink" title="系统组成"></a>系统组成</h2><p>2.1整体介绍</p>
+<p>下文展示了项目实拍整体图片，以及关系框图，对STM32H7B3I-DK开发板进行包装，开发板触控屏幕上运行团队设计的UI界面对摄像头模块进行控制，Maix-II-Dock摄像头模块采集传送带模块上被测电路板图像进行检测，并将结果送回开发板，方便导出，演示系统采用外接移动电源进行供电。</p>
+<p>2.2各模块介绍</p>
+<p>(1)UI展示模块</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230717093134.png"
+                     
+                ></p>
+<p>也是STM32H7B3I-DK开发套件本体，运行团队使用TouchGFX工具开发的UI触控交互界面，简单易用，便于工人使用本项目进行操作。</p>
+<p>(2)摄像头模块</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230717093234.png"
+                     
+                ></p>
+<p>使用Maix-II-Dock摄像头模块采集被测板图像信息，运用部署在模块上的YOLOv2目标检测算法实现检测焊接缺陷元件并标注。</p>
+<p>(3)传送带模块</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230717093147.png"
+                     
+                ></p>
+<p>承载被测实验电路板，辅助摄像头模块进行检测。模拟生产线环境，便于演示工人使用。</p>
+<h2 id="完成情况及性能参数"><a href="#完成情况及性能参数" class="headerlink" title="完成情况及性能参数"></a>完成情况及性能参数</h2><p>项目已实现通过主控板展示操作UI界面进行交互，控制摄像头模块进行检测。摄像头模块上部署了YOLOv2目标检测算法，实现了元件焊接错误的检测，能够使用传送带模型模拟在线检测的工作环境进行演示。团队开发者已搭建个人网站进行了上位机开发的尝试。</p>
+<p>3.1YOLO目标检测算法模型训练及部署</p>
+<p>为实现更好的质量检测结果，团队不断优化算法的数据集，目前已优化补充六代数据集并训练多个版本的模型，已实现了实时对缺陷PCBA中元件极性反向、缺焊、漏焊等问题的识别与框选。</p>
+<p>团队对多块电路板采集图像，制作数据集，先后使用了Roboflow与MaixHub注释元件信息，尝试不同的标注标签，导出数据集进行算法模型训练，下图为团队中期使用YOLOv5目标检测算法实现的初步效果。</p>
+<p>团队后期使用Maix-II-Dock摄像头模块，为便于部署，只进行错误元件标注，又多次在PyTorch框架下训练模型，并使用PyTorch自带的转换函数转变便于部署的onnx模型，最终将YOLOv2模型部署于摄像头模块，实现质量检测。</p>
+<p>3.2简洁易用的操作UI开发</p>
+<p>团队使用TouchGFX工具开发了简洁的触控UI界面，便于工人实际上手操作设备。UI包含十套交互屏幕界面设计，实现了检测控制、数据展示，开发人员展示、网站链接等功能。</p>
+<p>3.3上位机网站开发尝试</p>
+<p>团队成员为实现云存储功能，学习网站制作，已经基于Hexo框架搭建了项目博客网站，为下一步实现云存储上位机网站搭建奠定了技术基础。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>4.1可扩展之处</p>
+<p>在对缺陷电路板的数据收集与传输方面，团队正努力学习云端存储等相关技术，未来会将缺陷数据与云端连接，并通过大数据分析出工艺中的漏洞，便于企业将后台大量的数据作为改进生产工艺的参考。</p>
+<p>4.2心得体会</p>
+<p>参与本次嵌入式大赛，为团队提供了一个项目实践的机会，使各成员深刻理解到了机器学习和图像处理技术在实际工业生产中的重要价值。</p>
+<p>首先是计算机视觉技术的实用性与创新性。在PCBA生产线中，缺陷检测和问题定位是一个关键环节。传统的人工检测方式效率低下，且容易出错；而本项目则使用机器视觉和机器学习技术，实现了自动化、高效和准确的检测，大大提高了生产质量和效率，这完全符合当前工业4.0的智能制造理念。这次大赛让团队看到了学术知识与实际应用的紧密结合，也激发了团队对于技术创新的热情。</p>
+<p>其次是团队合作的重要性。在此次项目中，团队成员之间进行了有效的分工和协作。由于项目涉及到硬件开发、数据集采集与标注、模型训练与部署、系统集成等多个环节，团队需要充分利用每个成员的专长，同时互相学习，共同解决问题。这次经历让团队深刻认识到，团队合作不仅能提高工作效率，更能激发新的创意和思考。</p>
+<p>最后，持续学习与改进的必要性。在本项目开发过程中，团队遇到了许多预料之外的问题，比如光照条件变化对算法性能的影响，或是摄像头模块与开发板的适配问题。这些问题都需要团队不断学习新的知识，寻找解决方案，持续提升团队的技术水平。这次大赛让团队更加明白，只有持续学习和改进，才能在科技的浪潮中保持领先。</p>
+<p>总的来说，这次嵌入式大赛是一次宝贵的实践和学习经验。团队的“基于机器视觉的在线高速PCBA生产质量检测器”项目，不仅实现了技术的创新和实用，更让团队深感团队合作和持续学习的重要性。团队期待在未来的学习和工作中，能够继续发扬这种精神，为社会的发展做出更大的贡献。 </p>
+
+            </div>
+
+            
+                <div class="post-copyright-info">
+                    <div class="article-copyright-info-container">
+    <ul>
+        <li><strong>标题:</strong> 基于机器视觉的在线高速PCBA生产质量检测器</li>
+        <li><strong>作者:</strong> 朱一攀</li>
+        <li><strong>创建于:</strong> 2023-07-17 11:06:04</li>
+        
+            <li>
+                <strong>更新于:</strong> 2023-07-18 20:11:32
+            </li>
+        
+        <li>
+            <strong>链接:</strong> https://redefine.ohevan.com/2023/07/17/project/
+        </li>
+        <li>
+            <strong>版权声明:</strong> 本文章采用 <a class="license" target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">CC BY-NC-SA 4.0</a> 进行许可。
+        </li>
+    </ul>
+</div>
+
+                </div>
+            
+
+            
+                <ul class="post-tags-box">
+                    
+                        <li class="tag-item">
+                            <a href="/tags/%E9%A1%B9%E7%9B%AE/">#项目</a>&nbsp;
+                        </li>
+                    
+                </ul>
+            
+
+            
+
+            
+                <div class="article-nav">
+                    
+                        <div class="article-prev">
+                            <a class="prev"
+                            rel="prev"
+                            href="/2023/07/22/tool/"
+                            >
+                                <span class="left arrow-icon flex-center">
+                                    <i class="fa-solid fa-chevron-left"></i>
+                                </span>
+                                <span class="title flex-center">
+                                    <span class="post-nav-title-item">线上工具整理备用</span>
+                                    <span class="post-nav-item">上一篇</span>
+                                </span>
+                            </a>
+                        </div>
+                    
+                    
+                        <div class="article-next">
+                            <a class="next"
+                            rel="next"
+                            href="/2023/07/05/diaryone/"
+                            >
+                                <span class="title flex-center">
+                                    <span class="post-nav-title-item">2023上半年总结</span>
+                                    <span class="post-nav-item">下一篇</span>
+                                </span>
+                                <span class="right arrow-icon flex-center">
+                                    <i class="fa-solid fa-chevron-right"></i>
+                                </span>
+                            </a>
+                        </div>
+                    
+                </div>
+            
+
+
+            
+                <div class="comment-container">
+                    <div class="comments-container">
+    <div id="comment-anchor"></div>
+    <div class="comment-area-title">
+        <i class="fa-solid fa-comments"></i>&nbsp;评论
+    </div>
+    
+
+        
+            
+ 
+    <div id="waline"></div>
+    <script type="module"  data-pjax>
+        import { init } from 'https://evan.beee.top/js/waline.mjs';
+
+        function loadWaline() {
+            init({
+                el: '#waline',
+                serverURL: 'https://example.example.com',
+                lang: 'zh-CN',
+                dark: 'body[class~="dark-mode"]',
+                requiredMeta: ['nick','mail'], // cannot customize by theme config, change it yourself
+            });
+        }
+
+        if ('true') {
+            const loadWalineTimeout = setTimeout(() => {
+                loadWaline();
+                clearTimeout(loadWalineTimeout);
+            }, 1000);
+        } else {
+            window.addEventListener('DOMContentLoaded', loadWaline);
+        }
+        
+    </script>
+
+
+
+        
+    
+</div>
+
+                </div>
+            
+        </div>
+
+        
+            <div class="toc-content-container">
+                <div class="post-toc-wrap">
+    <div class="post-toc">
+        <div class="toc-title">此页目录</div>
+        <div class="page-title">基于机器视觉的在线高速PCBA生产质量检测器</div>
+        <ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BE%E8%AE%A1%E6%A6%82%E8%BF%B0"><span class="nav-text">设计概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B3%BB%E7%BB%9F%E7%BB%84%E6%88%90"><span class="nav-text">系统组成</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%8C%E6%88%90%E6%83%85%E5%86%B5%E5%8F%8A%E6%80%A7%E8%83%BD%E5%8F%82%E6%95%B0"><span class="nav-text">完成情况及性能参数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-text">总结</span></a></li></ol>
+
+    </div>
+</div>
+            </div>
+        
+    </div>
+</div>
+
+
+                
+
+            </div>
+            
+            
+
+        </div>
+
+        <div class="main-content-footer">
+            <footer class="footer">
+    <div class="info-container">
+        <div class="copyright-info">
+            &copy;
+            
+              <span>2023</span>
+              -
+            
+            2024&nbsp;&nbsp;<i class="fa-solid fa-heart fa-beat" style="--fa-animation-duration: 0.5s; color: #f54545"></i>&nbsp;&nbsp;<a href="/">朱一攀</a>
+        </div>
+        
+        <div class="theme-info info-item">
+            <span class="powered-by-container">由 <?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg version="1.1" id="圖層_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="1rem" height="1rem" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve"><path fill="#0E83CD" d="M256.4,25.8l-200,115.5L56,371.5l199.6,114.7l200-115.5l0.4-230.2L256.4,25.8z M349,354.6l-18.4,10.7l-18.6-11V275H200v79.6l-18.4,10.7l-18.6-11v-197l18.5-10.6l18.5,10.8V237h112v-79.6l18.5-10.6l18.5,10.8V354.6z"/></svg><a target="_blank" href="https://hexo.io">Hexo</a> 驱动</span>
+                <br>
+            <span class="theme-version-container">主题&nbsp;<a class="theme-version" target="_blank" href="https://github.com/EvanNotFound/hexo-theme-redefine">Redefine v2.1.2</a>
+        </div>
+        
+        
+        
+            <div id="start_div" style="display:none">
+                2023/4/19 20:44:00
+            </div>
+            <div>
+                博客已运行 <span class="odometer" id="runtime_days" ></span> 天 <span class="odometer" id="runtime_hours"></span> 小时 <span class="odometer" id="runtime_minutes"></span> 分钟 <span class="odometer" id="runtime_seconds"></span> 秒
+            </div>
+        
+        
+        
+            <script async data-pjax>
+                try {
+                    function odometer_init() {
+                    const elements = document.querySelectorAll('.odometer');
+                    elements.forEach(el => {
+                        new Odometer({
+                            el,
+                            format: '( ddd).dd',
+                            duration: 200
+                        });
+                    });
+                    }
+                    odometer_init();
+                } catch (error) {}
+            </script>
+        
+        
+        
+    </div>  
+</footer>
+        </div>
+    </div>
+
+    
+        <div class="post-tools">
+            <div class="post-tools-container">
+    <ul class="article-tools-list">
+        <!-- TOC aside toggle -->
+        
+            <li class="right-bottom-tools page-aside-toggle">
+                <i class="fa-regular fa-outdent"></i>
+            </li>
+        
+
+        <!-- go comment -->
+        
+            <li class="go-comment">
+                <i class="fa-regular fa-comments"></i>
+            </li>
+        
+    </ul>
+</div>
+
+        </div>
+    
+
+    <div class="right-side-tools-container">
+        <div class="side-tools-container">
+    <ul class="hidden-tools-list">
+        <li class="right-bottom-tools tool-font-adjust-plus flex-center">
+            <i class="fa-regular fa-magnifying-glass-plus"></i>
+        </li>
+
+        <li class="right-bottom-tools tool-font-adjust-minus flex-center">
+            <i class="fa-regular fa-magnifying-glass-minus"></i>
+        </li>
+
+        <li class="right-bottom-tools tool-expand-width flex-center">
+            <i class="fa-regular fa-expand"></i>
+        </li>
+
+        <li class="right-bottom-tools tool-dark-light-toggle flex-center">
+            <i class="fa-regular fa-moon"></i>
+        </li>
+
+        <!-- rss -->
+        
+
+        
+            <li class="right-bottom-tools tool-scroll-to-top flex-center">
+                <i class="fa-regular fa-arrow-up"></i>
+            </li>
+        
+
+        <li class="right-bottom-tools tool-scroll-to-bottom flex-center">
+            <i class="fa-regular fa-arrow-down"></i>
+        </li>
+    </ul>
+
+    <ul class="visible-tools-list">
+        <li class="right-bottom-tools toggle-tools-list flex-center">
+            <i class="fa-regular fa-cog fa-spin"></i>
+        </li>
+        
+        
+    </ul>
+</div>
+
+    </div>
+
+    <div class="image-viewer-container">
+    <img src="">
+</div>
+
+
+    
+        <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+          <span class="search-input-field-pre">
+            <i class="fa-solid fa-keyboard"></i>
+          </span>
+            <div class="search-input-container">
+                <input autocomplete="off"
+                       autocorrect="off"
+                       autocapitalize="off"
+                       placeholder="搜索..."
+                       spellcheck="false"
+                       type="search"
+                       class="search-input"
+                >
+            </div>
+            <span class="popup-btn-close">
+                <i class="fa-solid fa-times"></i>
+            </span>
+        </div>
+        <div id="search-result">
+            <div id="no-result">
+                <i class="fa-solid fa-spinner fa-spin-pulse fa-5x fa-fw"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+
+
+</main>
+
+
+
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/main.js"></script>
+
+<script src="/js/layouts/navbarShrink.js"></script>
+
+<script src="/js/tools/scrollTopBottom.js"></script>
+
+<script src="/js/tools/lightDarkSwitch.js"></script>
+
+
+
+    
+<script src="/js/tools/localSearch.js"></script>
+
+
+
+
+    
+<script src="/js/tools/codeBlock.js"></script>
+
+
+
+
+    
+<script src="/js/layouts/lazyload.js"></script>
+
+
+
+
+    
+<script src="/js/tools/runtime.js"></script>
+
+    
+<script src="/js/layouts/odometer.min.js"></script>
+
+    
+<link rel="stylesheet" href="/assets/odometer-theme-minimal.css">
+
+
+
+
+  
+<script src="/js/libs/Typed.min.js"></script>
+
+  
+<script src="/js/plugins/typed.js"></script>
+
+
+
+
+
+
+
+<div class="post-scripts pjax">
+    
+        
+<script src="/js/tools/tocToggle.js"></script>
+
+<script src="/js/libs/anime.min.js"></script>
+
+<script src="/js/layouts/toc.js"></script>
+
+<script src="/js/plugins/tabs.js"></script>
+
+    
+</div>
+
+
+    
+<script src="/js/libs/pjax.min.js"></script>
+
+<script>
+    window.addEventListener('DOMContentLoaded', () => {
+        window.pjax = new Pjax({
+            selectors: [
+                'head title',
+                '.page-container',
+                '.pjax',
+            ],
+            history: true,
+            debug: false,
+            cacheBust: false,
+            timeout: 0,
+            analytics: false,
+            currentUrlFullReload: false,
+            scrollRestoration: false,
+            // scrollTo: true,
+        });
+
+        document.addEventListener('pjax:send', () => {
+            Global.utils.pjaxProgressBarStart();
+        });
+
+        document.addEventListener('pjax:complete', () => {
+            Global.utils.pjaxProgressBarEnd();
+            window.pjax.executeScripts(document.querySelectorAll('script[data-pjax], .pjax script'));
+            Global.refresh();
+        });
+    });
+</script>
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="Hexo Theme Redefine">
+    
+    <meta name="author" content="朱一攀">
+    <!-- preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://evan.beee.top" crossorigin>
+    
+    <!--- Seo Part-->
+    
+    <link rel="canonical" href="http://example.com/2023/05/28/stm32-3-1/"/>
+    <meta name="robots" content="index,follow">
+    <meta name="googlebot" content="index,follow">
+    <meta name="revisit-after" content="1 days">
+    
+        <meta name="description" content="前言笔者终于要完成工作室的第一篇教程了，终于找到了去哪里学这个东西，开始着手写教程了，打算自己博客写的多一些，然后工作室教程适当截取便是。 STM32FLASH操作介绍STM32编程方式 在线编程通过JTAG&#x2F;SWD协议或Boot loader下载程序到微控制器，这两个协议其实就是在用STlink、JLink等下载程序，而这个BL其实就是通过串口。这两种都是比较常见的。 在程序中编程首先">
+<meta property="og:type" content="article">
+<meta property="og:title" content="STM32笔记（四）——Flash模拟EEPROM">
+<meta property="og:url" content="http://example.com/2023/05/28/STM32-3-1/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="前言笔者终于要完成工作室的第一篇教程了，终于找到了去哪里学这个东西，开始着手写教程了，打算自己博客写的多一些，然后工作室教程适当截取便是。 STM32FLASH操作介绍STM32编程方式 在线编程通过JTAG&#x2F;SWD协议或Boot loader下载程序到微控制器，这两个协议其实就是在用STlink、JLink等下载程序，而这个BL其实就是通过串口。这两种都是比较常见的。 在程序中编程首先">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%A4%A7%E5%B0%8F%E5%88%A4%E6%96%AD.jpg">
+<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B0%8F%E5%AE%B9%E9%87%8F%E5%88%86%E9%85%8D.png">
+<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E6%B5%81%E7%A8%8B.png">
+<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E9%A1%B5%E6%93%A6%E9%99%A4.png">
+<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/CR.png">
+<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-30%20094354.jpg">
+<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-30%20095853.jpg">
+<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-30%20103610.jpg">
+<meta property="og:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-30%20110525.jpg">
+<meta property="article:published_time" content="2023-05-28T07:29:54.000Z">
+<meta property="article:modified_time" content="2023-08-24T00:19:16.141Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="STM32">
+<meta property="article:tag" content="学习笔记">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%A4%A7%E5%B0%8F%E5%88%A4%E6%96%AD.jpg">
+    
+    <!--- Icon Part-->
+    <link rel="icon" type="image/png" href="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/yipanzhu_Cyberpunk_postmodern_wasteland_32039757-f150-46f5-8e25-eb9d71b1555c.png" sizes="192x192">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/yipanzhu_Cyberpunk_postmodern_wasteland_32039757-f150-46f5-8e25-eb9d71b1555c.png">
+    <meta name="theme-color" content="#367df7">
+    <link rel="shortcut icon" href="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/yipanzhu_Cyberpunk_postmodern_wasteland_32039757-f150-46f5-8e25-eb9d71b1555c.png">
+    <!--- Page Info-->
+    
+    <title>
+        
+            STM32笔记（四）——Flash模拟EEPROM -
+        
+        ZYiPan&#39;s Blog
+    </title>
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    
+<link rel="stylesheet" href="/assets/fonts.css">
+
+    <!--- Font Part-->
+    
+    
+    
+    
+
+    <!--- Inject Part-->
+    
+    <script id="hexo-configurations">
+    let Global = window.Global || {};
+    Global.hexo_config = {"hostname":"example.com","root":"/","language":"zh-CN","path":"search.xml"};
+    Global.theme_config = {"articles":{"style":{"font_size":"16px","line_height":1.5,"image_border_radius":"14px","image_alignment":"center","image_caption":false,"link_icon":true},"word_count":{"enable":true,"count":true,"min2read":true},"author_label":{"enable":true,"auto":false,"list":[""]},"code_block":{"copy":true,"style":"mac","font":{"enable":false,"family":null,"url":null}},"toc":{"enable":true,"max_depth":3,"number":false,"expand":true,"init_open":true},"copyright":true,"lazyload":true,"recommendation":{"enable":false,"title":"推荐阅读","limit":3,"placeholder":"/images/wallhaven-wqery6-light.webp","skip_dirs":[]}},"colors":{"primary":"#367df7","secondary":null},"global":{"fonts":{"chinese":{"enable":false,"family":null,"url":null},"english":{"enable":false,"family":null,"url":null}},"content_max_width":"1000px","sidebar_width":"210px","hover":{"shadow":false,"scale":true},"scroll_progress":{"bar":false,"percentage":false},"busuanzi_counter":{"enable":false,"site_pv":false,"site_uv":false,"post_pv":false},"pjax":true,"open_graph":true},"home_banner":{"enable":true,"image":{"light":"https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/toutu.jpg","dark":"https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/toutu.jpg"},"title":"一攀の吐槽","subtitle":{"text":["错的不是我，而是这个世界。"],"hitokoto":{"enable":false,"api":"https://v1.hitokoto.cn"},"typing_speed":200,"backing_speed":80,"starting_delay":500,"backing_delay":1500,"loop":true,"smart_backspace":true},"text_color":{"light":"#d1d1b6","dark":"#d1d1b6"},"text_style":{"title_size":"2.8rem","subtitle_size":"1.5rem","line_height":1.2},"custom_font":{"enable":false,"family":null,"url":null},"social_links":{"enable":true,"links":{"github":"https://github.com/yipanzhu","instagram":null,"zhihu":"https://www.zhihu.com/people/ku-liao-jiao-ni","twitter":null,"email":"yipanzhu@outlook.com","fa-solid fa-c":"https://blog.csdn.net/weixin_63008006?spm=1000.2115.3001.5343"}}},"plugins":{"feed":{"enable":false},"aplayer":{"enable":false,"type":"fixed","audios":[{"name":null,"artist":null,"url":null,"cover":null}]},"mermaid":{"enable":false,"version":"9.3.0"}},"version":"2.1.2","navbar":{"auto_hide":false,"color":{"left":"#367df7","right":"#367df7","transparency":15},"links":{"Home":{"path":"/","icon":"fa-regular fa-house"},"Blogs":{"icon":"fa-light fa-pen-nib","submenus":{"archives":"https://yipanzhu.github.io/archives/","tags":"/tags/"}},"Github":{"path":"https://github.com/yipanzhu","icon":"fa-brands fa-github"},"About Me":{"path":"https://yipanzhu.github.io/about","icon":"fa-light fa-user"}},"search":{"enable":true,"preload":true}},"page_templates":{"friends_column":2,"tags_style":"cloud"},"home":{"sidebar":{"enable":true,"position":"left","first_item":"menu","announcement":null,"links":null},"article_date_format":"auto","categories":{"enable":true,"limit":3},"tags":{"enable":true,"limit":3}}};
+    Global.language_ago = {"second":"%s 秒前","minute":"%s 分钟前","hour":"%s 小时前","day":"%s 天前","week":"%s 周前","month":"%s 个月前","year":"%s 年前"};
+  </script>
+    
+    <!--- Fontawesome Part-->
+    
+<link rel="stylesheet" href="/fontawesome/fontawesome.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/brands.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/solid.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/regular.min.css">
+
+    
+    
+    
+    
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+<div class="progress-bar-container">
+    
+
+    
+        <span class="pjax-progress-bar"></span>
+        <span class="pjax-progress-icon">
+            <i class="fa-solid fa-circle-notch fa-spin"></i>
+        </span>
+    
+</div>
+
+
+<main class="page-container">
+
+    
+
+    <div class="main-content-container">
+
+        <div class="main-content-header">
+            <header class="navbar-container">
+    
+    <div class="navbar-content">
+        <div class="left">
+            
+                <a class="logo-image" href="/">
+                    <img src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/20230430134343-removebg-preview.png">
+                </a>
+            
+            <a class="logo-title" href="/">
+                
+                ZYiPan&#39;s Blog
+                
+            </a>
+        </div>
+
+        <div class="right">
+            <!-- PC -->
+            <div class="desktop">
+                <ul class="navbar-list">
+                    
+                        
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class="" 
+                                    href="/"  >
+                                    
+                                        
+                                            <i class="fa-regular fa-house"></i>
+                                        
+                                        首页
+                                    
+                                </a>
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class="has-dropdown" 
+                                    href="#" onClick="return false;">
+                                    
+                                        
+                                            <i class="fa-light fa-pen-nib"></i>
+                                        
+                                        博客&nbsp;<i class="fa-solid fa-chevron-down"></i>
+                                    
+                                </a>
+                                <!-- Submenu -->
+                                
+                                    <ul class="sub-menu">
+                                    
+                                        <li>
+                                        <a target="_blank" rel="noopener" href="https://yipanzhu.github.io/archives/">寻迹
+                                        </a>
+                                        </li>
+                                    
+                                        <li>
+                                        <a href="/tags/">标签
+                                        </a>
+                                        </li>
+                                    
+                                    </ul>
+                                
+                            </li>
+                    
+                        
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class="" 
+                                    target="_blank" rel="noopener" href="https://github.com/yipanzhu"  >
+                                    
+                                        
+                                            <i class="fa-brands fa-github"></i>
+                                        
+                                        GITHUB
+                                    
+                                </a>
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class="" 
+                                    target="_blank" rel="noopener" href="https://yipanzhu.github.io/about"  >
+                                    
+                                        
+                                            <i class="fa-light fa-user"></i>
+                                        
+                                        关于我
+                                    
+                                </a>
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                    
+                        <li class="navbar-item search search-popup-trigger">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </li>
+                    
+                </ul>
+            </div>
+            <!-- Mobile -->
+            <div class="mobile">
+                
+                    <div class="icon-item search search-popup-trigger"><i class="fa-solid fa-magnifying-glass"></i></div>
+                
+                <div class="icon-item navbar-bar">
+                    <div class="navbar-bar-middle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile drawer -->
+    <div class="navbar-drawer">
+        <ul class="drawer-navbar-list">
+            
+                
+                    <li class="drawer-navbar-item flex-center">
+                        <a class="" 
+                        href="/"  >
+                             
+                                
+                                    <i class="fa-regular fa-house"></i>
+                                
+                                首页
+                            
+                        </a>
+                    </li>
+                    <!-- Submenu -->
+                    
+            
+                
+                    <li class="drawer-navbar-item flex-center">
+                        <a class="has-dropdown" 
+                        href="#" onClick="return false;">
+                            
+                                
+                                    <i class="fa-light fa-pen-nib"></i>
+                                
+                                博客&nbsp;<i class="fa-solid fa-chevron-down"></i>
+                            
+                        </a>
+                    </li>
+                    <!-- Submenu -->
+                              
+                        
+                            <li class="dropdown-item flex-center">
+                                <a class="dropdown-item" target="_blank" rel="noopener" href="https://yipanzhu.github.io/archives/">寻迹</a>
+                            </li>
+                        
+                            <li class="dropdown-item flex-center">
+                                <a class="dropdown-item" href="/tags/">标签</a>
+                            </li>
+                        
+                    
+            
+                
+                    <li class="drawer-navbar-item flex-center">
+                        <a class="" 
+                        target="_blank" rel="noopener" href="https://github.com/yipanzhu"  >
+                             
+                                
+                                    <i class="fa-brands fa-github"></i>
+                                
+                                GITHUB
+                            
+                        </a>
+                    </li>
+                    <!-- Submenu -->
+                    
+            
+                
+                    <li class="drawer-navbar-item flex-center">
+                        <a class="" 
+                        target="_blank" rel="noopener" href="https://yipanzhu.github.io/about"  >
+                             
+                                
+                                    <i class="fa-light fa-user"></i>
+                                
+                                关于我
+                            
+                        </a>
+                    </li>
+                    <!-- Submenu -->
+                    
+            
+
+        </ul>
+    </div>
+
+    <div class="window-mask"></div>
+
+</header>
+
+
+        </div>
+
+        <div class="main-content-body">
+
+            
+
+            <div class="main-content">
+
+                
+                    <div class="fade-in-down-animation">
+    <div class="post-page-container">
+        <div class="article-content-container">
+
+            
+            
+                <div class="article-title">
+                    <h1 class="article-title-regular">STM32笔记（四）——Flash模拟EEPROM</h1>
+                </div>
+            
+                
+            
+
+            
+                <div class="article-header">
+                    <div class="avatar">
+                        <img src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/mianju2023-04-30%20140959.jpg">
+                    </div>
+                    <div class="info">
+                        <div class="author">
+                            <span class="name">朱一攀</span>
+                            
+                                <span class="author-label"></span>
+                            
+                        </div>
+                        <div class="meta-info">
+                            <div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        <i class="fa-regular fa-pen-fancy"></i>&nbsp;
+        <span class="desktop">2023-05-28 15:29:54</span>
+        <span class="mobile">2023-05-28 15:29</span>
+        <span class="hover-info">创建</span>
+    </span>
+    
+        <span class="article-date article-meta-item">
+            <i class="fa-regular fa-wrench"></i>&nbsp;
+            <span class="desktop">2023-08-24 08:19:16</span>
+            <span class="mobile">2023-08-24 08:19</span>
+            <span class="hover-info">更新</span>
+        </span>
+    
+
+    
+    
+        <span class="article-tags article-meta-item">
+            <i class="fa-regular fa-tags"></i>&nbsp;
+            <ul>
+                
+                    <li>
+                        <a href="/tags/STM32/">STM32</a>&nbsp;
+                    </li>
+                
+                    <li>
+                        | <a href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a>&nbsp;
+                    </li>
+                
+            </ul>
+        </span>
+    
+
+    
+    
+        <span class="article-wordcount article-meta-item">
+            <i class="fa-regular fa-typewriter"></i>&nbsp;<span>2.7k 字</span>
+        </span>
+    
+    
+        <span class="article-min2read article-meta-item">
+            <i class="fa-regular fa-clock"></i>&nbsp;<span>9 分钟</span>
+        </span>
+    
+    
+</div>
+
+                        </div>
+                    </div>
+                </div>
+            
+
+            <div class="article-content markdown-body">
+                <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>笔者终于要完成工作室的第一篇教程了，终于找到了去哪里学这个东西，开始着手写教程了，打算自己博客写的多一些，然后工作室教程适当截取便是。</p>
+<h2 id="STM32FLASH操作介绍"><a href="#STM32FLASH操作介绍" class="headerlink" title="STM32FLASH操作介绍"></a>STM32FLASH操作介绍</h2><h3 id="STM32编程方式"><a href="#STM32编程方式" class="headerlink" title="STM32编程方式"></a>STM32编程方式</h3><ul>
+<li>在线编程<br>通过JTAG&#x2F;SWD协议或Boot loader下载程序到微控制器，这两个协议其实就是在用STlink、JLink等下载程序，而这个BL其实就是通过串口。这两种都是比较常见的。</li>
+<li>在程序中编程<br>首先我们通过在线编程写一个程序到微控制器，然后这个程序可以把一个数据包重新烧写到闪存存储器中。</li>
+</ul>
+<h3 id="STM32闪存模块存储器组织"><a href="#STM32闪存模块存储器组织" class="headerlink" title="STM32闪存模块存储器组织"></a>STM32闪存模块存储器组织</h3><p>不同型号的 STM32，其 FLASH 容量也有所不同，最小的只有 16K 字节，最大的则达到了1024K 字节。根据下图，可知C8T6的FLASH为64K，</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%A4%A7%E5%B0%8F%E5%88%A4%E6%96%AD.jpg"
+                      alt="大小判断"
+                ></p>
+<p>那么它作为小容量产品的闪存模块组织如下图：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B0%8F%E5%AE%B9%E9%87%8F%E5%88%86%E9%85%8D.png"
+                      alt="小容量"
+                ></p>
+<p>STM32的闪存模块由：主存储器、信息块和闪存存储器接口寄存器等三部分组成。</p>
+<p>主存储器，该部分用来存放代码和数据常数（如const类型的数据）。对于小容量产品，被划分为页0~页31，每页1K字节。上图中也可以看到主存储器的起始地址为0x0800 0000。</p>
+<p>信息块，该部分分为两个个小部分，其中启动程序代码（系统存储器），是用来存储 ST 自带的启动程序，用于串口下载代码。用户选择字节，则一般用于配置写保护、读保护等功能。</p>
+<p>闪存存储器接口寄存器，该部分用于控制闪存读写等，是整个闪存模块的控制机构。</p>
+<h3 id="FLASH闪存的读取"><a href="#FLASH闪存的读取" class="headerlink" title="FLASH闪存的读取"></a>FLASH闪存的读取</h3><p>内置闪存模块可以在通用地址空间直接寻址，任何32位数据的读操作都能访问闪存模块内容并得到相应的数据。</p>
+<p>例如，我们要从地址addr，读取一个半字（半字为 16 为，字为 32 位），可以通过如下的语句读取：</p>
+<p><code>data=*(vu16*)addr;</code></p>
+<p>将addr强制转换为vu16指针，然后取该指针所指向的地址的值，即得到了addr地址的值。类似的，将上面的 vu16 改为 vu8，即可读取指定地址的一个字节。</p>
+<h3 id="FLASH闪存的写和擦除操作"><a href="#FLASH闪存的写和擦除操作" class="headerlink" title="FLASH闪存的写和擦除操作"></a>FLASH闪存的写和擦除操作</h3><p>STM32闪存编程由FPEC（闪存编程和擦除控制器）模块处理，它包含7个32位寄存器：</p>
+<ul>
+<li>FPEC 键寄存器(FLASH_KEYR)</li>
+<li>选择字节键寄存器(FLASH_OPTKEYR)</li>
+<li>闪存控制寄存器(FLASH_CR)</li>
+<li>闪存状态寄存器(FLASH_SR)</li>
+<li>闪存地址寄存器(FLASH_AR)</li>
+<li>选择字节寄存器(FLASH_OBR)</li>
+<li>写保护寄存器(FLASH_WRPR)</li>
+</ul>
+<p>写的注意事项：</p>
+<blockquote>
+<p>STM32 复位后，FPEC 模块是被保护的，不能写入 FLASH_CR 寄存器；通过写入特定的序列到 FLASH_KEYR 寄存器可以打开 FPEC 模块（即写入 KEY1 和 KEY2），只有在写保护被解除后，我们才能操作相关寄存器，这个过程叫Unlock。</p>
+</blockquote>
+<blockquote>
+<p>KEY1和KEY2是指其中 FPEC 键寄存器总共有的三个个键值：</p>
+</blockquote>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">RDPRT 键=0X000000A5</span><br><span class="line">KEY1=0X45670123</span><br><span class="line">KEY2=0XCDEF89AB</span><br></pre></td></tr></table></figure></div>
+<blockquote>
+<p>STM32 闪存的编程每次必须写入 16 位（不可写入 8 位数据），当 FLASH_CR 寄存器的 PG 位为’1’时，在一个闪存地址写入一个半字将启动一次编程；写入任何非半字的数据，FPEC 都会产生总线错误。</p>
+</blockquote>
+<blockquote>
+<p>在编程过程中(BSY 位为’1’)，任何读写闪存的操作都会使CPU暂停，直到此次闪存编程结束，所以在写之前要保证没有其他的操作在进行。</p>
+</blockquote>
+<blockquote>
+<p>写FLASH某个地址的时候，首先要保障这个地址是被擦除了的。STM32 的 FLASH 在编程的时候，也必须要求其写入地址的 FLASH 是被擦除了的（也就是其值必须是 0XFFFF），否则无法写入，在 FLASH_SR 寄存器的 PGERR 位将得到一个警告。</p>
+</blockquote>
+<p>总结流程如下图：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E6%B5%81%E7%A8%8B.png"
+                      alt="流程"
+                ></p>
+<p>从上图可以得到闪存的编程顺序如下：</p>
+<ul>
+<li>检查 FLASH_CR 的 LOCK 是否解锁，如果没有则先解锁</li>
+<li>检查 FLASH_SR 寄存器的 BSY 位，以确认没有其他正在进行的编程操作</li>
+<li>设置 FLASH_CR 寄存器的 PG 位为’1’</li>
+<li>在指定的地址写入要编程的半字</li>
+<li>等待 BSY 位变为’0’</li>
+<li>读出写入的地址并验证数据</li>
+</ul>
+<p>前面提到，我们在 STM32 的 FLASH 编程的时候，要先判断缩写地址是否被擦除了，所以，我们有必要再介绍一下 STM32 的闪存擦除，STM32 的闪存擦除分为两种：页擦除和整片擦除。</p>
+<p>已经说过，对于小容量来说，主存分成了32个页，页擦除顾名思义就是擦除那一页的1K字节。其步骤如下图：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E9%A1%B5%E6%93%A6%E9%99%A4.png"
+                      alt="页擦除"
+                ></p>
+<p>从上图可以看出，STM32 的页擦除顺序为：</p>
+<ul>
+<li>检查 FLASH_CR 的 LOCK 是否解锁，如果没有则先解锁</li>
+<li>检查 FLASH_SR 寄存器的 BSY 位，以确认没有其他正在进行的闪存操作</li>
+<li>设置 FLASH_CR 寄存器的 PER 位为’1’</li>
+<li>用 FLASH_AR 寄存器选择要擦除的页</li>
+<li>设置 FLASH_CR 寄存器的 STRT 位为’1’</li>
+<li>等待 BSY 位变为’0’</li>
+<li>读出被擦除的页并做验证</li>
+</ul>
+<p>全片擦除则不需要选择要擦除的页，然后将 FLASH_CR 寄存器的 MER 设置为’1’，其它操作相同。</p>
+<h3 id="相关寄存器具体介绍"><a href="#相关寄存器具体介绍" class="headerlink" title="相关寄存器具体介绍"></a>相关寄存器具体介绍</h3><h4 id="FPEC-键寄存器：FLASH-KEYR"><a href="#FPEC-键寄存器：FLASH-KEYR" class="headerlink" title="FPEC 键寄存器：FLASH_KEYR"></a>FPEC 键寄存器：FLASH_KEYR</h4><p>前文的两个Unlock键值已经介绍，没有太多其他用法。下面具体介绍与程序相关的一些寄存器。</p>
+<h4 id="闪存控制寄存器（FLASH-CR）"><a href="#闪存控制寄存器（FLASH-CR）" class="headerlink" title="闪存控制寄存器（FLASH_CR）"></a>闪存控制寄存器（FLASH_CR）</h4><p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/CR.png"
+                      alt="CR"
+                ></p>
+<p>位7正是控制解锁的LOCK位，位6是开始位，当该位为’1’时将触发一次擦除操作。该位只可由软件置为’1’并在BSY变为’1’时清为’0’。位2和1，则是擦除选项，MER为全擦除，PER为页擦除。</p>
+<h4 id="内存地址寄存器（FLASH-AR）"><a href="#内存地址寄存器（FLASH-AR）" class="headerlink" title="内存地址寄存器（FLASH_AR）"></a>内存地址寄存器（FLASH_AR）</h4><p>主要用来当进行编程时选择要编程的地址，当进行页擦除时选择要擦除的页。</p>
+<h2 id="FLASH相关操作库函数"><a href="#FLASH相关操作库函数" class="headerlink" title="FLASH相关操作库函数"></a>FLASH相关操作库函数</h2><p>用到的库函数为stmflash.h&#x2F;stmflash.c</p>
+<p>前文提到，在对 FLASH 进行写操作前必须先解锁，解锁操作也就是必须在FLASH_KEYR 寄存器写入特定的序列（KEY1 和 KEY2）,固件库函数实现很简单：</p>
+<p><code>void FLASH_Unlock(void);</code></p>
+<p>同样的道理，在对 FLASH 写操作完成之后，我们要锁定 FLASH，使用的库函数是：</p>
+<p><code>void FLASH_Lock(void);</code></p>
+<p>解锁后，如果我们要进行写操作，官方固件库提供了三个FLASH写函数：</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">FLASH_Status FLASH_ProgramWord(uint32_t Address, uint32_t Data);</span><br><span class="line">FLASH_Status FLASH_ProgramHalfWord(uint32_t Address, uint16_t Data);</span><br><span class="line">FLASH_Status FLASH_ProgramOptionByteData(uint32_t Address, uint8_t Data);</span><br></pre></td></tr></table></figure></div>
+<p>其作用分别为FLASH_ProgramWord 为 32 位字写入函数，其他分别为 16 位半字写入和用户选择字节写入函数。这里需要说明，32 位字节写入实际上是写入的两次 16 位数据，写完第一次后地址+2，这与前面提到的 STM32 闪存的编程每次必须写入 16 位相呼应。</p>
+<p>写好后，如果我需要擦除，</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">FLASH_Status FLASH_ErasePage(uint32_t Page_Address);</span><br><span class="line">FLASH_Status FLASH_EraseAllPages(void);</span><br><span class="line">FLASH_Status FLASH_EraseOptionBytes(void);</span><br></pre></td></tr></table></figure></div>
+<p>第一个函数是页擦除函数，根据页地址擦除特定的页数据，第二个函数是擦除所有的页数据，第三个函数是擦除用户选择字节数据。</p>
+<p>只会写入和擦除还是不够的，还要能够获取FLASH的状态，主要用到<br>&#96;&#96;FLASH_Status FLASH_GetStatus(void);<br>返回值通过枚举类型定义：</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">typedef enum</span><br><span class="line">&#123; </span><br><span class="line"> FLASH_BUSY = 1,//忙</span><br><span class="line"> FLASH_ERROR_PG,//编程错误</span><br><span class="line"> FLASH_ERROR_WRP,//写保护错误</span><br><span class="line"> FLASH_COMPLETE,//操作完成</span><br><span class="line"> FLASH_TIMEOUT//操作超时</span><br><span class="line">&#125;FLASH_Status</span><br></pre></td></tr></table></figure></div>
+
+<p>从这里面我们可以看到 FLASH 操作的 5 个状态。</p>
+<p>在执行闪存写操作时，任何对闪存的读操作都会锁住总线，在写操作完成后读操作才能正确地进行；即在进行写或擦除操作时，不能进行代码或数据的读取操作。所以在每次操作之前，我们都要等待上一次操作完成这次操作才能开始。使用的函数是：</p>
+<p><code>FLASH_Status FLASH_WaitForLastOperation(uint32_t Timeout)</code></p>
+<p>入口参数为等待时间，返回值是 FLASH 的状态。</p>
+<h2 id="USART串口通信"><a href="#USART串口通信" class="headerlink" title="USART串口通信"></a>USART串口通信</h2><p>为了能有明显的实验现象，学习串口来进行打印。</p>
+<h3 id="串口通信基础理论"><a href="#串口通信基础理论" class="headerlink" title="串口通信基础理论"></a>串口通信基础理论</h3><p>通信是为了实现数据交流，扩展硬件系统。如果需要两个芯片交流，就需要进行通信。通信协议就是通信的一套规则。</p>
+<p>对于我们要学的UASRT，他的两个引脚为TX、RX（或者叫TXD、RXD），RX是数据接收脚，TX是数据发送脚。双工模式为全双工，指通信双方能同时进行双向通信。常用通信的特性汇总如下：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-30%20094354.jpg"
+                      alt="特性汇总"
+                ></p>
+<p>接线对应要求如图：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-30%20095853.jpg"
+                      alt="接线"
+                ></p>
+<p>注意电平问题，电平标准是数据1和数据0的表达方式，TTL电平为+3.3或+5V表示1，0V表示0。RS232电平，-3<del>-15V表示1，+3</del>+15表示0。RS485两线压差+2<del>+6V表示1，-2</del>-6V表示0。（差分信号）</p>
+<p>接下来该了解串口参数及时序了，串口中每一个字节放再一个数据帧里，每一个数据帧由起始位、数据位和停止位组成。数据位一般位8位，有时会在数据位后有一个奇偶校验位。串口的主要参数有：</p>
+<ul>
+<li>波特率：串口通信的速率，异步通信，需要约定好速率。二进制下，波特率&#x3D;比特率，说白了是规定每隔多久发送&#x2F;接收1位。</li>
+<li>起始位：固定为低电平，表示数据帧开始，产生下降沿</li>
+<li>数据位：数据帧的有效载荷，1为高电平，0为低电平，低位先行。传0F，，那应该是1111 0000。</li>
+<li>校验位：用于数据验证，由数据位得来。奇偶校验，看1的个数，补在校验位。</li>
+<li>停止位：用于数据帧间隔，固定为高，为了保障开始位产生下降沿。</li>
+</ul>
+<h3 id="USART外设简介"><a href="#USART外设简介" class="headerlink" title="USART外设简介"></a>USART外设简介</h3><p>STM32内部集成的硬件外设。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-30%20103610.jpg"
+                      alt="内容"
+                ></p>
+<p>关于USART的内部框图，我这里就不放了，可以去查数据手册，需要注意的是，引脚上，我们常用的就是TX和RX引脚，其他用于别的功能的不用在意。然后对应写和读操作的两个寄存器可以了解一下，而两个引脚相接的就是两个移位寄存器，一个用于发送，一个用于接收。了解原理即可。</p>
+<p>可简略为下图</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-30%20110525.jpg"
+                      alt="简略图"
+                ></p>
+<p>而对于数据位细节，输出较为简单，但输入则需要采样时间配合好，比较复杂，所以就有了起始位侦测，他一位会进行16次采样，保证准确性，避免噪声的影响。</p>
+<hr>
+<p>代码实现等掌握了发出来吧，连带eeprom读写。</p>
+
+            </div>
+
+            
+                <div class="post-copyright-info">
+                    <div class="article-copyright-info-container">
+    <ul>
+        <li><strong>标题:</strong> STM32笔记（四）——Flash模拟EEPROM</li>
+        <li><strong>作者:</strong> 朱一攀</li>
+        <li><strong>创建于:</strong> 2023-05-28 15:29:54</li>
+        
+            <li>
+                <strong>更新于:</strong> 2023-08-24 08:19:16
+            </li>
+        
+        <li>
+            <strong>链接:</strong> https://redefine.ohevan.com/2023/05/28/STM32-3-1/
+        </li>
+        <li>
+            <strong>版权声明:</strong> 本文章采用 <a class="license" target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">CC BY-NC-SA 4.0</a> 进行许可。
+        </li>
+    </ul>
+</div>
+
+                </div>
+            
+
+            
+                <ul class="post-tags-box">
+                    
+                        <li class="tag-item">
+                            <a href="/tags/STM32/">#STM32</a>&nbsp;
+                        </li>
+                    
+                        <li class="tag-item">
+                            <a href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">#学习笔记</a>&nbsp;
+                        </li>
+                    
+                </ul>
+            
+
+            
+
+            
+                <div class="article-nav">
+                    
+                        <div class="article-prev">
+                            <a class="prev"
+                            rel="prev"
+                            href="/2023/07/05/diaryone/"
+                            >
+                                <span class="left arrow-icon flex-center">
+                                    <i class="fa-solid fa-chevron-left"></i>
+                                </span>
+                                <span class="title flex-center">
+                                    <span class="post-nav-title-item">2023上半年总结</span>
+                                    <span class="post-nav-item">上一篇</span>
+                                </span>
+                            </a>
+                        </div>
+                    
+                    
+                        <div class="article-next">
+                            <a class="next"
+                            rel="next"
+                            href="/2023/05/14/STM32-3/"
+                            >
+                                <span class="title flex-center">
+                                    <span class="post-nav-title-item">STM32学习笔记（三）——GPIO输入代码实现</span>
+                                    <span class="post-nav-item">下一篇</span>
+                                </span>
+                                <span class="right arrow-icon flex-center">
+                                    <i class="fa-solid fa-chevron-right"></i>
+                                </span>
+                            </a>
+                        </div>
+                    
+                </div>
+            
+
+
+            
+                <div class="comment-container">
+                    <div class="comments-container">
+    <div id="comment-anchor"></div>
+    <div class="comment-area-title">
+        <i class="fa-solid fa-comments"></i>&nbsp;评论
+    </div>
+    
+
+        
+            
+ 
+    <div id="waline"></div>
+    <script type="module"  data-pjax>
+        import { init } from 'https://evan.beee.top/js/waline.mjs';
+
+        function loadWaline() {
+            init({
+                el: '#waline',
+                serverURL: 'https://example.example.com',
+                lang: 'zh-CN',
+                dark: 'body[class~="dark-mode"]',
+                requiredMeta: ['nick','mail'], // cannot customize by theme config, change it yourself
+            });
+        }
+
+        if ('true') {
+            const loadWalineTimeout = setTimeout(() => {
+                loadWaline();
+                clearTimeout(loadWalineTimeout);
+            }, 1000);
+        } else {
+            window.addEventListener('DOMContentLoaded', loadWaline);
+        }
+        
+    </script>
+
+
+
+        
+    
+</div>
+
+                </div>
+            
+        </div>
+
+        
+            <div class="toc-content-container">
+                <div class="post-toc-wrap">
+    <div class="post-toc">
+        <div class="toc-title">此页目录</div>
+        <div class="page-title">STM32笔记（四）——Flash模拟EEPROM</div>
+        <ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#STM32FLASH%E6%93%8D%E4%BD%9C%E4%BB%8B%E7%BB%8D"><span class="nav-text">STM32FLASH操作介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#STM32%E7%BC%96%E7%A8%8B%E6%96%B9%E5%BC%8F"><span class="nav-text">STM32编程方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#STM32%E9%97%AA%E5%AD%98%E6%A8%A1%E5%9D%97%E5%AD%98%E5%82%A8%E5%99%A8%E7%BB%84%E7%BB%87"><span class="nav-text">STM32闪存模块存储器组织</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#FLASH%E9%97%AA%E5%AD%98%E7%9A%84%E8%AF%BB%E5%8F%96"><span class="nav-text">FLASH闪存的读取</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#FLASH%E9%97%AA%E5%AD%98%E7%9A%84%E5%86%99%E5%92%8C%E6%93%A6%E9%99%A4%E6%93%8D%E4%BD%9C"><span class="nav-text">FLASH闪存的写和擦除操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E5%AF%84%E5%AD%98%E5%99%A8%E5%85%B7%E4%BD%93%E4%BB%8B%E7%BB%8D"><span class="nav-text">相关寄存器具体介绍</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#FLASH%E7%9B%B8%E5%85%B3%E6%93%8D%E4%BD%9C%E5%BA%93%E5%87%BD%E6%95%B0"><span class="nav-text">FLASH相关操作库函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#USART%E4%B8%B2%E5%8F%A3%E9%80%9A%E4%BF%A1"><span class="nav-text">USART串口通信</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%B2%E5%8F%A3%E9%80%9A%E4%BF%A1%E5%9F%BA%E7%A1%80%E7%90%86%E8%AE%BA"><span class="nav-text">串口通信基础理论</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#USART%E5%A4%96%E8%AE%BE%E7%AE%80%E4%BB%8B"><span class="nav-text">USART外设简介</span></a></li></ol></li></ol>
+
+    </div>
+</div>
+            </div>
+        
+    </div>
+</div>
+
+
+                
+
+            </div>
+            
+            
+
+        </div>
+
+        <div class="main-content-footer">
+            <footer class="footer">
+    <div class="info-container">
+        <div class="copyright-info">
+            &copy;
+            
+              <span>2023</span>
+              -
+            
+            2024&nbsp;&nbsp;<i class="fa-solid fa-heart fa-beat" style="--fa-animation-duration: 0.5s; color: #f54545"></i>&nbsp;&nbsp;<a href="/">朱一攀</a>
+        </div>
+        
+        <div class="theme-info info-item">
+            <span class="powered-by-container">由 <?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg version="1.1" id="圖層_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="1rem" height="1rem" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve"><path fill="#0E83CD" d="M256.4,25.8l-200,115.5L56,371.5l199.6,114.7l200-115.5l0.4-230.2L256.4,25.8z M349,354.6l-18.4,10.7l-18.6-11V275H200v79.6l-18.4,10.7l-18.6-11v-197l18.5-10.6l18.5,10.8V237h112v-79.6l18.5-10.6l18.5,10.8V354.6z"/></svg><a target="_blank" href="https://hexo.io">Hexo</a> 驱动</span>
+                <br>
+            <span class="theme-version-container">主题&nbsp;<a class="theme-version" target="_blank" href="https://github.com/EvanNotFound/hexo-theme-redefine">Redefine v2.1.2</a>
+        </div>
+        
+        
+        
+            <div id="start_div" style="display:none">
+                2023/4/19 20:44:00
+            </div>
+            <div>
+                博客已运行 <span class="odometer" id="runtime_days" ></span> 天 <span class="odometer" id="runtime_hours"></span> 小时 <span class="odometer" id="runtime_minutes"></span> 分钟 <span class="odometer" id="runtime_seconds"></span> 秒
+            </div>
+        
+        
+        
+            <script async data-pjax>
+                try {
+                    function odometer_init() {
+                    const elements = document.querySelectorAll('.odometer');
+                    elements.forEach(el => {
+                        new Odometer({
+                            el,
+                            format: '( ddd).dd',
+                            duration: 200
+                        });
+                    });
+                    }
+                    odometer_init();
+                } catch (error) {}
+            </script>
+        
+        
+        
+    </div>  
+</footer>
+        </div>
+    </div>
+
+    
+        <div class="post-tools">
+            <div class="post-tools-container">
+    <ul class="article-tools-list">
+        <!-- TOC aside toggle -->
+        
+            <li class="right-bottom-tools page-aside-toggle">
+                <i class="fa-regular fa-outdent"></i>
+            </li>
+        
+
+        <!-- go comment -->
+        
+            <li class="go-comment">
+                <i class="fa-regular fa-comments"></i>
+            </li>
+        
+    </ul>
+</div>
+
+        </div>
+    
+
+    <div class="right-side-tools-container">
+        <div class="side-tools-container">
+    <ul class="hidden-tools-list">
+        <li class="right-bottom-tools tool-font-adjust-plus flex-center">
+            <i class="fa-regular fa-magnifying-glass-plus"></i>
+        </li>
+
+        <li class="right-bottom-tools tool-font-adjust-minus flex-center">
+            <i class="fa-regular fa-magnifying-glass-minus"></i>
+        </li>
+
+        <li class="right-bottom-tools tool-expand-width flex-center">
+            <i class="fa-regular fa-expand"></i>
+        </li>
+
+        <li class="right-bottom-tools tool-dark-light-toggle flex-center">
+            <i class="fa-regular fa-moon"></i>
+        </li>
+
+        <!-- rss -->
+        
+
+        
+            <li class="right-bottom-tools tool-scroll-to-top flex-center">
+                <i class="fa-regular fa-arrow-up"></i>
+            </li>
+        
+
+        <li class="right-bottom-tools tool-scroll-to-bottom flex-center">
+            <i class="fa-regular fa-arrow-down"></i>
+        </li>
+    </ul>
+
+    <ul class="visible-tools-list">
+        <li class="right-bottom-tools toggle-tools-list flex-center">
+            <i class="fa-regular fa-cog fa-spin"></i>
+        </li>
+        
+        
+    </ul>
+</div>
+
+    </div>
+
+    <div class="image-viewer-container">
+    <img src="">
+</div>
+
+
+    
+        <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+          <span class="search-input-field-pre">
+            <i class="fa-solid fa-keyboard"></i>
+          </span>
+            <div class="search-input-container">
+                <input autocomplete="off"
+                       autocorrect="off"
+                       autocapitalize="off"
+                       placeholder="搜索..."
+                       spellcheck="false"
+                       type="search"
+                       class="search-input"
+                >
+            </div>
+            <span class="popup-btn-close">
+                <i class="fa-solid fa-times"></i>
+            </span>
+        </div>
+        <div id="search-result">
+            <div id="no-result">
+                <i class="fa-solid fa-spinner fa-spin-pulse fa-5x fa-fw"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+
+
+</main>
+
+
+
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/main.js"></script>
+
+<script src="/js/layouts/navbarShrink.js"></script>
+
+<script src="/js/tools/scrollTopBottom.js"></script>
+
+<script src="/js/tools/lightDarkSwitch.js"></script>
+
+
+
+    
+<script src="/js/tools/localSearch.js"></script>
+
+
+
+
+    
+<script src="/js/tools/codeBlock.js"></script>
+
+
+
+
+    
+<script src="/js/layouts/lazyload.js"></script>
+
+
+
+
+    
+<script src="/js/tools/runtime.js"></script>
+
+    
+<script src="/js/layouts/odometer.min.js"></script>
+
+    
+<link rel="stylesheet" href="/assets/odometer-theme-minimal.css">
+
+
+
+
+  
+<script src="/js/libs/Typed.min.js"></script>
+
+  
+<script src="/js/plugins/typed.js"></script>
+
+
+
+
+
+
+
+<div class="post-scripts pjax">
+    
+        
+<script src="/js/tools/tocToggle.js"></script>
+
+<script src="/js/libs/anime.min.js"></script>
+
+<script src="/js/layouts/toc.js"></script>
+
+<script src="/js/plugins/tabs.js"></script>
+
+    
+</div>
+
+
+    
+<script src="/js/libs/pjax.min.js"></script>
+
+<script>
+    window.addEventListener('DOMContentLoaded', () => {
+        window.pjax = new Pjax({
+            selectors: [
+                'head title',
+                '.page-container',
+                '.pjax',
+            ],
+            history: true,
+            debug: false,
+            cacheBust: false,
+            timeout: 0,
+            analytics: false,
+            currentUrlFullReload: false,
+            scrollRestoration: false,
+            // scrollTo: true,
+        });
+
+        document.addEventListener('pjax:send', () => {
+            Global.utils.pjaxProgressBarStart();
+        });
+
+        document.addEventListener('pjax:complete', () => {
+            Global.utils.pjaxProgressBarEnd();
+            window.pjax.executeScripts(document.querySelectorAll('script[data-pjax], .pjax script'));
+            Global.refresh();
+        });
+    });
+</script>
+
+
+
+
+</body>
+</html>

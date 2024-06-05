@@ -1,0 +1,1540 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>STM32学习笔记（一）——GPIO输出</title>
+    <url>/2023/05/10/STM32-1/</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>简单写一下，主要是工作室的学习任务，老师要写一篇32的标准库教程应该是，笔者因为也有在学习项目所需的Hal库之前学习一下标准库的想法，所以帮老师也写一下教程。不完全是被抓壮丁了。然后主要是自己回顾所用的笔记，这里记录的多为代码，以及简单理论，这里所发表的不是教程，所以不是很详尽。</p>
+<p>关于看的教程就是B站江科大的视频，51就是看的他的，跟机构讲解完全不是一个模式，可学。</p>
+<h2 id="GPIO输出"><a href="#GPIO输出" class="headerlink" title="GPIO输出"></a>GPIO输出</h2><p>通用输入输出口，可配置为8种输入输出模式，引脚电平0-3.3V，引脚定义带有FT的可容忍5V，输出可以控制蜂鸣器、LED等，还可以模拟通信协议，</p>
+<p>输入模式可以读取端口的高低电压，可以读取按键输入等，GPIO挂在APB2外设总线，结构为</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-10%20102936.jpg"
+                      alt="1"
+                ></p>
+<p>位结构如图</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-10%20103243.jpg"
+                      alt="2"
+                ></p>
+<p>看上图可以分析通过上拉电阻、下拉电阻来控制上、下拉输入，为了避免悬空时引脚不确定的问题而添加</p>
+<p>8种工作模式如下：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-10%20103638.jpg"
+                      alt="3"
+                ></p>
+<p>前三个输入操作都可以读取引脚高低电平，模拟输入是则是接入片上外设也就是ADC，开漏输出和推挽输出，都是数字输出高低电平，开漏高阻态，没有驱动能力，只有低电平有驱动能力，推挽输出则高低电平都有驱动能力，复用推挽输出等最后两个功能和上两个差不多，只不过可以通过片上外设进行控制。</p>
+<p>点亮与熄灭一个LED的代码如下，</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;stm32f10x.h&quot;                  // Device header</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">	GPIO_InitTypeDef GPIO_InitStructure;</span><br><span class="line">	//定义一个符合类型的结构体，自己的编译器变量只能在前面定义</span><br><span class="line">	</span><br><span class="line">	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA,ENABLE);</span><br><span class="line">	//调用RCC里面的APB2外设时钟控制函数，</span><br><span class="line">	//第一个参数选正确接口的外设，然后第二个选ENABLE即可开启时钟</span><br><span class="line">	</span><br><span class="line">	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;//推挽输出</span><br><span class="line">	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;//GPIOA的0号引脚</span><br><span class="line">	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;</span><br><span class="line">	//定义各个结构体成员的参数</span><br><span class="line">	</span><br><span class="line">	GPIO_Init(GPIOA, &amp;GPIO_InitStructure);</span><br><span class="line">	//用结构体来初始化变量，</span><br><span class="line">	//这里就是用第二个参数（结构体来定义第一个参数接口）</span><br><span class="line">	</span><br><span class="line">    //下面为GPIO的几个常用的函数</span><br><span class="line"></span><br><span class="line">	GPIO_SetBits(GPIOA,GPIO_Pin_0);  </span><br><span class="line">	//使PA0口为高电平，最小系统板接的灯灭</span><br><span class="line">	//GPIO_ResetBits(GPIOA,GPIO_Pin_0);</span><br><span class="line">	//使PA0口为低电平，最小系统板接的灯亮</span><br><span class="line">  	//GPIO_WriteBit(GPIOA,GPIO_Pin_0,Bit_RESET);  </span><br><span class="line">	//bit_reset就是清除端口值，也就是置为低电平</span><br><span class="line">	//bit_set就是设置端口值，给高电平</span><br><span class="line">  </span><br><span class="line"></span><br><span class="line">    while(1)</span><br><span class="line">	&#123;</span><br><span class="line">		</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>
+<p>然后是流水灯的电路，</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;stm32f10x.h&quot;                  // Device header</span><br><span class="line">#include &quot;Delay.h&quot;</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">	GPIO_InitTypeDef GPIO_InitStructure;</span><br><span class="line">	//定义一个符合类型的结构体，自己的编译器变量只能在前面定义</span><br><span class="line">	</span><br><span class="line">	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA,ENABLE);</span><br><span class="line">	//调用RCC里面的APB2外设时钟控制函数，</span><br><span class="line">	//第一个参数选正确接口的外设，然后第二个选ENABLE即可开启时钟</span><br><span class="line">	</span><br><span class="line">	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;//推挽输出</span><br><span class="line">	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3;  </span><br><span class="line">    //GPIOA的0号引脚，加上或的几个脚，，，这几个一或相当于，0000 0000 0000 1111，，最后四个都进行了初始化</span><br><span class="line">	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;</span><br><span class="line">	//定义各个结构体成员的参数</span><br><span class="line">	</span><br><span class="line">	GPIO_Init(GPIOA, &amp;GPIO_InitStructure);</span><br><span class="line">	//用结构体来初始化变量，</span><br><span class="line">	//这里就是用第二个参数（结构体来定义第一个参数接口）</span><br><span class="line">	</span><br><span class="line">	</span><br><span class="line">	while(1)</span><br><span class="line">	&#123;</span><br><span class="line">		GPIO_Write(GPIOA, ~0x0001); //0000 0000 0000 0001，，加~是因为是低电平点亮，所以进行取反</span><br><span class="line">		Delay_ms(500);</span><br><span class="line">		GPIO_Write(GPIOA, ~0x0002); //0000 0000 0000 0010</span><br><span class="line">		Delay_ms(500);</span><br><span class="line">		GPIO_Write(GPIOA, ~0x0004); //0000 0000 0000 0100</span><br><span class="line">		Delay_ms(500);</span><br><span class="line">		GPIO_Write(GPIOA, ~0x0008); //0000 0000 0000 1000</span><br><span class="line">		Delay_ms(500);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>
+
+<p>然后是蜂鸣器</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;stm32f10x.h&quot;                  // Device header</span><br><span class="line">#include &quot;Delay.h&quot;</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">	GPIO_InitTypeDef GPIO_InitStructure;</span><br><span class="line">	//定义一个符合类型的结构体，自己的编译器变量只能在前面定义</span><br><span class="line">	</span><br><span class="line">	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB,ENABLE);</span><br><span class="line">	//调用RCC里面的APB2外设时钟控制函数，</span><br><span class="line">	//第一个参数选正确接口的外设，然后第二个选ENABLE即可开启时钟,蜂鸣器按教程是PB12</span><br><span class="line">	</span><br><span class="line">	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;//推挽输出</span><br><span class="line">	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12;//GPIOA的12号引脚，加上或几个脚</span><br><span class="line">	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;</span><br><span class="line">	//定义各个结构体成员的参数</span><br><span class="line">	</span><br><span class="line">	GPIO_Init(GPIOB, &amp;GPIO_InitStructure);</span><br><span class="line">	//用结构体来初始化变量，</span><br><span class="line">	//这里就是用第二个参数（结构体来定义第一个参数接口）</span><br><span class="line">	</span><br><span class="line">	</span><br><span class="line">	while(1)</span><br><span class="line">	&#123;</span><br><span class="line">		GPIO_SetBits(GPIOB,GPIO_Pin_12);</span><br><span class="line">		Delay_ms(100);</span><br><span class="line">		GPIO_ResetBits(GPIOB,GPIO_Pin_12);</span><br><span class="line">		Delay_ms(100);</span><br><span class="line">		GPIO_SetBits(GPIOB,GPIO_Pin_12);</span><br><span class="line">		Delay_ms(100);</span><br><span class="line">		GPIO_ResetBits(GPIOB,GPIO_Pin_12);</span><br><span class="line">		Delay_ms(700);</span><br><span class="line">		</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>
+
+<p>以上就是用GPIO的输出控制LED以及蜂鸣器的代码部分。</p>
+<p>然后是还讲了关于调用函数的一些方法方式，</p>
+<p>第一种就是打开.h文件的最后，右键看定义，去看各个参数</p>
+<p>第二种就是看库函数使用文档，不过有的文档不好找，且找到了估计是英文</p>
+<p>第三种就是去看别人的代码，直接取用。</p>
+]]></content>
+      <tags>
+        <tag>STM32</tag>
+        <tag>学习笔记</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Hexo+Github搭建个人博客</title>
+    <url>/2023/04/30/Hexo-Github%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2/</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>博客第一篇文章就写一下创建这个网站的心路历程。</p>
+<p>最近真的十分忙哈，工作室这个学期走上正轨之后工作也是接踵而至，常常因为一些文本工作不能进行技术学习，有种时间花在刀把的感觉。</p>
+<p>但还是打算花些时间搭这个网站，因为有一个属于自己的网站什么的实在是泰裤啦，也认为矫情的自己需要一个输出的平台，网上那些优秀的个人博客好似都是搞软件的人员写的，没怎么见过电子人记录点亮一颗电容的事迹，所以我来写。</p>
+<p>其实最开始有建博客网站的想法是因为师兄的博客中有这样一篇教程，前人将路都走出来了，为什么不沿着足迹再走一遍。</p>
+<h2 id="过程记录"><a href="#过程记录" class="headerlink" title="过程记录"></a>过程记录</h2><h3 id="参考文章与工具"><a href="#参考文章与工具" class="headerlink" title="参考文章与工具"></a>参考文章与工具</h3><p>既然是根据前人的路走一遍，笔者也是小白，多数原理都不懂，所以也不做详细教程记录，只在此记录一些小白需要避坑的点，如果能满足一些像我一样的外行从零到有的折腾需求，已是更好。</p>
+<p>笔者主要参考文章如下：</p>
+<p><a class="link"   href="https://zhuanlan.zhihu.com/p/26625249" >GitHub+Hexo 搭建个人网站详细教程 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><a class="link"   href="https://blog.csdn.net/sinat_37781304/article/details/82729029" >hexo史上最全搭建教程 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>虽然两篇都是比较老的文章，但是步骤已是十分全面，未表的细节也都不会产生致命错误，跟着这两篇文章，笔者也是坎坎坷坷将网站搭出来了<a class="link"   href="https://yipanzhu.github.io/" >ZYiPan <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a>，其主要步骤就是：</p>
+<blockquote>
+<p>A首先你需要一个Github账号并建立工程来部署我们的网站</p>
+<p>B然后为了安装Hexo你需要为其搭建一个环境，为此安装Git和Node.js</p>
+<p>C将Git与Github绑定，并且安装好Git和Node.js后就可以装Hexo</p>
+<p>D推送网站并简单设置</p>
+</blockquote>
+<p>简单的流程就是上述这样，而且顺序不一定按照上面这个来，至于要不要购买个人域名看自己而定，毕竟首年10元内，第二年就不是这个价了。</p>
+<p>我选用的主题是redefine，页面有一张较大的头图，比较戳我（后续竟然没有适合放的图片也是醉了），而且开发者准备的资料真的十分齐备。</p>
+<p><a class="link"   href="https://hexo.io/themes/" >Hexo主题库 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><a class="link"   href="https://github.com/EvanNotFound/hexo-theme-redefine" >Redefine主题 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><a class="link"   href="https://redefine-docs.ohevan.com/" >Redefine官方文档 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>其他工具有<a class="link"   href="https://www.remove.bg/zh" >在线抠图 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><a class="link"   href="https://fontawesome.com/search" >引用图标 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<h3 id="含泪避坑"><a href="#含泪避坑" class="headerlink" title="含泪避坑"></a>含泪避坑</h3><p>关于安装Git我就是一路点下一步，除了改变了安装位置，其他都按照默认设置进行的安装，真的懒得自己配置环境变量了。</p>
+<p>第一个小坑就是自己眼瞎，<code>ssh-keygen -t rsa -C &quot;你的GitHub注册邮箱&quot;</code>生成密钥文件这里，注意C要大写，否则会有错误。</p>
+<p>而之后在Github中粘贴密钥时，那个文件打不开无法复制内容，这时候用命令行打开那个文件。  <a class="link"   href="https://blog.csdn.net/qq_41539778/article/details/109114980" >看这篇文章最后 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>知乎那篇文章，“为了检测我们的网站雏形”这一步看看你的Git命令行是不是在blog文件夹下使用的，然后想要预览网站对网速要求很高，但因该可以进去。（我最后还是能进去的）活用<code>hexo clean</code>命令清除缓存</p>
+<p>Markdown入门可以看我自己的文章<a class="link"   href="https://www.zhihu.com/question/47975724/answer/2833558520" >基础教程（含图床搭建） <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>关于主题参数设置真的没什么大问题，主题作者将步骤讲解得十分全面，每次改动后使用</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">hexo clean //这是清除网页缓存</span><br><span class="line">hexo g //这是生成</span><br><span class="line">hexo d //这是部署</span><br></pre></td></tr></table></figure></div>
+<p>这三条指令，注意都是在blog文件夹下打开git命令行。</p>
+<p>当想要写笔记的时候，只要在blog下打开git命令行，输入<code>hexo n &quot;name&quot;</code>即可在source文件夹中的_post里创建一个.md文档，写就是了。</p>
+<p>写好后，还是</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">hexo g</span><br><span class="line">hexo d</span><br></pre></td></tr></table></figure></div>
+<p>即可部署好文章</p>
+<h2 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h2><p>以上就是简短的一个踩坑经验，其实本篇文章更重要的意义是作为第一篇博客来帮助我查看是否有网站搭建问题，所以没什么大用。</p>
+<p>搭建个人网站主要是有自己的一个输出平台，希望自己保持这份折腾的心，一直走下去，多写多记。</p>
+<hr>
+<p>电路板三月七真的难绷，为什么都不是人了？？？</p>
+<p>米忽悠首个 AIGC 发布，画三月七还是不能让万物成精啊看来<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E3%80%8C%E6%97%A0%E5%B0%BD%E7%9A%84%E4%B8%89%E6%9C%88%E4%B8%83%E3%80%8D%E6%B4%BB%E5%8A%A8%E5%85%B1%E6%8C%AF%E7%BB%93%E6%9E%9C.png"
+                     
+                ></p>
+]]></content>
+      <tags>
+        <tag>网站搭建</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>STM32学习笔记（二）——GPIO输入及C语言复习</title>
+    <url>/2023/05/10/STM32-2/</url>
+    <content><![CDATA[<h2 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h2><p>从本节开始，笔者开始使用工作室发放的板子，根据课程举一反三，自己根据自己板子的电路开始写代码了，跟课程里的有可能不一致。</p>
+<h2 id="GPIO输入"><a href="#GPIO输入" class="headerlink" title="GPIO输入"></a>GPIO输入</h2><p>按键是常见的输入设备，按下导通，松手断开，按键抖动是因为机械式弹簧片通断物理上就会有抖动，会抖5-10ms，要过滤他，最简单的就是通过延时</p>
+<p>传感器模块原理都差不多，那些电阻的阻值会随着外界模拟量来改变，通常与定值电阻串联分压，得到模拟电压的输出，方便电路检测。还可以通过电压比较器来对模拟电压进行二值化，从而得到数字电压输出</p>
+<p>按键一般采用下接地的习惯，看高低电平需要来考虑加上拉电阻，直接接GPIO口，按下时导通到GND，这种接法就会是按下是为低电平，松开时为高电平。</p>
+<h2 id="C语言知识复习"><a href="#C语言知识复习" class="headerlink" title="C语言知识复习"></a>C语言知识复习</h2><p>数据类型比较基础，各种数据类型的关键字、位数、表示范围等，STM32中int为32位的，</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-10%20103638.jpg"
+                      alt="1"
+                ></p>
+<p>st给数据类型都起了新的名字，uint8_t表示无符号字符。</p>
+<p>C语言的宏定义：#define</p>
+<p>用来用字符来代替一个数字</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#define ABC 12345//定义时</span><br><span class="line">int a = ABC;//引用时</span><br></pre></td></tr></table></figure></div>
+<p>typedef是将一个比较长的变量名换个名字，用来给变量命名时常用。</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">typedef unsigned char uint8_t;//定义时</span><br><span class="line">uint8_t a;//引用时</span><br></pre></td></tr></table></figure></div>
+<p>C语言的结构体就比较重要，他也是一种高级点的数据类型，数组是组合数据类型，但他只能组合相同类型的数据，但结构体可以组合不同类型的变量数据。</p>
+<p>结构体的简单用法</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">    int a;//整形变量</span><br><span class="line">    a = 66;</span><br><span class="line">    int b[5];//数组</span><br><span class="line">    b[0] = 66;</span><br><span class="line">    b[1] = 77;</span><br><span class="line">    b[2] = 88;</span><br><span class="line">    struct&#123;char x;int y;float z;&#125; c;//这是结构体c的定义，要在关键字后面表明各个变量的数据类型</span><br><span class="line">    c.x = &#x27;A&#x27;;//结构体赋值语句</span><br><span class="line">    c.y = 66;</span><br><span class="line">    c.z = 1.23;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<p>每次敲struct来定义结构体太麻烦，活用typedef</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">typedef struct&#123;</span><br><span class="line">    char x;</span><br><span class="line">    int y;</span><br><span class="line">    float z;</span><br><span class="line">&#125;StructName_t;   //利用typedef一个东西，来代替定义结构体的一大堆字母</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">    int a;//整形变量</span><br><span class="line">    a = 66;</span><br><span class="line">    int b[5];//数组</span><br><span class="line">    b[0] = 66;</span><br><span class="line">    b[1] = 77;</span><br><span class="line">    b[2] = 88;</span><br><span class="line">    StructName_t c;//这是结构体c的定义，要在关键字后面表明各个变量的数据类型</span><br><span class="line">    StructName_t d;//能快速再定义一个和c差不多的结构体</span><br><span class="line"></span><br><span class="line">    c.x = &#x27;A&#x27;;//结构体赋值语句</span><br><span class="line">    c.y = 66;</span><br><span class="line">    c.z = 1.23;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>附一段数据结构的小内容:</p>
+<p>为何头指针为head的带头结点的单链表判空条件head-&gt;next&#x3D;&#x3D;null?其实一开始这里也是没啥问题的，只是突然产生了疑问点——head为头指针，储存了头结点的地址，按照我残余的一点指针知识，我总感觉不对，head只是个地址，咋可以直接head-&gt;next使用呢？其实哈，这里又产生了和我之前学结构体这个知识点一样的纠结点（嘿嘿，其实这里也算是结构体类型）——结构体</p>
+<p>总之和结构体类型一样这个指向符号“-&gt;”,这里是有特殊规定的，比如你定义个结构体类型</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct student</span><br><span class="line">&#123;</span><br><span class="line">	int age;</span><br><span class="line">	float score;</span><br><span class="line">	char name[100];</span><br><span class="line">&#125;*pstu，stu;</span><br></pre></td></tr></table></figure></div>
+<p>你用stu.age，pstu-&gt;age或者(*pstu).age都是一样可以取到成员变量的，这里的pstu它也是个地址，但是c语言就是这么规定了利用pstu-&gt;age可以取到其结构体内部成员变量（记住就好）所以不难理解为啥head这个指向头结点的指针为啥用head-&gt;next就能取到头结点结构体中的next成员变量了。</p>
+<p>如此便恍然大悟，头结点中next成员变量存储的是下一个结点的地址，若next域中为null，所以除了头结点外，链表中无其他结点，于是单链表判空。</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">版权声明：本段为CSDN博主「懵逼是一种状态」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。</span><br></pre></td></tr></table></figure></div>
+<p><a class="link"   href="https://blog.csdn.net/qq_41113008/article/details/107494929" >原文链接 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>其次是C语言的枚举，关键字为enum</p>
+<p>也是数据类型，定义一个取值受限制的整型变量，用于限制取值范围</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">typedef enum&#123;</span><br><span class="line">    MONDAY = 1,</span><br><span class="line">    TUESDAY,</span><br><span class="line">    WEDNESDAY</span><br><span class="line">&#125; week_t;  </span><br><span class="line"></span><br><span class="line">  //利用typedef一个枚举变量，来代替定义一些受限制的只能是那几个数的量</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">    Week_t week;</span><br><span class="line">    week = MONDAY;  //week = 1</span><br><span class="line">    week = TUESDAY;  //week = 2</span><br><span class="line">    week = 100;   //error</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<p>具体控制代码部分明天写了。</p>
+<hr>
+<p>今天开了组会，项目进展堪忧，教程这样写下去也不知道能不能来得及</p>
+<p>加油吧</p>
+]]></content>
+      <tags>
+        <tag>STM32</tag>
+        <tag>学习笔记</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>STM32笔记（四）——Flash模拟EEPROM</title>
+    <url>/2023/05/28/STM32-3-1/</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>笔者终于要完成工作室的第一篇教程了，终于找到了去哪里学这个东西，开始着手写教程了，打算自己博客写的多一些，然后工作室教程适当截取便是。</p>
+<h2 id="STM32FLASH操作介绍"><a href="#STM32FLASH操作介绍" class="headerlink" title="STM32FLASH操作介绍"></a>STM32FLASH操作介绍</h2><h3 id="STM32编程方式"><a href="#STM32编程方式" class="headerlink" title="STM32编程方式"></a>STM32编程方式</h3><ul>
+<li>在线编程<br>通过JTAG&#x2F;SWD协议或Boot loader下载程序到微控制器，这两个协议其实就是在用STlink、JLink等下载程序，而这个BL其实就是通过串口。这两种都是比较常见的。</li>
+<li>在程序中编程<br>首先我们通过在线编程写一个程序到微控制器，然后这个程序可以把一个数据包重新烧写到闪存存储器中。</li>
+</ul>
+<h3 id="STM32闪存模块存储器组织"><a href="#STM32闪存模块存储器组织" class="headerlink" title="STM32闪存模块存储器组织"></a>STM32闪存模块存储器组织</h3><p>不同型号的 STM32，其 FLASH 容量也有所不同，最小的只有 16K 字节，最大的则达到了1024K 字节。根据下图，可知C8T6的FLASH为64K，</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%A4%A7%E5%B0%8F%E5%88%A4%E6%96%AD.jpg"
+                      alt="大小判断"
+                ></p>
+<p>那么它作为小容量产品的闪存模块组织如下图：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B0%8F%E5%AE%B9%E9%87%8F%E5%88%86%E9%85%8D.png"
+                      alt="小容量"
+                ></p>
+<p>STM32的闪存模块由：主存储器、信息块和闪存存储器接口寄存器等三部分组成。</p>
+<p>主存储器，该部分用来存放代码和数据常数（如const类型的数据）。对于小容量产品，被划分为页0~页31，每页1K字节。上图中也可以看到主存储器的起始地址为0x0800 0000。</p>
+<p>信息块，该部分分为两个个小部分，其中启动程序代码（系统存储器），是用来存储 ST 自带的启动程序，用于串口下载代码。用户选择字节，则一般用于配置写保护、读保护等功能。</p>
+<p>闪存存储器接口寄存器，该部分用于控制闪存读写等，是整个闪存模块的控制机构。</p>
+<h3 id="FLASH闪存的读取"><a href="#FLASH闪存的读取" class="headerlink" title="FLASH闪存的读取"></a>FLASH闪存的读取</h3><p>内置闪存模块可以在通用地址空间直接寻址，任何32位数据的读操作都能访问闪存模块内容并得到相应的数据。</p>
+<p>例如，我们要从地址addr，读取一个半字（半字为 16 为，字为 32 位），可以通过如下的语句读取：</p>
+<p><code>data=*(vu16*)addr;</code></p>
+<p>将addr强制转换为vu16指针，然后取该指针所指向的地址的值，即得到了addr地址的值。类似的，将上面的 vu16 改为 vu8，即可读取指定地址的一个字节。</p>
+<h3 id="FLASH闪存的写和擦除操作"><a href="#FLASH闪存的写和擦除操作" class="headerlink" title="FLASH闪存的写和擦除操作"></a>FLASH闪存的写和擦除操作</h3><p>STM32闪存编程由FPEC（闪存编程和擦除控制器）模块处理，它包含7个32位寄存器：</p>
+<ul>
+<li>FPEC 键寄存器(FLASH_KEYR)</li>
+<li>选择字节键寄存器(FLASH_OPTKEYR)</li>
+<li>闪存控制寄存器(FLASH_CR)</li>
+<li>闪存状态寄存器(FLASH_SR)</li>
+<li>闪存地址寄存器(FLASH_AR)</li>
+<li>选择字节寄存器(FLASH_OBR)</li>
+<li>写保护寄存器(FLASH_WRPR)</li>
+</ul>
+<p>写的注意事项：</p>
+<blockquote>
+<p>STM32 复位后，FPEC 模块是被保护的，不能写入 FLASH_CR 寄存器；通过写入特定的序列到 FLASH_KEYR 寄存器可以打开 FPEC 模块（即写入 KEY1 和 KEY2），只有在写保护被解除后，我们才能操作相关寄存器，这个过程叫Unlock。</p>
+</blockquote>
+<blockquote>
+<p>KEY1和KEY2是指其中 FPEC 键寄存器总共有的三个个键值：</p>
+</blockquote>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">RDPRT 键=0X000000A5</span><br><span class="line">KEY1=0X45670123</span><br><span class="line">KEY2=0XCDEF89AB</span><br></pre></td></tr></table></figure></div>
+<blockquote>
+<p>STM32 闪存的编程每次必须写入 16 位（不可写入 8 位数据），当 FLASH_CR 寄存器的 PG 位为’1’时，在一个闪存地址写入一个半字将启动一次编程；写入任何非半字的数据，FPEC 都会产生总线错误。</p>
+</blockquote>
+<blockquote>
+<p>在编程过程中(BSY 位为’1’)，任何读写闪存的操作都会使CPU暂停，直到此次闪存编程结束，所以在写之前要保证没有其他的操作在进行。</p>
+</blockquote>
+<blockquote>
+<p>写FLASH某个地址的时候，首先要保障这个地址是被擦除了的。STM32 的 FLASH 在编程的时候，也必须要求其写入地址的 FLASH 是被擦除了的（也就是其值必须是 0XFFFF），否则无法写入，在 FLASH_SR 寄存器的 PGERR 位将得到一个警告。</p>
+</blockquote>
+<p>总结流程如下图：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E6%B5%81%E7%A8%8B.png"
+                      alt="流程"
+                ></p>
+<p>从上图可以得到闪存的编程顺序如下：</p>
+<ul>
+<li>检查 FLASH_CR 的 LOCK 是否解锁，如果没有则先解锁</li>
+<li>检查 FLASH_SR 寄存器的 BSY 位，以确认没有其他正在进行的编程操作</li>
+<li>设置 FLASH_CR 寄存器的 PG 位为’1’</li>
+<li>在指定的地址写入要编程的半字</li>
+<li>等待 BSY 位变为’0’</li>
+<li>读出写入的地址并验证数据</li>
+</ul>
+<p>前面提到，我们在 STM32 的 FLASH 编程的时候，要先判断缩写地址是否被擦除了，所以，我们有必要再介绍一下 STM32 的闪存擦除，STM32 的闪存擦除分为两种：页擦除和整片擦除。</p>
+<p>已经说过，对于小容量来说，主存分成了32个页，页擦除顾名思义就是擦除那一页的1K字节。其步骤如下图：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E9%A1%B5%E6%93%A6%E9%99%A4.png"
+                      alt="页擦除"
+                ></p>
+<p>从上图可以看出，STM32 的页擦除顺序为：</p>
+<ul>
+<li>检查 FLASH_CR 的 LOCK 是否解锁，如果没有则先解锁</li>
+<li>检查 FLASH_SR 寄存器的 BSY 位，以确认没有其他正在进行的闪存操作</li>
+<li>设置 FLASH_CR 寄存器的 PER 位为’1’</li>
+<li>用 FLASH_AR 寄存器选择要擦除的页</li>
+<li>设置 FLASH_CR 寄存器的 STRT 位为’1’</li>
+<li>等待 BSY 位变为’0’</li>
+<li>读出被擦除的页并做验证</li>
+</ul>
+<p>全片擦除则不需要选择要擦除的页，然后将 FLASH_CR 寄存器的 MER 设置为’1’，其它操作相同。</p>
+<h3 id="相关寄存器具体介绍"><a href="#相关寄存器具体介绍" class="headerlink" title="相关寄存器具体介绍"></a>相关寄存器具体介绍</h3><h4 id="FPEC-键寄存器：FLASH-KEYR"><a href="#FPEC-键寄存器：FLASH-KEYR" class="headerlink" title="FPEC 键寄存器：FLASH_KEYR"></a>FPEC 键寄存器：FLASH_KEYR</h4><p>前文的两个Unlock键值已经介绍，没有太多其他用法。下面具体介绍与程序相关的一些寄存器。</p>
+<h4 id="闪存控制寄存器（FLASH-CR）"><a href="#闪存控制寄存器（FLASH-CR）" class="headerlink" title="闪存控制寄存器（FLASH_CR）"></a>闪存控制寄存器（FLASH_CR）</h4><p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/CR.png"
+                      alt="CR"
+                ></p>
+<p>位7正是控制解锁的LOCK位，位6是开始位，当该位为’1’时将触发一次擦除操作。该位只可由软件置为’1’并在BSY变为’1’时清为’0’。位2和1，则是擦除选项，MER为全擦除，PER为页擦除。</p>
+<h4 id="内存地址寄存器（FLASH-AR）"><a href="#内存地址寄存器（FLASH-AR）" class="headerlink" title="内存地址寄存器（FLASH_AR）"></a>内存地址寄存器（FLASH_AR）</h4><p>主要用来当进行编程时选择要编程的地址，当进行页擦除时选择要擦除的页。</p>
+<h2 id="FLASH相关操作库函数"><a href="#FLASH相关操作库函数" class="headerlink" title="FLASH相关操作库函数"></a>FLASH相关操作库函数</h2><p>用到的库函数为stmflash.h&#x2F;stmflash.c</p>
+<p>前文提到，在对 FLASH 进行写操作前必须先解锁，解锁操作也就是必须在FLASH_KEYR 寄存器写入特定的序列（KEY1 和 KEY2）,固件库函数实现很简单：</p>
+<p><code>void FLASH_Unlock(void);</code></p>
+<p>同样的道理，在对 FLASH 写操作完成之后，我们要锁定 FLASH，使用的库函数是：</p>
+<p><code>void FLASH_Lock(void);</code></p>
+<p>解锁后，如果我们要进行写操作，官方固件库提供了三个FLASH写函数：</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">FLASH_Status FLASH_ProgramWord(uint32_t Address, uint32_t Data);</span><br><span class="line">FLASH_Status FLASH_ProgramHalfWord(uint32_t Address, uint16_t Data);</span><br><span class="line">FLASH_Status FLASH_ProgramOptionByteData(uint32_t Address, uint8_t Data);</span><br></pre></td></tr></table></figure></div>
+<p>其作用分别为FLASH_ProgramWord 为 32 位字写入函数，其他分别为 16 位半字写入和用户选择字节写入函数。这里需要说明，32 位字节写入实际上是写入的两次 16 位数据，写完第一次后地址+2，这与前面提到的 STM32 闪存的编程每次必须写入 16 位相呼应。</p>
+<p>写好后，如果我需要擦除，</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">FLASH_Status FLASH_ErasePage(uint32_t Page_Address);</span><br><span class="line">FLASH_Status FLASH_EraseAllPages(void);</span><br><span class="line">FLASH_Status FLASH_EraseOptionBytes(void);</span><br></pre></td></tr></table></figure></div>
+<p>第一个函数是页擦除函数，根据页地址擦除特定的页数据，第二个函数是擦除所有的页数据，第三个函数是擦除用户选择字节数据。</p>
+<p>只会写入和擦除还是不够的，还要能够获取FLASH的状态，主要用到<br>&#96;&#96;FLASH_Status FLASH_GetStatus(void);<br>返回值通过枚举类型定义：</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">typedef enum</span><br><span class="line">&#123; </span><br><span class="line"> FLASH_BUSY = 1,//忙</span><br><span class="line"> FLASH_ERROR_PG,//编程错误</span><br><span class="line"> FLASH_ERROR_WRP,//写保护错误</span><br><span class="line"> FLASH_COMPLETE,//操作完成</span><br><span class="line"> FLASH_TIMEOUT//操作超时</span><br><span class="line">&#125;FLASH_Status</span><br></pre></td></tr></table></figure></div>
+
+<p>从这里面我们可以看到 FLASH 操作的 5 个状态。</p>
+<p>在执行闪存写操作时，任何对闪存的读操作都会锁住总线，在写操作完成后读操作才能正确地进行；即在进行写或擦除操作时，不能进行代码或数据的读取操作。所以在每次操作之前，我们都要等待上一次操作完成这次操作才能开始。使用的函数是：</p>
+<p><code>FLASH_Status FLASH_WaitForLastOperation(uint32_t Timeout)</code></p>
+<p>入口参数为等待时间，返回值是 FLASH 的状态。</p>
+<h2 id="USART串口通信"><a href="#USART串口通信" class="headerlink" title="USART串口通信"></a>USART串口通信</h2><p>为了能有明显的实验现象，学习串口来进行打印。</p>
+<h3 id="串口通信基础理论"><a href="#串口通信基础理论" class="headerlink" title="串口通信基础理论"></a>串口通信基础理论</h3><p>通信是为了实现数据交流，扩展硬件系统。如果需要两个芯片交流，就需要进行通信。通信协议就是通信的一套规则。</p>
+<p>对于我们要学的UASRT，他的两个引脚为TX、RX（或者叫TXD、RXD），RX是数据接收脚，TX是数据发送脚。双工模式为全双工，指通信双方能同时进行双向通信。常用通信的特性汇总如下：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-30%20094354.jpg"
+                      alt="特性汇总"
+                ></p>
+<p>接线对应要求如图：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-30%20095853.jpg"
+                      alt="接线"
+                ></p>
+<p>注意电平问题，电平标准是数据1和数据0的表达方式，TTL电平为+3.3或+5V表示1，0V表示0。RS232电平，-3<del>-15V表示1，+3</del>+15表示0。RS485两线压差+2<del>+6V表示1，-2</del>-6V表示0。（差分信号）</p>
+<p>接下来该了解串口参数及时序了，串口中每一个字节放再一个数据帧里，每一个数据帧由起始位、数据位和停止位组成。数据位一般位8位，有时会在数据位后有一个奇偶校验位。串口的主要参数有：</p>
+<ul>
+<li>波特率：串口通信的速率，异步通信，需要约定好速率。二进制下，波特率&#x3D;比特率，说白了是规定每隔多久发送&#x2F;接收1位。</li>
+<li>起始位：固定为低电平，表示数据帧开始，产生下降沿</li>
+<li>数据位：数据帧的有效载荷，1为高电平，0为低电平，低位先行。传0F，，那应该是1111 0000。</li>
+<li>校验位：用于数据验证，由数据位得来。奇偶校验，看1的个数，补在校验位。</li>
+<li>停止位：用于数据帧间隔，固定为高，为了保障开始位产生下降沿。</li>
+</ul>
+<h3 id="USART外设简介"><a href="#USART外设简介" class="headerlink" title="USART外设简介"></a>USART外设简介</h3><p>STM32内部集成的硬件外设。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-30%20103610.jpg"
+                      alt="内容"
+                ></p>
+<p>关于USART的内部框图，我这里就不放了，可以去查数据手册，需要注意的是，引脚上，我们常用的就是TX和RX引脚，其他用于别的功能的不用在意。然后对应写和读操作的两个寄存器可以了解一下，而两个引脚相接的就是两个移位寄存器，一个用于发送，一个用于接收。了解原理即可。</p>
+<p>可简略为下图</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-05-30%20110525.jpg"
+                      alt="简略图"
+                ></p>
+<p>而对于数据位细节，输出较为简单，但输入则需要采样时间配合好，比较复杂，所以就有了起始位侦测，他一位会进行16次采样，保证准确性，避免噪声的影响。</p>
+<hr>
+<p>代码实现等掌握了发出来吧，连带eeprom读写。</p>
+]]></content>
+      <tags>
+        <tag>STM32</tag>
+        <tag>学习笔记</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>STM32环境搭建并实现C51与MDK共存（Hal开发）</title>
+    <url>/2023/04/30/test-my-site/</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>笔者由于竞赛需要，最近开始学习STM32H7系列芯片，由于之前并没有学习过32，且51也是较早时期学习，对于一些概念一知半解，没有得到很好的吸收，所以在基础较差的情况下，现在搭建32的环境也是一波三折。特此记录，以供自己队友查看，自己水平有限，但其中整理的一些资料如果对其他人也能带来帮助，定会更好。</p>
+<h2 id="支持环境简介"><a href="#支持环境简介" class="headerlink" title="支持环境简介"></a>支持环境简介</h2><p>意法半导体基于32位ARM Cortex-M 内核的STM32系列微控制器得到了一整套软件工具的支持。它整合了传统集成式开发环境IDE和主要第三方提供的C&#x2F;C++编译器和调试器，并以ST的创新工具作为补充，比如STM32CubeMX，Cube.AI等。</p>
+<p>常用的IDE就笔者目前了解到的有ST自家的STM32CubeIDE、CLion、VScode配合插件，也有用IAR的，以及今天我要详细介绍的Keil。</p>
+<p>笔者目前使用CubeMX图形化界面进行MCU选型以及引脚配置，配合Keil进行代码编译调试，笔者水平有限，且仍在学习中，如有错误还请批评指正。这篇文章也只是便于队友搭环境所记录，更偏向于各方有参考意义的资料整合。</p>
+<h2 id="CubeMX安装与配置"><a href="#CubeMX安装与配置" class="headerlink" title="CubeMX安装与配置"></a>CubeMX安装与配置</h2><p>这是官网对于自家生态下的软件介绍：</p>
+<blockquote>
+<p>STM32CubeMX是STM32Cube工具家族中的一员，从MCU&#x2F;MPU选型，引脚配置，系统时钟以及外设时钟设置，到外设参数配置，中间件参数配置，它给STM32开发者们提供了一种简单，方便，并且直观的方式来完成这些工作。所有的配置完成后，它还可以根据所选的IDE生成对应的工程和初始化C代码。</p>
+</blockquote>
+<p><a class="link"   href="https://www.stmcu.com.cn/" >ST中文官网 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>关于CubeMX的安装，官网中就能够直接进行下载<a class="link"   href="https://www.stmcu.com.cn/Designresource/detail/software/711627" >Windows点击下载 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>下载好安装包后，具体的安装步骤与教程可以参考以下视频，需要注意的一点就是<strong>库的安装路径不能出现中文</strong>，否则会有乱码。然后视频中下载了当时用不上的F1的pack，就没下，后面直接在MX里线上选择H7进行了下载，好在校园网这次可给力了一把，下载没出乱子。</p>
+<p><a class="link"   href="https://www.bilibili.com/video/BV1q4411d7RX?p=2&vd_source=df63b1518b81b99bf6c584903334107e" >B站参考视频，这时候看P2 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>安装好MX和H7的包之后，新建项目，可以根据芯片来创建，也可以根据ST官方开发板来进行创建，笔者竞赛申请的开发板以及已有的开发板为以下两款：</p>
+<p><a class="link"   href="https://www.st.com/zh/evaluation-tools/stm32h7b3i-dk.html" >STM32H7B3I-DK <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><a class="link"   href="https://www.st.com/zh/evaluation-tools/nucleo-h7a3zi-q.html" >NUCLEO-H7A3ZI-Q <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>创建好新的项目后，就可以看到MX的图形化配置界面，十分友好。然后在选择IDE时，就到了我们需要介绍的Keil的MDK的安装了。</p>
+<h3 id="插叙"><a href="#插叙" class="headerlink" title="插叙"></a>插叙</h3><p>在本节中，笔者提到了中文路径一事，在注册微软账户时，由于笔者注册了中文名，导致C盘用户文件夹为中文，在之前搭建VScode环境时就出过问题，这次MX的路径好在可以修改，但笔者在学习51时所安装的老版本Keil也遇到过乱码问题，所以这次查了大量方法，想从根本上解决该问题，功夫不负有心人，笔者找到了下面文章中的解决方法，该方法与网上其他方法的原理相同，但操作更为简单，只需粘贴执行几行命令，即可实现一个英文文件夹的镜像链接。</p>
+<p><a class="link"   href="https://answers.microsoft.com/zh-hans/windows/forum/all/%E4%BF%AE%E6%94%B9-windows/3c8cc397-e62a-4e3f-a113-96a342995982" >修改 Windows 用户账户文件夹路径，以改善应用程序兼容性 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<h2 id="Keil的MDK与51的共存"><a href="#Keil的MDK与51的共存" class="headerlink" title="Keil的MDK与51的共存"></a>Keil的MDK与51的共存</h2><p>笔者在之前就安装过Keil，但版本较老，这次也是卸载重装，主要参考了以下三个视频，建议都看完，就明白到底是要干个什么事了。</p>
+<p><a class="link"   href="https://www.bilibili.com/video/BV1q4411d7RX?p=1&vd_source=df63b1518b81b99bf6c584903334107e" >只看P1 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>这个视频里没有提供安装包资源，但对于整体流程讲的较为清晰，总结为下载Keil，并装上C51实现能对51的开发，装上MDK实现对32的开发。然后为了能够免费使用，需要那啥一下，视频中那个及其古早画风的黑色界面软件。</p>
+<p><a class="link"   href="https://www.bilibili.com/video/BV1ae4y1G7rW/?spm_id_from=333.788&vd_source=df63b1518b81b99bf6c584903334107e" >看完整个3P <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>这个视频讲得太细了，而且可以要到他的安装包资源，可以直接用他整理好的安装包进行安装搭建。按照教程就不会有错误。</p>
+<p><a class="link"   href="https://www.bilibili.com/video/BV1Ga4y1a7Xa/?vd_source=df63b1518b81b99bf6c584903334107e" >这个视频对于理解以上所有内容都有帮助 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>这个UP很接地气，也是便于理解上面的操作。</p>
+<p>到这里应该就能完成Keil的下载和MDK等的安装了，然后笔者其实忘记了在Keil中安装32的那些开发包，在后续的将代码从MX生成用MDK打开时，通过自带的一个installer才在线上较慢速度地下载完成。可以正常使用。关于创建工程以及将代码用Keil打开，可以看这个视频地前面一段<a class="link"   href="https://www.bilibili.com/video/BV1q4411d7RX?p=3&vd_source=df63b1518b81b99bf6c584903334107e" >可以看看P3和P2 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<hr>
+<p>至此笔者竞赛的初步需求就已经满足，关于STLink的安装，由于时间关系还未做，后续可能会补充。</p>
+<pre><code>本文由ZYiPan编写，技术有限，如有问题，请指正！
+</code></pre>
+]]></content>
+      <tags>
+        <tag>STM32</tag>
+        <tag>环境搭建</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>STM32学习笔记（三）——GPIO输入代码实现</title>
+    <url>/2023/05/14/STM32-3/</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>续前篇GPIO输入的理论部分，没什么好讲的，直接上代码书写部分吧，笔记一般都写在注释里了。</p>
+<p>这两天正值期中考试，这几个学期自己专业都没期中考试，在部门中理所当然多做了些工作，也算是从部门工作快开摆的末尾在奉献奉献吧。节能减排在没什么成果的情况下竟然能获得推入国赛的资格，好好珍惜，没有成果也要拼一把，如果不是炮灰，这不就发达了。</p>
+<h2 id="代码书写"><a href="#代码书写" class="headerlink" title="代码书写"></a>代码书写</h2><p>模块化编程确实重要，一般驱动代码都会单独封装起来，用到时再引用，这样也不错。</p>
+<p>由于是标准库，所以建文件夹并且添加文件夹不可少，用标准库的弊端这不就显现了。添加Hardware文件并添加，这个不过多讲了，相信以后做的多了也就会了。</p>
+<p>工程管理加组挪位置，工程选项加到头文件路径，在文件夹中添加.c文件.h文件，注意都加在该文件夹中，.c用来放驱动程序主体代码，.h放程序对外提供的函数或变量的声明。</p>
+<p>两个文件建好后，需要添加一些必要的头头，</p>
+<h2 id="在-c文件中，需要添加芯片的头文件，在-h文件中则是添加防止头文件重复包含的代码。"><a href="#在-c文件中，需要添加芯片的头文件，在-h文件中则是添加防止头文件重复包含的代码。" class="headerlink" title="在.c文件中，需要添加芯片的头文件，在.h文件中则是添加防止头文件重复包含的代码。"></a>在.c文件中，需要添加芯片的头文件，在.h文件中则是添加防止头文件重复包含的代码。<br><div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#ifndef __LED_H   //如果没有定义LED字符串</span><br><span class="line">#define __LED_H   //那么就定义这个字符串</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#endif  //这个和ifndef组成括号，同样注意文件以空行结尾</span><br><span class="line"></span><br></pre></td></tr></table></figure></div></h2><h2 id="按键控制LED代码"><a href="#按键控制LED代码" class="headerlink" title="按键控制LED代码"></a>按键控制LED代码</h2><p>附代码方便查询</p>
+<p>首先是LED初始化和点亮熄灭以及反转的封装代码</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;stm32f10x.h&quot;                  // Device header</span><br><span class="line"></span><br><span class="line">void LED_Init(void)</span><br><span class="line">&#123;</span><br><span class="line">	GPIO_InitTypeDef GPIO_InitStructure;//这是定义一个结构体变量</span><br><span class="line"></span><br><span class="line">	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA,ENABLE);  //还是初始化时钟，开启时钟</span><br><span class="line">	</span><br><span class="line">	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;//结构体的成员，Out_PP为推挽输出</span><br><span class="line">	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1 | GPIO_Pin_2;//选中1号口和2号口</span><br><span class="line">	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;//选择速度</span><br><span class="line">	GPIO_Init(GPIOA, &amp;GPIO_InitStructure);</span><br><span class="line">	</span><br><span class="line">	GPIO_SetBits(GPIOA, GPIO_Pin_1 | GPIO_Pin_2);//默认关闭</span><br><span class="line">	</span><br><span class="line">	</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void LED1_ON(void)</span><br><span class="line">&#123;</span><br><span class="line">	GPIO_ResetBits(GPIOA,GPIO_Pin_1);//点亮蓝LED</span><br><span class="line">&#125;</span><br><span class="line">void LED1_Turn1(void)</span><br><span class="line">&#123;</span><br><span class="line">	if(GPIO_ReadOutputDataBit(GPIOA, GPIO_Pin_1) == 0)//读取当前端口的输出状态，如果正在输出零，</span><br><span class="line">	&#123;</span><br><span class="line">		GPIO_SetBits(GPIOA,GPIO_Pin_1);//那么就将他置为1，令其反转</span><br><span class="line">	&#125;</span><br><span class="line">	else</span><br><span class="line">	&#123;</span><br><span class="line">		GPIO_ResetBits(GPIOA,GPIO_Pin_1);//否则相当于正在输出1，此时将他置为0</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void LED1_OFF(void)</span><br><span class="line">&#123;</span><br><span class="line">	GPIO_SetBits(GPIOA,GPIO_Pin_1);//熄灭蓝LED</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void LED2_ON(void)</span><br><span class="line">&#123;</span><br><span class="line">	GPIO_ResetBits(GPIOA,GPIO_Pin_2);//点亮彩LED</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void LED2_OFF(void)</span><br><span class="line">&#123;</span><br><span class="line">	GPIO_SetBits(GPIOA,GPIO_Pin_2);</span><br><span class="line">&#125;</span><br><span class="line">void LED2_Turn2(void)</span><br><span class="line">&#123;</span><br><span class="line">	if(GPIO_ReadOutputDataBit(GPIOA, GPIO_Pin_2) == 0)//读取当前端口的输出状态，如果正在输出零，</span><br><span class="line">	&#123;</span><br><span class="line">		GPIO_SetBits(GPIOA,GPIO_Pin_2);//那么就将他置为1，令其反转</span><br><span class="line">	&#125;</span><br><span class="line">	else</span><br><span class="line">	&#123;</span><br><span class="line">		GPIO_ResetBits(GPIOA,GPIO_Pin_2);//否则相当于正在输出1，此时将他置为0</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>
+<p>这块感觉不用花太多时间了。</p>
+]]></content>
+      <tags>
+        <tag>STM32</tag>
+        <tag>学习笔记</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>python必要基础知识</title>
+    <url>/2023/07/24/python/</url>
+    <content><![CDATA[<h2 id="环境相关"><a href="#环境相关" class="headerlink" title="环境相关"></a>环境相关</h2><p>可以直接下python3的解释器，然后进阶或者大多玩AI的都是用Anaconda。</p>
+<p>我在之前配置深度学习环境的时候，装了Anaconda和pycharm所以就用这两个配合使用吧。</p>
+<h2 id="走进python世界"><a href="#走进python世界" class="headerlink" title="走进python世界"></a>走进python世界</h2><h3 id="第一个程序"><a href="#第一个程序" class="headerlink" title="第一个程序"></a>第一个程序</h3><p>经典的Hello World!</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">myString = &#x27;Hello,World!&#x27;</span><br><span class="line">print(myString)  # python注释是使用井号来区别的</span><br></pre></td></tr></table></figure></div>
+
+<p>缩进使用的的空格来区分，缩进相同，就是同一块代码块，c语言狂怒，不能再瞎敲空格了。</p>
+<h3 id="函数"><a href="#函数" class="headerlink" title="函数"></a>函数</h3><p>输出print函数</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">print(变量)</span><br><span class="line">print(字符串)</span><br></pre></td></tr></table></figure></div>
+
+<p>输入函数input()</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">input(&#x27;input the stock price of Apple: &#x27;)</span><br></pre></td></tr></table></figure></div>
+
+<p>返回类型是字符型</p>
+<h3 id="语法基础"><a href="#语法基础" class="headerlink" title="语法基础"></a>语法基础</h3><p>变量 ：用来标识对象，或者引用对象</p>
+<p>一般可以认为python中没有常量。但是可以通过一些方法实现不可变。</p>
+<p>命名规则为，标识符首字符必须是字母或下划线。。。。和c一样的三条。</p>
+<p>约定俗成的是，全大写的标识符是一个符号常量，一般也不用下划线开头</p>
+<p>关键字不可用做变量名也是一样的。</p>
+<p>表达式：用运算符连接各种数据的形成的表达式。</p>
+<p>赋值 &#x3D; python能够将类型和值都包含过去</p>
+<p>PI &#x3D; 3.14159</p>
+<p>就包含了，PI是浮点型，它的值还是3.14159，不需要显式声明，根据值来确定类型</p>
+<p>数据类型：</p>
+<p>整型：与长整型不严格区分，基本上不会有溢出的问题会出现</p>
+<p>布尔型： 整型的子类，仅有True和False</p>
+]]></content>
+      <tags>
+        <tag>python</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Anaconda+PyTorch深度学习环境搭建</title>
+    <url>/2023/04/30/hello-world/</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本文为作者为了实现一个项目跑yolo的需求，从师兄那里听取了基本的操作，然后开始自己摸索的过程记录。类似的环境搭建教程虽然多，但是总感觉不是完全契合自己的需求，所以为方便记录本过程以及提供一个全面的介绍，笔者决定自己写一篇经验帖，另笔者只是一名刚刚接触深度学习就要赶鸭子上架的大二代码搬运工，技术有限，文章如有错误欢迎指正。</p>
+<h2 id="Anaconda安装"><a href="#Anaconda安装" class="headerlink" title="Anaconda安装"></a>Anaconda安装</h2><h3 id="什么是Anaconda"><a href="#什么是Anaconda" class="headerlink" title="什么是Anaconda"></a>什么是Anaconda</h3><p>Anaconda是一个集成的Python包以及环境，包含依赖项等，可以用来管理包，安装、运行应用，其包含了conda、Python等180多个科学包及其依赖项，Anaconda + Jupyter 基本上已经是大部分机器学习&#x2F;数据分析等开发者标配的开发环境，针对不同版本的Python需求，Anaconda可以帮助建立管理多个环境，以避免不同环境的相互影响，提供一个更加快速和简单的方式来运行机器学习的相关代码。</p>
+<p><a class="link"   href="https://www.anaconda.com/" >Anaconda官网 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-04-15%20163617.jpg"
+                      alt="Anaconda官网"
+                ></p>
+<h3 id="软件安装"><a href="#软件安装" class="headerlink" title="软件安装"></a>软件安装</h3><p>有两种下载的方式，网上部分教程使用清华的镜像进行下载，我是使用上文引用的官网就可以直接进行安装，<br>在官网进行下载，直接点击Download即可，这里可以用最新的版本。<br>下载好后双击安装包，进行安装。<img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/1.jpg"
+                      alt="1"
+                ></p>
+<p>安装过程整体来说没什么坑，点Next就可-&gt;I Agree.</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/2.jpg"
+                      alt="2"
+                ></p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/3.jpg"
+                      alt="3"
+                ></p>
+<p>这里与你的电脑的操作用户有关，一般个人就选择Just Me即可。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/4.jpg"
+                      alt="4"
+                ></p>
+<p>关于路径如果C盘不是很阔绰的还是换到其它盘吧，软件因为各种包比较多，还是蛮大的。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/5.jpg"
+                      alt="5"
+                ></p>
+<p>是否添加环境变量，如果为了省事我看许多教程就直接将第二条打勾了，但有一位网友的教程说到可能会影响电脑装好的origin-py，</p>
+<p>所以我这里选择了不打勾，后续自己添加，但我在原本没有装Python的情况下好像没什么影响。然后点击Install即可进行安装。安装过程不算快，需要等3、5分钟。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/6.jpg"
+                      alt="6"
+                ></p>
+<p>之后过掉两页没什么说的Next，最后一页这里不用打勾，勾了会有弹窗。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/7.jpg"
+                      alt="7"
+                ></p>
+<p>至此安装完成，可以在电脑中找到该软件。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/8.jpg"
+                      alt="8"
+                ></p>
+<h3 id="添加环境变量"><a href="#添加环境变量" class="headerlink" title="添加环境变量"></a>添加环境变量</h3><p>如果刚刚没有打勾自动添加，那么现在则是需要手动添加，如果像我一样直接在D盘新建了文件夹进行安装的话，那么可以直接逐行复制下面的路径添加到PATH中，</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">D:\Anaconda</span><br><span class="line">D:\Anaconda\Scripts</span><br><span class="line">D:\Anaconda\Library\mingw-w64\bin</span><br><span class="line">D:\Anaconda\Library\bin</span><br></pre></td></tr></table></figure></div>
+<p>添加环境变量的方法如下：</p>
+<p>右键此电脑，点击属性，找到高级系统设置</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/9.jpg"
+                      alt="9"
+                ></p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/10.jpg"
+                      alt="10"
+                ></p>
+<p>点击环境变量进行设置</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/11.jpg"
+                      alt="11"
+                ></p>
+<p>在系统变量中找到PATH双击或者点击编辑，进入环境变量配置页面，</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/12.jpg"
+                      alt="12"
+                ></p>
+<p>如果你和我一样在D盘中新建文件夹进行安装，则按照一开始我说的四行路径逐一新建添加进去即可，如果不是，则按照自己的安装路径进行添加。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/13.jpg"
+                      alt="13"
+                ></p>
+<p>完成上述操作后我们可以进cmd检查一下，直接在搜索框中搜索cmd打开，输入</p>
+<p><code>conda --version</code>并执行，可以查看版本信息，输入</p>
+<p><code>conda info</code>执行可以获取更多信息</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/14.jpg"
+                      alt="14"
+                ></p>
+<p>至此，Anaconda安装完成。</p>
+<h2 id="Anaconda虚拟环境管理演示"><a href="#Anaconda虚拟环境管理演示" class="headerlink" title="Anaconda虚拟环境管理演示"></a>Anaconda虚拟环境管理演示</h2><p>针对不同版本的Python需求，Anaconda可以帮助建立管理多个环境，建立开发用虚拟环境可以理解为只是系统的另一个区域，你可以在其中使用任意安装包，并与其他的Python包隔离开，互不影响，这就是conda的价值。</p>
+<p>打开Cmd，键入<code>activate</code>，即可进入base环境<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/15.jpg"
+                      alt="15"
+                ></p>
+<p>再继续键入<code>conda create -n py38 python=3.8</code>&#x2F;&#x2F;环境命名为py38，其中python版本指定为了3.8（-n是name的缩写）</p>
+<p>即可创建一个环境名称为py38的，python版本为3.8的虚拟环境。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/16.jpg"
+                      alt="16"
+                ></p>
+<p>稍等片刻后，即可出现询问是否确定下载创建环境的对话，这时键入<code>y</code>即可完成下载。（我这里的WARNING是说有新版本的conda，没有影响我创建环境）</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/17.jpg"
+                      alt="17"
+                ></p>
+<p>等待进度条加载完成，下载创建好环境后，键入<code>conda activate py38</code>即可激活进入建立的py38环境（命令行前面的括号有所提示）。这时键入<code>python</code>并执行，出现的本环境中的python版本为3.8.16，符合要求。<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/18.jpg"
+                      alt="18"
+                ></p>
+<p>在&gt;&gt;&gt;后键入<code> exit()</code>执行即可出现新的命令行，键入<code>conda deactivate</code>即可退出py38环境，回到base环境中，这时键入<code>python</code>执行显示版本为与安装的Anaconda配套的3.10.9版本。</p>
+<p>再次键入<br><code> exit()</code> 、 <code>conda deactivate</code>即可从base环境中退出。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/19.jpg"
+                      alt="19"
+                ></p>
+<p>以上就是Anaconda基本的建立环境操作了，常用的相关指令可以查看conda网站</p>
+<p><a class="link"   href="https://docs.conda.io/projects/conda/en/latest/commands.html" >点击查看更多指令 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>比如查看所有环境的指令<code>conda env list</code>，即可看到我的base环境与建立的py38环境。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/20.jpg"
+                      alt="20"
+                ></p>
+<h2 id="编程环境安装"><a href="#编程环境安装" class="headerlink" title="编程环境安装"></a>编程环境安装</h2><p>我学校的师兄使用的是PyCharm，为方便出问题后可以询问，我没有使用vscode，也选择了PyCharm，且据说高版本的Anaconda里面无法直接下载vscode了。</p>
+<p><a class="link"   href="https://www.jetbrains.com/pycharm/" >PyCharm官网 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/21.jpg"
+                      alt="21"
+                ></p>
+<p>直接在官网点击DOWNLOAD，即可弹出页面下载，这里选择右边社区版本为免费开源的。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/22.jpg"
+                      alt="22"
+                ></p>
+<p>下载好安装包后双击安装即可，路径可以自选，然后下图页面全打勾即可，环境变量让他自动安装好。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/23.jpg"
+                      alt="23"
+                ></p>
+<p>之后的一个页面保持默认即可，点击Install安装完成。<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/24.jpg"
+                      alt="24"
+                ></p>
+<p>在桌面找到快捷方式打开PyCharm，我电脑上没有.py程序，我这里点击新建，new project</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/25.jpg"
+                      alt="25"
+                ></p>
+<p>之前不是使用Anaconda新建了一个虚拟环境吗，这里我们就选择第二项先前的…</p>
+<p>然后点击Add解释器，<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/26.jpg"
+                      alt="26"
+                ></p>
+<p>左边选择第一项虚拟环境，右边选择现存的Existing，然后点击···，选择之前建立的虚拟环境。<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/27.jpg"
+                      alt="27"
+                ></p>
+<p>我之前就安在D盘文件夹下，找到Anaconda下的envs，下拉会有一个python.exe选中后点击create即可。<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/28.jpg"
+                      alt="28"
+                ></p>
+<p>这里我们能看到python版本为py38环境中的3.8版本，点击create即可新建工程。<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/29.jpg"
+                      alt="29"
+                ></p>
+<p>至此IDE也安装完成。</p>
+<h2 id="CUDA与cuDNN安装"><a href="#CUDA与cuDNN安装" class="headerlink" title="CUDA与cuDNN安装"></a>CUDA与cuDNN安装</h2><h3 id="什么是CUDA与cuDNN"><a href="#什么是CUDA与cuDNN" class="headerlink" title="什么是CUDA与cuDNN"></a>什么是CUDA与cuDNN</h3><p>CUDA是NVIDIA推出的运算平台。 它是一种由NVIDIA推出的通用并行计算架构，该架构使GPU能够解决复杂的计算问题。 它包含了CUDA指令集架构（ISA）以及GPU内部的并行计算引擎。深度神经网络库 (cuDNN) 是一个GPU加速的深度神经网络基元库。cuDNN可大幅度优化标准例程（例如前向和后向卷积、池化、归一化和激活层）的实施。总的来说，二者的作用是促使GPU加速。</p>
+<h3 id="关于CUDA的下载版本讨论"><a href="#关于CUDA的下载版本讨论" class="headerlink" title="关于CUDA的下载版本讨论"></a>关于CUDA的下载版本讨论</h3><p>下载前关于版本的注意事项：</p>
+<blockquote>
+<p>笔者查阅大量经验帖，众说纷纭，大致有以下注意事项：</p>
+<blockquote>
+<p>30系显卡网上说只能安装CUDA11.0以上了，这直接导致许多经验帖下共享的的资源不可用，或者下载后会报错，建议查清自己适配的版本后从官网下载；</p>
+</blockquote>
+<blockquote>
+<p>cuDNN版本与CUDA版本相对应，而电脑支持的CUDA版本较高，但PyTorch支持的版本有限，可以从官网上查看；</p>
+</blockquote>
+<blockquote>
+<p>CUDA对显卡驱动也有要求，所以网上教程第一步一般都是装显卡驱动，一般CUDA11版本又需要版本号&gt;450的显卡驱动；</p>
+</blockquote>
+</blockquote>
+<p>在版本对应上，这位大佬的文章讲解得较为精简明了：</p>
+<p><a class="link"   href="https://www.jianshu.com/p/ac70300b598b" >pytorch、显卡、显卡驱动、cuda版本是如何对应的 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>以下记录我的安装过程，我的显卡是3050Laptop，电脑上自带NVIDIA GeForce Experimence，使用该软件我完成了诸多经验贴的第一步——安装&#x2F;更新显卡驱动，</p>
+<p>可以看到，我的显卡驱动为531.61版本，足够高，理论上下载什么CUDA都可以，</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/30.png"
+                      alt="30"
+                ></p>
+<p>在这里我附上可以查找显卡更新驱动的链接，如果没有这个软件，可以通过这个网站装显卡驱动，<a class="link"   href="https://www.nvidia.cn/geforce/drivers/" >GeForce 驱动程序 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a>。</p>
+<p>然后就是确定我到底可以安装什么版本的CUDA，而CUDA需要与cuDNN相对应，又需要与PyTorch适配，我首先进入了PyTorch的官网查看到最新的版本支持CUDA为11.7和11.8，<a class="link"   href="https://pytorch.org/" >PyTorch官网 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%EF%BC%93%EF%BC%91.png"
+                      alt="31"
+                ></p>
+<p>又进入CUDA的历史版本中查看11.8和11.7是否都有，发现果然不是最新的CUDA版本，<br><a class="link"   href="https://developer.nvidia.com/cuda-toolkit-archive" >CUDA历代版本 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a><br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%EF%BC%93%EF%BC%92.png"
+                      alt="32"
+                ></p>
+<p>又去看了cuDNN的版本支持<a class="link"   href="https://developer.nvidia.com/rdp/cudnn-archive" >cuDNN历代版本 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a>，发现还是有支持11与12代CUDA版本的，主要就是PyTorch版本拖后腿，于是我最终决定下载11.7版本的CUDA。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%EF%BC%93%EF%BC%93.png"
+                      alt="33"
+                ></p>
+<h3 id="CUDA下载步骤"><a href="#CUDA下载步骤" class="headerlink" title="CUDA下载步骤"></a>CUDA下载步骤</h3><p>决定下载11.7之后，我在上面发的CUDA的历代版本下载页里点击了11.7.1版本下载，有下图选项需要选择，我是win10系统，所以进行了如下选择，注意这里的VERSION指的是你的电脑操作系统版本，根据情况选，然后选择下载到本地。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%EF%BC%93%EF%BC%94.png"
+                      alt="34"
+                ></p>
+<p>安装包下载好后，双击打开它，下图页面不建议更改路径，之后等待安装</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%EF%BC%93%EF%BC%95.png"
+                      alt="35"
+                ></p>
+<p>中途一路默认，到这里，选择自定义安装</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%EF%BC%93%EF%BC%96.png"
+                      alt="36"
+                ></p>
+<p>自定义安装中，我对照我显卡装完驱动后已有的程序取消了几个勾，一般应该只勾选第一个大项CUDA即可</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%EF%BC%93%EF%BC%97.png"
+                      alt="37"
+                ></p>
+<p>下一步选择安装路径，我按照网上教程多新建了几个文件夹，路径如下供参考，</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%EF%BC%93%EF%BC%98.png"
+                      alt="38"
+                ></p>
+<p>结果发现我这里并没有网上教程中的CUDA Samples那一项，不过大部分装新版本CUDA的一般直接下一步了，应该应该影响不大。所以在更改路径后我也下一步了，<a class="link"   href="https://blog.csdn.net/wumingshuing/article/details/126624615?spm=1001.2101.3001.6650.3&utm_medium=distribute.pc_relevant.none-task-blog-2~default~CTRLIST~Rate-3-126624615-blog-127499808.235%5Ev29%5Epc_relevant_default_base3&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2~default~CTRLIST~Rate-3-126624615-blog-127499808.235%5Ev29%5Epc_relevant_default_base3&utm_relevant_index=6" >据说11.6后就都没有了 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/%EF%BC%93%EF%BC%99.png"
+                      alt="39"
+                ></p>
+<p>下一步是让勾选vs什么的，不勾无法下一步，所以我勾好后下一步一路默认安装好了。</p>
+<p>然后可以验证一下是否成功安装，打开cmd，键入<code>nvcc -V</code>注意V要大写，否则你会和我一样心脏骤停。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/40.png"
+                      alt="40"
+                ></p>
+<h3 id="cuDNN下载步骤"><a href="#cuDNN下载步骤" class="headerlink" title="cuDNN下载步骤"></a>cuDNN下载步骤</h3><p>既然CUDA安装了11.7.1，那么cnDNN只要选择相对应的版本即可，</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/41.png"
+                      alt="41"
+                ></p>
+<p>我这里选择了对应11.x的版本然后下载win版本，下载好后就是一个安装包，我们解压它，将里面的三个文件夹复制粘贴到刚刚安装CUDA的文件夹里，对我来说就是刚刚建的那好几个文件夹的地方。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/42.png"
+                      alt="42"
+                ><br>我的话是复制到下图这里。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/43.png"
+                      alt="43"
+                ></p>
+<p>至此CUDA与cuDNN安装完成。</p>
+<h2 id="PyTorch安装"><a href="#PyTorch安装" class="headerlink" title="PyTorch安装"></a>PyTorch安装</h2><h3 id="什么是PyTorch"><a href="#什么是PyTorch" class="headerlink" title="什么是PyTorch"></a>什么是PyTorch</h3><p>PyTorch 是一种用于构建深度学习模型的功能完备框架，是一种通常用于图像识别和语言处理等应用程序的机器学习。使用 Python 编写，因此对于大多数机器学习开发者而言，学习和使用起来相对简单。PyTorch 的独特之处在于，它完全支持 GPU，并且使用反向模式自动微分技术，因此可以动态修改计算图形。这使其成为快速实验和原型设计的常用选择。</p>
+<h3 id="PyTorch安装-1"><a href="#PyTorch安装-1" class="headerlink" title="PyTorch安装"></a>PyTorch安装</h3><p>我首先看了我这次搭建深度学习环境的目的——yolov3对Python环境的要求，发现是大于3.7即可，那么我之前构建的3.8版本的py38环境可以用，所以决定就在这个环境中去装PyTorch了。</p>
+<p>打开cmd，还是进入py38环境。在命令行界面输入<code>activate</code>进入base环境，输入<code>conda activate py38</code>激活进入py38，</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/45.jpg"
+                      alt="45"
+                ></p>
+<p>然后进入<a class="link"   href="https://pytorch.org/" >PyTorch官网 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a>，我这里已经提前看好了它的11.7版本，直接复制下面的指令代码到cmd中执行即可下载。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/47.png"
+                      alt="47"
+                ></p>
+<p>之后会加载出来一个需要下载的包的list，并问你y&#x2F;n，这时键入y并执行开始下载，下载界面只拍了照，没有截图，大概就是长这样，经过漫长的等待，下载好后会显示done。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/46.jpg"
+                      alt="46"
+                ></p>
+<p>显示done之后，我们在py38环境中键入<code>python</code>，然后依次输入下面三条指令并执行，查看输出结果是否正常，我的结果如下图：</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">import torch</span><br><span class="line">print(torch. __version__)</span><br><span class="line">torch.cuda. is_available()</span><br></pre></td></tr></table></figure></div>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/44.jpg"
+                      alt="44"
+                ></p>
+<p>注意当最后一条指令返回True代表安装成功，且可以使用GPU。</p>
+<h3 id="配置PyCharm"><a href="#配置PyCharm" class="headerlink" title="配置PyCharm"></a>配置PyCharm</h3><p>这一步骤是为了在PyCharm中可以使用PyTorch，我们打开刚刚下载的PyCharm，然后在刚刚下载时py38环境中建立的工程内写下这几行代码：</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">import torch</span><br><span class="line">print(torch.__version__)</span><br><span class="line">print(torch.cuda.is_available())</span><br></pre></td></tr></table></figure></div>
+<p>然后run一下，输出结果为</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/48.png"
+                      alt="48"
+                ></p>
+<p>代表此时PyCharm可以使用PyTorch，网络上有的帖子这里仍旧需要配置环境变量，但是我这里就直接run出来了，如果有配置环境变量的需求可以参考这篇博客（<a class="link"   href="https://blog.csdn.net/weixin_44842318/article/details/127487476" >需要配置环境点这里 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a>）。但感觉如果你和我相同的操作应该就没问题。</p>
+<hr>
+<p>至此，深度学习的开发环境Anaconda+CUDA+cuDNN+PyTorch+PyCharm就已经搭建完成了，我要去学习跑yolo了，希望本篇对你有所帮助。</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">本文由ZYiPan编写，刚接触深度学习，技术有限，如有错误，欢迎指正！</span><br></pre></td></tr></table></figure></div>]]></content>
+      <tags>
+        <tag>环境搭建</tag>
+        <tag>深度学习</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>2023上半年总结</title>
+    <url>/2023/07/05/diaryone/</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>26号考完最后一科到现在也算是期末平稳落地，自己又过了八天慢生活，遗憾的是武功山没按计划去爬，不过这周末约了js，能聊聊也不错，很久没见老班长了。<br>放假八天，权重文件搞出来了，也算有一点点成果，但不多。大学过半，2023年过半，一直觉得该写点总结，今日终于动笔，简单总结下这个学期，反思下2023这半年。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/8%7BD3~14%24IHLU(VF2Y4_CT)8.jpg"
+                     
+                ></p>
+<h2 id="生活的A面"><a href="#生活的A面" class="headerlink" title="生活的A面"></a>生活的A面</h2><p>这个学期终于有点像是大学生的体验了，不再只是简单的学习课本，做作业，考试。微机原理进行了汇编语言实验以及电子技术实践，都让我有很多体会。最重要一点，参加嵌入式竞赛，我闻到了点科研的味道。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/SMV%24OE7I515J%24MB9F242QRQ.jpg"
+                     
+                ></p>
+<p>2023年3月左右，本意是打算深耕于建为工作室的我，最终还是一上头跟着lx参加了这个预热半学期的嵌入式竞赛，自此写项目书、了解stm32、了解视觉算法，一扇崭新的大门向我打开。通过了学院的初筛，入驻实验室，最重要的是通过l老师认识了yj师兄，pz师姐以及帮助了许多的jl哥，跟随着他们，自己这小比赛因为涉及点深度学习的内容，甚至有了点科研的感觉。顺路打了场节能减排和职规赛，马马虎虎拿了点不上台面的奖。此间也算是有了一些stm32的基础知识，跑yolo运用roboflow的一些傻瓜式操作，但是目前学习都不深入，不懂原理，终究只是小打小闹罢了。还需要再接再厉。实验室里平时氛围一般，但近期光电赛临近提交，终于有了点攻坚的感觉，听着长我一届的学长说着我仅仅听过的一些词，调试着程序，终于意识到自己这半年其实真没学到什么东西，别说触摸科研，连学院做项目的合格水平都没达到。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E5%9B%BE%E7%89%8720230318160421.png"
+                     
+                ></p>
+<p>竞赛与实验室上还算费心，不用说还有部门工作和蛋疼的工作室，投入到学习学业的时间必然减少，但大学这种形式上的期末考试让我十分讨厌，不知怎的对期末真的不太上心，这总归不太好。我后续不断告诉自己，绩点还是很重要的，能往上刷的机会也不多了，好在目前靠着考前突击还维持在3以上。</p>
+<h2 id="生活的B面"><a href="#生活的B面" class="headerlink" title="生活的B面"></a>生活的B面</h2><p>半年来生活上仍然没有什么改进，懒懒散散。一直幻想自己成为一个自律有效率的人，但通常是自律不了半天时间，便想给自己放个假。半年前在22年最后一天，也写了下对23年的期望，希望自己能在今年结束的时候，细数自己一年的进步与成就。现在已经过了半年，生活上反正是没什么进步，成就的话，也不能完全算取得了。</p>
+<p>关于这方面的反思，我时不时就会来一次，无非就是自己哪里做的不好，哪里仍需要改进，但每当忙起来或者累了，又将之抛于脑后。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/5DZ4ZGIN%7DUKS3YFYAW~K5XM.jpg"
+                     
+                ></p>
+<p>和部门的三位相处还算融洽，熬夜加班个几次，革命友情也就来了。一些委员也着实让人省心，当时留任想的是自己能够给委员带来一些东西，自认为尽可能的能帮就帮了，但这半年真的让人费心的事有点多，可能没完成最初的预期。我一直觉得自己是个好为人师的人，有什么经验就希望能分享出去，有什么能避坑的点就提醒一下，但其实这些行为在一些人看来有些多余，我在认识到这点之后也在逐渐改正。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E5%9B%BE%E7%89%8720230705165113.jpg"
+                     
+                ></p>
+<p>和班里的人打交道总是缺乏热情，关系比较好的，也仅限自己的室友和几个人，能脱去团书的职务是我没想到的，但承接班长的工作也是我没有计划的，唉，总是喜欢操这些没有人愿意操的心，明明今年没有入选发展对象已经令人很寒心了，好在g书记真的很给力，部门那边申请的校级五四评优竟然悄咪咪通过了。</p>
+<p>湖南的天气无语到令人发狂，有下雨天的湿热，大晴天的燥热，有时候接连不断的大雨还会连续几天，总是能搞人心态。前两天可能是因为吹空调吹的太猛了而发烧，让我想起了lx这个学期因为身体原因而颇为不顺心，一直想要去锻炼，想要多注意点生活方式，尽量让自己健康些，发现自己这代人可能真的是有点网上说的“无病呻吟”，在20岁的年纪就开始“保温杯泡枸杞”，预防“老寒腿”，注意饮食，但又经常吃外卖，夜宵，熬夜。</p>
+<p>这学期和家里人通电话的次数也变少了，我不认为忙应当是减少联系的理由，不该把联系家里人当做一种负担，随着自己走出家门，和家人聚少离多，父母的关心和思念是弥足珍贵的。每次通电话都希望尽可能传达我过的还算不错的感觉，分享一下自己的成果，感觉子女和父母总是能以任何方式彼此理解。</p>
+<h2 id="未来一阵子的期望"><a href="#未来一阵子的期望" class="headerlink" title="未来一阵子的期望"></a>未来一阵子的期望</h2><p>这个暑假既然留校，希望自己能在stm32开发上学到一些真本事，而且两个竞赛的时间紧迫必须要做出点东西，不能浪费自己这个学期的工作。</p>
+<p>自从看了大疆大佬的一篇文章之后，我一直把英语当做一种工具来学，但这半年很少接触英语，考六级的机会不多了，也要抓紧。</p>
+<p>沾到了点科研的感觉，暂且不论目前人工智能方向的火热，不论未来深挖哪个方向，都让我感觉读研是很有必要的。即将步入大三，考研的一些东西也应当开始了解，下个学期没那么忙的话，要抓住考六级和刷绩点的机会。</p>
+<p>不管怎么说，希望自己终有一天能构建自己的精神世界，做一个情感丰富的人，有自己热爱的事物。在此之上，人将无所不能。</p>
+]]></content>
+      <tags>
+        <tag>杂记</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>基于机器视觉的在线高速PCBA生产质量检测器</title>
+    <url>/2023/07/17/project/</url>
+    <content><![CDATA[<h2 id="设计概述"><a href="#设计概述" class="headerlink" title="设计概述"></a>设计概述</h2><p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E5%9B%BE%E7%89%8720230717091339.jpg"
+                     
+                ></p>
+<p>1.1设计目的</p>
+<p>随着电子技术的发展，电子产品中的印制板组件（PCBA）越来越复杂，在元件数目较多的PCBA生产过程中，很容易出现元件的漏焊、缺件、错件等可靠性问题，制约电子设备的生产效益。本项目基于STM32H7系列MCU设计，使用摄像头扫描生产线上的PCBA，通过视觉算法快速准确地检测元件的焊接缺陷，提供给维修人员针对性维修，从而降低焊接错误而导致的废品率，节省产能，同时减少电子垃圾，实现经济、环境的双重收益，为电子产品的生产提供更好的保障。</p>
+<p>1.2应用领域</p>
+<p>本项目的应用领域主要在电子制造业，可包含各个环节，例如PCB板制造商、电子组装厂、OEM厂商等。因为PCBA加工制程比较繁琐，需经过许多复杂的工序，所以在加工过程中难免会因为人员的疏忽，或是机器故障而导致产品出现焊接质量问题，本项目可以帮助企业通过识别和定位PCB板焊接过程中的错误，提高生产效率和产品质量。</p>
+<p>1.3主要技术特点</p>
+<p>本项目设计基于STM32H7B3I-DK开发板套件，该套件用作用户应用程序开发的参考设计，本团队正是在此套件上开发了一套简洁易用的GUI，同时控制部署了YOLOv2视觉检测算法的Maix-II-Dock摄像头套件，检测生产线上PCB板元件的缺焊漏焊、极性反向等焊接问题。成功将深度学习的AI模型部署到嵌入式设备来运行，同时配合简约的UI，实现低学习成本操作，便于电子制造业工人上手使用。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E5%9B%BE%E7%89%8720230717095652.jpg"
+                     
+                ></p>
+<p>1.4关键性能指标<br>GUI操作简捷流畅，共设置10套屏幕页面进行交互，配置图片演示以及文字提示，便于操作人员直接使用触控操作，控制设备实现轻量化检测。</p>
+<p>团队为使视觉算法检测准确，多次进行数据集采集补充，训练模型时数据集达到3000余张，每项标注达6000例。也尝试更换标注方案，训练不同版本的算法模型，尝试进行移植部署处理。下图为模型的准确度曲线。</p>
+<p>团队搭配使用Maix-II-Dock摄像头模块，有特有的AI硬件加速特性，配合部署YOLO视觉算法，实现在线快速检测。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230717085917.png"
+                     
+                ></p>
+<p>1.5主要创新点</p>
+<p>(1)准确高效识别元件状态与电路板的焊接状态</p>
+<p>传统的PCBA故障检测需要人工仔细观察PCB板上密集微小的元器件，并依据一定的经验来判断是否有明显的元件损坏或焊接缺陷，效率极低。而本项目可通过摄像头利用视觉算法检测元件与电路板焊接状态是否异常，定位异常数据并进行明显的标注，便于后续的故障维修。</p>
+<p>(2)在线质量检测</p>
+<p>传统的PCB板维修过程中，维修师傅需要在检测完电路板的故障后立即开始维修，不能高效便捷地记录故障位置。对此团队拟设计云端存储功能，可以将采集到的PCB板故障数据详细编号并传输至云端保存，实现数据真实备份存储，维修方案更加灵活，同时企业可以将后台大量的数据作为改进生产工艺的参考。团队已针对此功能尝试开发网站。</p>
+<p>(3)低耗能绿色生产，从源头上减少电子垃圾产生</p>
+<p>本项目通过实现对PCB装配件生产过程中的质量检测自动化和智能化，减少了人工检测的需求，同时也能够降低产品的废品率和损失率，进而减少资源的浪费和环境污染。</p>
+<h2 id="系统组成"><a href="#系统组成" class="headerlink" title="系统组成"></a>系统组成</h2><p>2.1整体介绍</p>
+<p>下文展示了项目实拍整体图片，以及关系框图，对STM32H7B3I-DK开发板进行包装，开发板触控屏幕上运行团队设计的UI界面对摄像头模块进行控制，Maix-II-Dock摄像头模块采集传送带模块上被测电路板图像进行检测，并将结果送回开发板，方便导出，演示系统采用外接移动电源进行供电。</p>
+<p>2.2各模块介绍</p>
+<p>(1)UI展示模块</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230717093134.png"
+                     
+                ></p>
+<p>也是STM32H7B3I-DK开发套件本体，运行团队使用TouchGFX工具开发的UI触控交互界面，简单易用，便于工人使用本项目进行操作。</p>
+<p>(2)摄像头模块</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230717093234.png"
+                     
+                ></p>
+<p>使用Maix-II-Dock摄像头模块采集被测板图像信息，运用部署在模块上的YOLOv2目标检测算法实现检测焊接缺陷元件并标注。</p>
+<p>(3)传送带模块</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ%E6%88%AA%E5%9B%BE20230717093147.png"
+                     
+                ></p>
+<p>承载被测实验电路板，辅助摄像头模块进行检测。模拟生产线环境，便于演示工人使用。</p>
+<h2 id="完成情况及性能参数"><a href="#完成情况及性能参数" class="headerlink" title="完成情况及性能参数"></a>完成情况及性能参数</h2><p>项目已实现通过主控板展示操作UI界面进行交互，控制摄像头模块进行检测。摄像头模块上部署了YOLOv2目标检测算法，实现了元件焊接错误的检测，能够使用传送带模型模拟在线检测的工作环境进行演示。团队开发者已搭建个人网站进行了上位机开发的尝试。</p>
+<p>3.1YOLO目标检测算法模型训练及部署</p>
+<p>为实现更好的质量检测结果，团队不断优化算法的数据集，目前已优化补充六代数据集并训练多个版本的模型，已实现了实时对缺陷PCBA中元件极性反向、缺焊、漏焊等问题的识别与框选。</p>
+<p>团队对多块电路板采集图像，制作数据集，先后使用了Roboflow与MaixHub注释元件信息，尝试不同的标注标签，导出数据集进行算法模型训练，下图为团队中期使用YOLOv5目标检测算法实现的初步效果。</p>
+<p>团队后期使用Maix-II-Dock摄像头模块，为便于部署，只进行错误元件标注，又多次在PyTorch框架下训练模型，并使用PyTorch自带的转换函数转变便于部署的onnx模型，最终将YOLOv2模型部署于摄像头模块，实现质量检测。</p>
+<p>3.2简洁易用的操作UI开发</p>
+<p>团队使用TouchGFX工具开发了简洁的触控UI界面，便于工人实际上手操作设备。UI包含十套交互屏幕界面设计，实现了检测控制、数据展示，开发人员展示、网站链接等功能。</p>
+<p>3.3上位机网站开发尝试</p>
+<p>团队成员为实现云存储功能，学习网站制作，已经基于Hexo框架搭建了项目博客网站，为下一步实现云存储上位机网站搭建奠定了技术基础。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>4.1可扩展之处</p>
+<p>在对缺陷电路板的数据收集与传输方面，团队正努力学习云端存储等相关技术，未来会将缺陷数据与云端连接，并通过大数据分析出工艺中的漏洞，便于企业将后台大量的数据作为改进生产工艺的参考。</p>
+<p>4.2心得体会</p>
+<p>参与本次嵌入式大赛，为团队提供了一个项目实践的机会，使各成员深刻理解到了机器学习和图像处理技术在实际工业生产中的重要价值。</p>
+<p>首先是计算机视觉技术的实用性与创新性。在PCBA生产线中，缺陷检测和问题定位是一个关键环节。传统的人工检测方式效率低下，且容易出错；而本项目则使用机器视觉和机器学习技术，实现了自动化、高效和准确的检测，大大提高了生产质量和效率，这完全符合当前工业4.0的智能制造理念。这次大赛让团队看到了学术知识与实际应用的紧密结合，也激发了团队对于技术创新的热情。</p>
+<p>其次是团队合作的重要性。在此次项目中，团队成员之间进行了有效的分工和协作。由于项目涉及到硬件开发、数据集采集与标注、模型训练与部署、系统集成等多个环节，团队需要充分利用每个成员的专长，同时互相学习，共同解决问题。这次经历让团队深刻认识到，团队合作不仅能提高工作效率，更能激发新的创意和思考。</p>
+<p>最后，持续学习与改进的必要性。在本项目开发过程中，团队遇到了许多预料之外的问题，比如光照条件变化对算法性能的影响，或是摄像头模块与开发板的适配问题。这些问题都需要团队不断学习新的知识，寻找解决方案，持续提升团队的技术水平。这次大赛让团队更加明白，只有持续学习和改进，才能在科技的浪潮中保持领先。</p>
+<p>总的来说，这次嵌入式大赛是一次宝贵的实践和学习经验。团队的“基于机器视觉的在线高速PCBA生产质量检测器”项目，不仅实现了技术的创新和实用，更让团队深感团队合作和持续学习的重要性。团队期待在未来的学习和工作中，能够继续发扬这种精神，为社会的发展做出更大的贡献。 </p>
+]]></content>
+      <tags>
+        <tag>项目</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>线上工具整理备用</title>
+    <url>/2023/07/22/tool/</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>很久没有打理自己的博客了，其实就自己目前的水平而言，博客不太好进一步优化了，还需要真正花些时间来学学才可能更进一步，当前就尽量完善内容，多写些东西吧。</p>
+<p>嵌入式前些天交稿，目前在等待结果了，希望能进入复赛，项目当前也面临着后继无人的状态，很难搞。自己的计划是，能在yj师兄回来前彻底掌握目前项目所需要的东西，进而向几个师兄师姐学习更多。</p>
+<p>今天是7月22日，正好是今年老妈的生日，也是今年BW的第二天，也是BML十周年的日子。今年因为打比赛，又没有计划好日子去一趟BW，高中毕业的暑假就想去，要学车等等没去成，大一暑假正好赶上遗憾的2022年，到今年已经错过了3个年头。未来想想只会更忙。就在刚刚的BML上有个节目叫时光胶囊，不只十年的番剧BGM响起，感觉自己才二十岁，就已经二次元不起来了快，我一直不认为自己算是个纯二次元，只不过小时候看死火海养成了追追番的习惯而已。而现在随着时间的压缩，很少追番了，只能是看看泛式的节目，找回点感觉。还是要不负时光，多做些有意义的事，多做些尝试。</p>
+<h2 id="工具整理"><a href="#工具整理" class="headerlink" title="工具整理"></a>工具整理</h2><h3 id="科技改变生活类"><a href="#科技改变生活类" class="headerlink" title="科技改变生活类"></a>科技改变生活类</h3><p>首当其冲，就是openai的chatgpt，这玩意无疑是学生和工作者的一大福音：<a class="link"   href="https://chat.openai.com/" >ChatGPT <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>然后就是不用使用魔法的Claude，我把它挂到了Slack上：<a class="link"   href="https://app.slack.com/client/T055K8QDKUM/D055QMJ4G68" >Claude <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>还有个套壳GPT，也整理了些AI工具的需要魔法的Poe：<a class="link"   href="https://poe.com/" >Poe <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p>还有些LLM的整理：<a class="link"   href="https://chat.lmsys.org/" >More <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<h3 id="实用工具"><a href="#实用工具" class="headerlink" title="实用工具"></a>实用工具</h3><p><a class="link"   href="https://lceda.cn/" >立创eda <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><a class="link"   href="https://app.roboflow.com/new-space-n8oni" >Roboflow <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><a class="link"   href="https://www.pexels.com/zh-cn/" >Pexel <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><a class="link"   href="https://sms-activate.org/cn" >虚拟海外电话 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><a class="link"   href="https://www.remove.bg/zh" >抠图 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><a class="link"   href="https://chuangzaoshi.com/" >平面设计资源 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><a class="link"   href="https://tinypng.com/" >压缩图片 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><a class="link"   href="https://www.iconfont.cn/" >矢量图标库 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><a class="link"   href="https://imgtool.net/pdfrotate/" >图文工具箱 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><a class="link"   href="https://www.postermywall.com/index.php" >海报制作 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<p><a class="link"   href="https://www.aiseesoft.com/image-upscaler/" >提高图片分辨率 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+]]></content>
+      <tags>
+        <tag>杂记</tag>
+        <tag>工具</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>第六届嵌入式芯片与系统设计竞赛参赛记录</title>
+    <url>/2023/08/24/the-sixth/</url>
+    <content><![CDATA[<h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>8月18日上午10:20，筹备了半年、侥幸进入国赛的嵌赛公布了获奖名单，这种预告公示的感觉，像极了科举揭榜，让人颇为激动。</p>
+<p>当全场人员听过三场致辞，等到获奖宣读的时候，我那贫乏的语言难以形容当时的氛围，像是所有人心中的期待化成了实质，弥漫四周，呼吸不由自主地停滞，耳边伴随着老师读过一个个数字，一双双眼睛齐齐盯着屏幕，从各式队伍名字中寻找最熟悉的几个字。十分幸运，第一个负责的项目能磕磕绊绊拿到国三。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230824082916.jpg"
+                      alt="奖项宣读"
+                ></p>
+<p>回顾此次竞赛经历，最初如果不是lx，可能真的无法下定决心搞。2月左右开始申报，拉队伍，l老师帮着定项目，lx总是能帮着拿不定主意的我出谋划策，区赛和国赛更是身在病房，仍在挂念，给了我很多鼓励。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230824083856.png"
+                      alt="对面就很牛"
+                ></p>
+<h2 id="参赛过程记录"><a href="#参赛过程记录" class="headerlink" title="参赛过程记录"></a>参赛过程记录</h2><p>下面写一些流水账，将时间和流程大致记录。和lx构思项目大概是在3月的3号。</p>
+<p>知识匮乏，反而限制了想象力，最后l老师和yj师兄商量着将项目定下来了，没有刘老师，肯定无法想到走视觉这条路。过于先进的科技对于普通人来说，就像是魔法一般。有了老师的建议和师兄的支持，十分惶恐，下定决心要做好。</p>
+<p>3月8号前后，决定了赛道以及板卡，并进行了报名预约。期间出了项目计划书提交给了丰老师。</p>
+<p>在第五周初知道了要答辩来确定划分实验室等事宜，开始写答辩稿，制作PPT，师兄说可以加紧将算法在电脑上跑出来，以增加答辩成功概率。3月16号写出来了答辩稿，3月底正式入住了创新实验室，有了小基地。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230318160421.png"
+                      alt="第一次标记"
+                ></p>
+<p>4月6号决定搞节能减排，打磨本子是我的老本行。节能减排忙活了将近得有两个月的时间，5月9号校答辩，拿了校一，冲出学校，5月底报了国赛无果。同时节水项目止步校三。中途4月底还打了个院里面的职业规划大赛，得了院奖。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230824084634.png"
+                      alt="自己反而拿了校一"
+                ></p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230824084423.jpg"
+                      alt="职规赛还是花了点经历"
+                ></p>
+<p>6月初从科协退休了，感觉还是十分圆满，g书记给了一个校奖还，科协带给我的影响是潜移默化的，我无法估量组织与倾听多场答辩会对我的答辩能力提升多少，他虽然没有给我太多实质，但回忆和影响总归值得珍惜。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/5DZ4ZGIN%7DUKS3YFYAW~K5XM.jpg"
+                      alt="再见，科协"
+                ></p>
+<p>6月底考完试，短短休息几天，开始主攻项目。首先是重新制作了数据集，中途还发烧来着（每逢放假必发烧），然后让lzn来实验室，结果板子带到了，人硬是没见着，咱也不理解到底有啥难言之隐，队伍十分缺少交流。摄像头采用了模块的，终于能亮了，这个时候，中心就到了玩板子以及转换模型并部署了，可惜跑的模型并没有用上，退而求其次用了模块化摄像头自带的平台间接实现了下效果。所以项目本身其实只实现了最最基础的一些小功能。</p>
+<p>7月9号，去长沙见了zjs，很不容易，终于见上一面，在他回合肥之前，发现两人的路径肯定是不会相同了，但相信我们二人做的努力都不会白费。</p>
+<p>回来后才是真正发愁部署以及设计UI界面，zn一个学期也没说要换方案，换了方案后，短短一周雏形就出来了。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/Q20230824093347.png"
+                      alt="UI素材"
+                ></p>
+<p>7月16号、17号准备了交稿的材料并提交，嵌入式初赛结束，后面两天准备了ican的材料，中途发现24号会出复赛名单，就没有回家，留在学校等名单，进入了复赛又准备行李去武汉，武汉比赛几天后得知进入国赛，回家休了十天，8月13号返校，15号杀去南京参与国赛，18号公示获奖名单，至此，第六届嵌赛告一段落。</p>
+<h2 id="不吐不快"><a href="#不吐不快" class="headerlink" title="不吐不快"></a>不吐不快</h2><p>其实，最让人难忘的几天，正是临近截稿的冲刺，实验室的各位互帮互助，相互提点，我和其他几位学弟一同去了武汉和南京，起码是有了些共同拼杀的战友情了。</p>
+<p>在武汉，和y哥的熄灯夜谈、报到时对于华科雄厚财力的震惊、答辩前萍水相逢的啊对对队间的寒暄、夜游两江、黄鹤楼吃闭门羹、地铁的“生死时速”、sony的联名，，都是十分美好的回忆，我也因此对武汉印象十分不错。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ0230824100306.jpg"
+                     
+                ></p>
+<p>在南京，因为其他项目而感到的自卑、答辩时挑刺的问题、全是人的秦淮河、商业气息厚重的夫子庙、网红的先锋书店、只挂照片的总统府，回忆好像都不太好，反而一些独特的突发情况更能让人心生涟漪，固定题库的嵌入式初级认证，总统府门前疯狂往别人雨伞下钻来躲雨、在没有夜生活的南京纠结吃什么到最后吃兰州拉面。对南京的感受是不如武汉的。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230824100257.jpg"
+                     
+                ></p>
+<p>这个暑假去了两个更大的城市，去了一个企业基地和一个高等学校，，感受是对于城市的追求变淡，但对于高等学校有了渴望，，不知对我这学期的考研择校会有什么影响。</p>
+<h2 id="一些心得总结"><a href="#一些心得总结" class="headerlink" title="一些心得总结"></a>一些心得总结</h2><p>决定参赛后每一步都十分重要，从组建团队、选择平台到项目实现，都需要慎重考虑。</p>
+<p>组建团队时确定好分工，加强队员间的沟通交流，团结一心共同攻坚对项目的推进十分有帮助，而如果队伍松散，不仅作品难以完成，更对队员的心态有消极的影响。</p>
+<p>作品的选题可以参考各个平台的参赛指南，结合自己的创意以及实用性，在答辩时评委老师十分看重实用价值。我的项目是检测电路板上元件的焊接缺陷，算法模型是使用一块实验电路板损坏进行训练的，在赛场上评委老师就针对不同企业所生产的各类电路板是否能高效检验进行了询问。</p>
+<p>作品功能的丰富性十分重要，丰富的功能也是团队工作量以及使用价值的体现。本竞赛答辩时更加侧重功能的实现与演示，功能丰富全面、演示精彩会更加分。</p>
+<p>开发过程中难免会遇到困难，这时灵活选取方案，在有限时间内完成基础的功能再逐步完善是一个更好的选择。团队在实现项目的过程中，发现在团队申请使用的这块ST平台的官方板卡上难以实现模型的量化移植，此时为了项目的基础功能实现，及时尝试了另一种方案。</p>
+<p>在答辩时，需要做到能在较短时间内展现项目的创新点与自身团队的工作量，这两点对评委了解项目至关重要，团队做了哪些细致的工作要向评委讲述清楚，否则功能演示简单的项目会使评委认为工作量不多，参赛选手的实践性不强。</p>
+<hr>
+<p>本文只用作记录。</p>
+]]></content>
+      <tags>
+        <tag>杂记</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>STM32学习笔记（六）——中断</title>
+    <url>/2023/08/25/STM32-5-1/</url>
+    <content><![CDATA[<h2 id="中断系统"><a href="#中断系统" class="headerlink" title="中断系统"></a>中断系统</h2><p>中断是在主程序运行过程中，出现了特定的中断触发条件（中断源），使得CPU暂停正在运行的程序，转而去处理中断程序，处理完后又返回暂停位置继续运行。</p>
+<p>多个中断是有优先级之分的，中断是可以嵌套的。</p>
+<p>执行流程如下：<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825145320.jpg"
+                     
+                ></p>
+<h2 id="STM32的中断"><a href="#STM32的中断" class="headerlink" title="STM32的中断"></a>STM32的中断</h2><p>一般每个芯片都有不同数量的中断通道，F103包括EXTI（外部中断）、TIM（定时器）、ADC（模数转换器）、USART（串口）、SPI通信、I2C通信、RTC实时时钟等多个外设。</p>
+<p>使用NVIC统一管理中断，每个中断通道都有16哥可编程的优先级，可以对他们分组。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825150242.jpg"
+                     
+                ></p>
+<p>不放到CPU来处理这些中断排序了，让NVIC来搞，排好后直接按顺序送到CPU，CPU只去管处理。</p>
+<h2 id="NVIC优先级分组"><a href="#NVIC优先级分组" class="headerlink" title="NVIC优先级分组"></a>NVIC优先级分组</h2><p>看优先级寄存器的4位（0-15）决定，如下：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825150600.jpg"
+                     
+                ></p>
+<p>抢占优先级高的，可以决定是否有中断嵌套，为了将16个优先级分为抢占和响应两种优先级，上面提到的寄存器的四位是二进制，分别对应16个优先级，优先级是值越小，优先级越高，0是最高。</p>
+<p>这4位可以切分，如上图，位数不固定。</p>
+<h2 id="EXTI外部中断"><a href="#EXTI外部中断" class="headerlink" title="EXTI外部中断"></a>EXTI外部中断</h2><p>简单来说就是引脚电平变化，就申请中断。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825151255.jpg"
+                     
+                ></p>
+<p>触发方式有上图4种。注意PA1和PB2不能同时用。</p>
+<p>基本结构如下：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825152006.jpg"
+                     
+                ></p>
+<p>因为EXTI通道数只有16个GPIO的PIN，所以实际上有GPIOA、GPIOB他们都有16个引脚，这时就需要进行选择，AFIO就相当于一个数据选择器，它可以从接入的多个GPIO中选择其中一个然后接入后面的EXTI通道中，这也是为什么PA0和PB0不能同时用。</p>
+<p>这个结构图相当完美。</p>
+<p>EXTI框图如下：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825152909.jpg"
+                     
+                ></p>
+<p>左下角可以看出，既可以触发中断（左下角上面输出）又可以触发其他外设（左下角下面输出，也就是触发事件）。</p>
+<h2 id="本次例程所用的外部模块"><a href="#本次例程所用的外部模块" class="headerlink" title="本次例程所用的外部模块"></a>本次例程所用的外部模块</h2><h3 id="使用外部中断的好处"><a href="#使用外部中断的好处" class="headerlink" title="使用外部中断的好处"></a>使用外部中断的好处</h3><ul>
+<li>STM32获取外部驱动的突发信号，比如旋转编码器的输出信号</li>
+</ul>
+<h3 id="旋转编码器"><a href="#旋转编码器" class="headerlink" title="旋转编码器"></a>旋转编码器</h3><p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825155639.jpg"
+                     
+                ></p>
+<p>有光栅式编码的，只能通过透光和不透光来测量速度等，无法判断旋转方向。</p>
+<p>我们使用的是触点式旋转编码器，他能够有两相正交输出，即相位相差90度。可判断方向</p>
+<p>硬件电路如下：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825160349.jpg"
+                     
+                ></p>
+<p>理论部分结束。</p>
+<h2 id="代码部分"><a href="#代码部分" class="headerlink" title="代码部分"></a>代码部分</h2><div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;stm32f10x.h&quot;                  // Device header</span><br><span class="line">#include &quot;Delay.h&quot;</span><br><span class="line">uint16_t Countsensor_Count;</span><br><span class="line"></span><br><span class="line">void Countsensor_Init(void)</span><br><span class="line">&#123;	</span><br><span class="line">	GPIO_InitTypeDef GPIO_InitStructure;</span><br><span class="line">	EXTI_InitTypeDef EXTI_InitStructure;</span><br><span class="line">	NVIC_InitTypeDef NVIC_InitStructure;</span><br><span class="line">	</span><br><span class="line">	//首先配置时钟</span><br><span class="line">	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB,ENABLE);//开启GPIOB外设的时钟</span><br><span class="line">	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO,ENABLE);//开启AFIO，也就是数据选择器，选择数据给NVIC</span><br><span class="line">	</span><br><span class="line">	//NVIC和EXTI两个外设的时钟一直是开着的，不需要手动开启，</span><br><span class="line">	//NVIC是内核外设，内核外设都不用开，EXTI不知道为啥不开</span><br><span class="line">	</span><br><span class="line">	//然后配置GPIO</span><br><span class="line">	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;//对于外部中断，一般就是浮空输入、上拉输入、下拉输入</span><br><span class="line">	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_14;</span><br><span class="line">	GPIO_InitStructure.GPIO_Speed  = GPIO_Speed_50MHz;</span><br><span class="line">	GPIO_Init(GPIOB,&amp;GPIO_InitStructure);</span><br><span class="line">	</span><br><span class="line">	//接着配置AFIO</span><br><span class="line">	GPIO_EXTILineConfig(GPIO_PortSourceGPIOB,GPIO_PinSource14);//AFIO外部中断引脚选择，也就是选择GPIOB</span><br><span class="line">	</span><br><span class="line">	//之后配置EXTI</span><br><span class="line">	EXTI_InitStructure.EXTI_Line = EXTI_Line14;//选择EXTI的14号线路</span><br><span class="line">	EXTI_InitStructure.EXTI_LineCmd = ENABLE;//开启</span><br><span class="line">	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;//配置为中断模式</span><br><span class="line">	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising_Falling;//下降沿触发</span><br><span class="line">	EXTI_Init(&amp;EXTI_InitStructure);</span><br><span class="line">	</span><br><span class="line">	//最后配置NVIC</span><br><span class="line">	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);//确定分组</span><br><span class="line">	NVIC_InitStructure.NVIC_IRQChannel = EXTI15_10_IRQn;//指定通道</span><br><span class="line">	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;</span><br><span class="line">	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;</span><br><span class="line">	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;</span><br><span class="line">	NVIC_Init(&amp;NVIC_InitStructure);</span><br><span class="line">	//外部中断配置完成</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">uint16_t CountSensor_Get(void)</span><br><span class="line">&#123;</span><br><span class="line">	return Countsensor_Count;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void EXTI15_10_IRQHandler(void)</span><br><span class="line">&#123;</span><br><span class="line">	if (EXTI_GetITStatus(EXTI_Line14) == SET)</span><br><span class="line">	&#123;</span><br><span class="line">//		Delay_ms(500);</span><br><span class="line">		Countsensor_Count ++;</span><br><span class="line">//		Delay_ms(500);</span><br><span class="line">		EXTI_ClearITPendingBit(EXTI_Line14);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>
+
+<p>对应5-2工程的旋转编码器计数实现代码：</p>
+<p>首先是Encoder.c作为旋转编码器的驱动代码。</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;stm32f10x.h&quot;                  // Device header</span><br><span class="line"></span><br><span class="line">int16_t Encoder_Count;</span><br><span class="line"></span><br><span class="line">void Encoder_Init(void)</span><br><span class="line">&#123;</span><br><span class="line">	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);</span><br><span class="line">	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);//同理开启二者时钟</span><br><span class="line">	</span><br><span class="line">	GPIO_InitTypeDef GPIO_InitStructure;</span><br><span class="line">	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;</span><br><span class="line">	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1;</span><br><span class="line">	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;</span><br><span class="line">	GPIO_Init(GPIOB, &amp;GPIO_InitStructure);</span><br><span class="line">	</span><br><span class="line">	GPIO_EXTILineConfig(GPIO_PortSourceGPIOB, GPIO_PinSource0);</span><br><span class="line">	GPIO_EXTILineConfig(GPIO_PortSourceGPIOB, GPIO_PinSource1);</span><br><span class="line">	</span><br><span class="line">	EXTI_InitTypeDef EXTI_InitStructure;</span><br><span class="line">	EXTI_InitStructure.EXTI_Line = EXTI_Line0 | EXTI_Line1;</span><br><span class="line">	EXTI_InitStructure.EXTI_LineCmd = ENABLE;</span><br><span class="line">	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;</span><br><span class="line">	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;</span><br><span class="line">	EXTI_Init(&amp;EXTI_InitStructure);</span><br><span class="line">	</span><br><span class="line">	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);</span><br><span class="line">	</span><br><span class="line">	NVIC_InitTypeDef NVIC_InitStructure;</span><br><span class="line">	NVIC_InitStructure.NVIC_IRQChannel = EXTI0_IRQn;</span><br><span class="line">	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;</span><br><span class="line">	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;</span><br><span class="line">	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;</span><br><span class="line">	NVIC_Init(&amp;NVIC_InitStructure);</span><br><span class="line"></span><br><span class="line">	NVIC_InitStructure.NVIC_IRQChannel = EXTI1_IRQn;</span><br><span class="line">	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;</span><br><span class="line">	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;</span><br><span class="line">	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;</span><br><span class="line">	NVIC_Init(&amp;NVIC_InitStructure);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">int16_t Encoder_Get(void)</span><br><span class="line">&#123;</span><br><span class="line">	int16_t Temp;</span><br><span class="line">	Temp = Encoder_Count;</span><br><span class="line">	Encoder_Count = 0;</span><br><span class="line">	return Temp;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void EXTI0_IRQHandler(void)</span><br><span class="line">&#123;</span><br><span class="line">	if (EXTI_GetITStatus(EXTI_Line0) == SET)</span><br><span class="line">	&#123;</span><br><span class="line">		/*如果出现数据乱跳的现象，可再次判断引脚电平，以避免抖动*/</span><br><span class="line">		if (GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_0) == 0)</span><br><span class="line">		&#123;</span><br><span class="line">			if (GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_1) == 0)</span><br><span class="line">			&#123;</span><br><span class="line">				Encoder_Count --;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		EXTI_ClearITPendingBit(EXTI_Line0);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void EXTI1_IRQHandler(void)</span><br><span class="line">&#123;</span><br><span class="line">	if (EXTI_GetITStatus(EXTI_Line1) == SET)</span><br><span class="line">	&#123;</span><br><span class="line">		/*如果出现数据乱跳的现象，可再次判断引脚电平，以避免抖动*/</span><br><span class="line">		if (GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_1) == 0)</span><br><span class="line">		&#123;</span><br><span class="line">			if (GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_0) == 0)</span><br><span class="line">			&#123;</span><br><span class="line">				Encoder_Count ++;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		EXTI_ClearITPendingBit(EXTI_Line1);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>
+
+<p>.h文件声明</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#ifndef __ENCODER_H</span><br><span class="line">#define __ENCODER_H</span><br><span class="line"></span><br><span class="line">void Encoder_Init(void);</span><br><span class="line">int16_t Encoder_Get(void);</span><br><span class="line"></span><br><span class="line">#endif</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>
+
+<p>主函数如下:</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;stm32f10x.h&quot;                  // Device header</span><br><span class="line">#include &quot;Delay.h&quot;</span><br><span class="line">#include &quot;OLED.h&quot;</span><br><span class="line">#include &quot;Encoder.h&quot;</span><br><span class="line"></span><br><span class="line">int16_t Num;</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">	OLED_Init();</span><br><span class="line">	Encoder_Init();</span><br><span class="line">	</span><br><span class="line">	OLED_ShowString(1, 1, &quot;Num:&quot;);</span><br><span class="line">	</span><br><span class="line">	while (1)</span><br><span class="line">	&#123;</span><br><span class="line">		Num += Encoder_Get();</span><br><span class="line">		OLED_ShowSignedNum(1, 5, Num, 5);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>]]></content>
+      <tags>
+        <tag>STM32</tag>
+        <tag>学习笔记</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>STM32学习笔记（五）——OLED调试工具</title>
+    <url>/2023/08/25/STM32-6/</url>
+    <content><![CDATA[<p>本节主要介绍STM32配合OLED屏幕进行调试的代码实现。</p>
+<h2 id="调试方式"><a href="#调试方式" class="headerlink" title="调试方式"></a>调试方式</h2><p>单片机调试一般有以下三种调试方式：</p>
+<ul>
+<li>串口调试：用串口通信，将调试信息发送到电脑端，便于显示</li>
+<li>显示屏调试：单片机没有屏幕就接一个屏幕，但只能显示简单内容</li>
+<li>Keil调试模式：借助编辑器的断点调式法</li>
+</ul>
+<h2 id="OLED简介"><a href="#OLED简介" class="headerlink" title="OLED简介"></a>OLED简介</h2><p>OLED都是自发光，不用像LCD需要背光。</p>
+<p>供电3-5.5V，通信协议：I2C&#x2F;SPI，分辨率是128*64</p>
+<h2 id="硬件电路"><a href="#硬件电路" class="headerlink" title="硬件电路"></a>硬件电路</h2><p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825093042.png"
+                     
+                ><br>SCL和SDA都是IIC通信引脚</p>
+<p>7引脚的是SPI通信的OLED模块，</p>
+<h2 id="OLED驱动函数"><a href="#OLED驱动函数" class="headerlink" title="OLED驱动函数"></a>OLED驱动函数</h2><p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230825093530.png"
+                     
+                ></p>
+<p>4行16列的小区快，驱动函数常见的初始化等都有，UP封装较为全面。</p>
+<p>代码封装好了直接用这些函数就行。</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;stm32f10x.h&quot;</span><br><span class="line">#include &quot;Delay.h&quot;</span><br><span class="line">#include &quot;OLED.h&quot;</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">	OLED_Init();</span><br><span class="line">	</span><br><span class="line">	OLED_ShowChar(1,1,&#x27;A&#x27;);</span><br><span class="line">	OLED_ShowString(2,1,&quot;ZYiPan&quot;);</span><br><span class="line">	OLED_ShowNum(1,2,123,3);</span><br><span class="line">	</span><br><span class="line">	while (1)</span><br><span class="line">	&#123;</span><br><span class="line">		</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>]]></content>
+      <tags>
+        <tag>STM32</tag>
+        <tag>学习笔记</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>STM32学习笔记（七）——TIM定时器中断</title>
+    <url>/2023/08/27/STM32-6-1/</url>
+    <content><![CDATA[<h2 id="TIM简介"><a href="#TIM简介" class="headerlink" title="TIM简介"></a>TIM简介</h2><p>定时器TIM（Timer），可以对输入的时钟进行计数，计数值到设定值后触发中断。即定时触发中断。</p>
+<p>含16位计数器寄存器、预分频器（分频，使计数器计数更加灵活），自动重装寄存器————这些构成时基单元。</p>
+<h2 id="定时器类型"><a href="#定时器类型" class="headerlink" title="定时器类型"></a>定时器类型</h2><p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230827162706.jpg"
+                     
+                ></p>
+<p>C8T6有一个高级定时器，三个通用计时器，，三个等级的定时器向下兼容。</p>
+<h2 id="定时器结构"><a href="#定时器结构" class="headerlink" title="定时器结构"></a>定时器结构</h2><h3 id="基本定时器结构如下："><a href="#基本定时器结构如下：" class="headerlink" title="基本定时器结构如下："></a>基本定时器结构如下：</h3><p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230827164513.jpg"
+                     
+                ></p>
+<p>图的下方可以看到之前提到的时基单元，包含预分频器，计数器和自动重装寄存器，它们3个构成了最基本的计数计时电路。</p>
+<p>预分频器之前连接的是基准计数时钟的输入，而基准计时器只能是内部时钟，直接理解为连接到了CK_INT内部时钟，来源为RCC_TIMxCLK，频率为系统主频72MHz，所以基准频率就是72MHz，</p>
+<p>而预分频就是可以对72MHz进行预分频，PSC写0，那么就是不分频或者叫1分频，输出&#x3D;输入&#x3D;72，如果预分频器写1，那就是2分频，输出&#x3D;输入的72&#x2F;2&#x3D;36，同理，写2为3分频，72&#x2F;3了就是。所以注意差值关系，</p>
+<p><code>实际分频系数=预分频器写入的值+1</code></p>
+<p>而这个预分频寄存器是16位的，最大值相当于可以写65535，再加1，最多65536分频。</p>
+<p>对于计数器，就是对分好的计数时钟进行计数，计数时钟每来一个上升沿，计数器的值就+1，同样是16位寄存器，所以所以可以从0加到65535，然后再回到0，计数器不断自增运行，自增到目标值时，产生中断，完成了定时的任务。</p>
+<p>自动重装寄存器——存储目标值的寄存器，图中向上的曲折箭头当计数值等于重装值后就产生“更新中断”，更新中断之后就会通往NVIC，再配置好NVIC的定时器通道，这样定时器的更新中断就能得到CPU的响应了。</p>
+<p>图中向下的箭头代表会产生一个“更新事件”，这玩意不会触发中断，但会触发内部其他电路的工作。</p>
+<p>主模式触发DAC的功能——让内部硬件在不受程序的控制下实现自动运行，在需要的情境下大幅度降低CPU负担。</p>
+<p>当需要转换DAC时，正常思路是设置中断调用代码来实现电压点变换，频繁进入中断会影响主程序的运行和其他中断的响应。所以定时器有个主模式，将更新事件通过主模式映射到TRGO，然后TRGO就会直接去触发DAC了。不用软件参与。</p>
+<h3 id="通用定时器框图如下："><a href="#通用定时器框图如下：" class="headerlink" title="通用定时器框图如下："></a>通用定时器框图如下：</h3><p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230828095055.jpg"
+                     
+                ></p>
+<p>可以看到，中间部分的结构和基本定时器相同，仍然是时基三件套，只不过通用定时器中的计数器不只有向上计数功能了，通用定时器和高级定时器还支持向下计数模式和中央对齐模式，顾名思义，向下计数就是从重装值开始向下自减，到零产生中断，中央对齐是增加到重装值产生中断，减到零产生中断。实际中常用的为向上计数功能。</p>
+<p>框图中上面的结构是用来选择时钟源的，基本定时器只能选内部时钟——系统主频72MHz，而通用定时和高级定时可以选用外部时钟做基准。</p>
+<p>第一个外部时钟是TIMx_ETR引脚上的外部时钟，，在这里，当我们在TIM2的ETR引脚PA0接一个外部方波时钟，然后配置下内部的极性选择、边沿检测和预分频器电路，在配置滤波电路，进行整形，收拾好的信号兵分两路，上面一路ETRF进入触发控制器，紧接着就可以选择作为时基单元的时钟了，如果想在ETR外部引脚提供时钟、或想对ETR时钟进行计数，把这个定时器当作计数器来用的话，就可以配置这一路。</p>
+<p>第二个可以提供时钟的路，就是TRGI，用作触发输入来使用，可以触发定时器的从模式，当这个看作外部时钟来使用的时候，这一路叫做“外部时钟模式1”，通过这一路的时钟第一个就是ETR引脚的信号，ETR可以走不同的通道来做时钟，第二个就是ITR信号，这部分的时钟信号是来自其他定时器的。从右边可以看出来主模式的输出TRGO可以通向其他定时器，这时就接到其他定时器的ITR引脚上来了，ITR0到ITR3分别来自其他4个定时器的TRGO输出，具体连接方式看手册的表。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230830091002.jpg"
+                     
+                ></p>
+<p>这就是ITR和定时器的连接关系。通过这一路就可以实现定时器级联的功能，比如我们先初始化TIM3，然后使用主模式把它的更新事件映射到TRGO，接着再初始化TIM2，选择ITR2，对应的就是TIM3的TRGO，后面再选择时钟为外部时钟模式1，这样，相当于TIM3的更新事件就可以驱动TIM2的时基单元，实现定时器的级联。</p>
+<p>继续看ITR的下面还可以选择TIF_ED，这连接的是图上时基单元下面的输入捕获单元的CH1引脚，就是从CH1获得时钟，后缀ED就是边沿的意思，意味着从这一路通过的时钟，上升沿和下降沿都有效。</p>
+<p>最后，这个时钟还可以通过TI1FP1和TI2FP2获得，其中TIFP1连接到了CH1引脚的时钟， TI2FP2连接到CH2的时钟。 </p>
+<p>到这里，外部时钟模式1的输入介绍完毕，总的来说就是，它的输入可以是ETR引脚、其他定时器、CH1引脚的边沿、CH1和CH2引脚。一般情况下，外部时钟通过ETR引脚就可以了。其它复杂的输入都是为了应对特定的场景。</p>
+<p>最后介绍下时钟输入之外的部分的电路，右上角最大区域的下方的定时器的一个编码器接口，可以读取正交编码器的输出波形，TRGO就是定时器的主模式输出，同时可以把内部的事件映射到TRGO引脚上。</p>
+<p>下面部分的电路主要包含两块，右边这一块有四条通道的是输出比较电路，对应CH1到CH4的引脚，可以用于输出PWM波形，驱动电机。左边这一块是输入捕获电路，同样是4个通道，可用于测量输入方波的频率。中间这些捕获&#x2F;比较寄存器是公用的，所以输出和比较不能共用，他们连引脚都是共用的。</p>
+<p>最后简单看下高级定时器，结构如下</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230830091002.jpg"
+                     
+                ></p>
+<p>结构更复杂，对高级来说，左上部分都是一样的，右下这块是新的，首先申请中断的地方增加了一个重复次数计数器，可以实现每隔多个计数周期，才发生一个更新事件或中断。原来只能每个周期完成后就更新，剩下的部分是对比较输出进行的一些升级，为了驱动三相无刷电机。</p>
+<p>扣完框图结构，最后看个定时中断基本结构图：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230830094340.jpg"
+                     
+                ></p>
+<p>本文先看下——定时中断和内外时钟源选择需要用到的结构，中间最重要的还是PSC预分频器，CNT计数器以及ARR自动重装器构成的时基单元，下面是控制一些运行模式的寄存器，左边是为时基单元提供时钟的部分，可以看到有RCC提供的内部时钟、ETR提供的外部时钟2、触发输入当作外部时钟的外部时钟模式1，以及一个编码器的模式。</p>
+<p>右边就是定时时间到了，信号的去向，中断信号会先在状态寄存器里置一个中断标志位，这个标志位会通过中断输出控制，到NVIC申请中断，中断输出要控制是因为定时器有很多模块要申请中断，所以要控制一下，中断输出控制就是中断输出的允许位，需要哪个中断就允许一下。</p>
+<h2 id="时基单元运行时序"><a href="#时基单元运行时序" class="headerlink" title="时基单元运行时序"></a>时基单元运行时序</h2><h3 id="预分频器时序"><a href="#预分频器时序" class="headerlink" title="预分频器时序"></a>预分频器时序</h3><p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230830102326.jpg"
+                     
+                ></p>
+<p>第二个计数器使能，高电平计数器正常运行，低电平计数器停止，CK_CNT既是预分频器的时钟输出，也是计数器的时钟输入。这里图上就有关系了，计数器未使能（低电平）时，计数器时钟没运行，使能后前半段预分频器系数为1，计数器时钟等于预分频器前面的时钟，后半段可以看出就是预分频器系数变到2了，计数器时钟也就变为预分频器时钟的一半了。</p>
+<p>在计数器时钟的驱动下，下面的计数器寄存器也跟随时钟的上升沿不断自增，在计数器寄存器的中间位置，FC之后，计数器变为0了，可推断出ARR自动重装值就是FC，计数值到达重装值，下一个计数才从零开始，同时产生一个更新事件，图中剩下的三行时序描述的是预分频寄存器的一种缓冲机制，看图可知预分频寄存器实际上有两个寄存器，一个是控制寄存器，供人们读写用的，不直接决定分频系数，一个是缓冲器（影子寄存器），它是真正起作用的寄存器，当我们将控制寄存器由零改成了一，不直接改变预分频系数是因为，会导致计数器寄存器前面计数的频率和后面计数频率不一致，先是会缓冲一段时间，等到这一个计数周期结束，产生一个更新事件时，预分频控制寄存器的值才会被传递到缓冲寄存器里面去，才会生效。</p>
+<p><code>计数器计数频率：CK_CNT=CK_PSC/(PSC+1)</code></p>
+<h3 id="计数器时序"><a href="#计数器时序" class="headerlink" title="计数器时序"></a>计数器时序</h3><p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230831081411.jpg"
+                     
+                ></p>
+<p>这是分频系数为2的图，第一行内部时钟72MHz，第二行时钟使能，高电平启动，第三行是计数器时钟，因分频系数为2，所以这个频率是上面的1&#x2F;2，计数器增到36后清零，计数器溢出，产生更新事件，更新中断标志位为1，这时就申请中断，中断响应后，需要在程序中手动清零。</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">CK_CNT_OV=CK_CNT/(ARR+1)</span><br><span class="line">         =CK_PSC/(PSC+1)/(ARR+1)</span><br></pre></td></tr></table></figure></div>
+
+<p>与预分频器一样，也具有缓冲寄存器的结构，不过用不用它我们可以决定，通过设置ARPE位，可以决定是否使用预装功能，可以对比下两图。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230831082720.jpg"
+                     
+                ></p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230831083051.jpg"
+                     
+                ></p>
+<hr>
+<p>最后本节还讲了下时钟树的结构，不便用笔记形式记录。<a class="link"   href="https://www.bilibili.com/video/BV1th411z7sn?p=13&vd_source=df63b1518b81b99bf6c584903334107e" >复习通道 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<h2 id="定时中断和内外时钟源选择代码"><a href="#定时中断和内外时钟源选择代码" class="headerlink" title="定时中断和内外时钟源选择代码"></a>定时中断和内外时钟源选择代码</h2><h3 id="定时中断"><a href="#定时中断" class="headerlink" title="定时中断"></a>定时中断</h3><p>在粘贴代码前，还是有些细节需要解释：</p>
+<p>首先是宏观掌握，严格按照这个图，一步一步地配置好定时器。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230830094340.jpg"
+                     
+                ></p>
+<ul>
+<li>第一步开启时钟</li>
+<li>第二步选择输入时基单元的时钟（在第一例中使用了内部时钟）</li>
+<li>第三步配置时基单元，定时的时间也取决于这一步的配置</li>
+<li>第四步配置使能更新中断，开启更新中断到NVIC的通路</li>
+<li>第五步配置NVIC</li>
+<li>第六步开始定时器</li>
+</ul>
+<p>配置完成。</p>
+<p>接着就是定时时间的思考，在第一个例子中，计划显示一个1秒的秒表效果的数字，时基单元配置如下：</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;//指定时钟分频，时钟分频是决定输入信号的滤波的采样频率的</span><br><span class="line">TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;//计数器模式，向上计数</span><br><span class="line">TIM_TimeBaseInitStructure.TIM_Period = 10000 - 1;//周期，ARR自动重装器的值</span><br><span class="line">TIM_TimeBaseInitStructure.TIM_Prescaler = 7200 - 1;//PSC预分频器的值</span><br><span class="line">TIM_TimeBaseInitStructure.TIM_RepetitionCounter = 0;//重复计数器</span><br><span class="line">TIM_TimeBaseInit(TIM2,&amp;TIM_TimeBaseInitStructure);</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>
+
+<p>首先第一个参数，时钟分频主要是对输入信号进行滤波的一些配置，第二个就是计数器模式，向上计数说明是向上记到重装值，后面的计数周期和预分频器则是决定定时时间的重要参数，计算的公式：</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">计数器计数频率：CK_CNT=CK_PSC/(PSC+1)</span><br></pre></td></tr></table></figure></div>
+<p>CK_CNT为计数器频率，CK_PSC为预分频器，</p>
+<p>预分频就是可以对选的内部时钟为72MHz进行预分频，PSC写0，那么就是不分频或者叫1分频，输出&#x3D;输入&#x3D;72，如果预分频器写1，那就是2分频，输出&#x3D;输入的72&#x2F;2&#x3D;36，同理，写2为3分频，72&#x2F;3了就是。所以注意差值关系，</p>
+<p><code>实际分频系数=预分频器写入的值+1</code></p>
+<p>此时预分频写7200 - 1，也就是实际分频系数为7200，即72MHz&#x2F;7200 &#x3D; 72<em>10^6&#x2F;72</em>10^2 &#x3D; 10000，也就是输出频率10000Hz，即每1&#x2F;10000S要计1次数，重装器为10000，那么每10000个数就进一次中断，即1S。</p>
+<p>以上就是定时器的精髓。</p>
+<p>下面粘贴第一例的代码：</p>
+<p>Timer.c如下：</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;stm32f10x.h&quot;                  // Device header</span><br><span class="line">#include &quot;stdint.h&quot;</span><br><span class="line"></span><br><span class="line">/*  extern uint16_t Num; */</span><br><span class="line"></span><br><span class="line">void Timer_Init(void)</span><br><span class="line">&#123;</span><br><span class="line">	TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;</span><br><span class="line">	NVIC_InitTypeDef NVIC_InitStructure;</span><br><span class="line">	</span><br><span class="line">	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2,ENABLE);//第一步开启时钟，TIM2通用计时器在APB1上</span><br><span class="line">	</span><br><span class="line">	TIM_InternalClockConfig(TIM2);//第二步，选择时基单元的时钟,用这个函数说明TIM2的时基单元用了内部时钟驱动</span><br><span class="line">	</span><br><span class="line">	//第三步，配置时基单元</span><br><span class="line">	TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;//指定时钟分频，时钟分频是决定输入信号的滤波的采样频率的</span><br><span class="line">	TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;//计数器模式，向上计数</span><br><span class="line">	TIM_TimeBaseInitStructure.TIM_Period = 20000 - 1;//周期，ARR自动重装器的值</span><br><span class="line">	TIM_TimeBaseInitStructure.TIM_Prescaler = 3600 - 1;//PSC预分频器的值</span><br><span class="line">	TIM_TimeBaseInitStructure.TIM_RepetitionCounter = 0;//重复计数器</span><br><span class="line">	TIM_TimeBaseInit(TIM2,&amp;TIM_TimeBaseInitStructure);</span><br><span class="line">	//时基单元配置完成</span><br><span class="line">	</span><br><span class="line">	TIM_ClearFlag(TIM2,TIM_FLAG_Update);//手动把更新中断标志位清除了，避免了刚初始化完就进中断的问题</span><br><span class="line">	</span><br><span class="line">	//配置使能更新中断</span><br><span class="line">	TIM_ITConfig(TIM2,TIM_IT_Update,ENABLE);//开启更新中断到NVIC的通路</span><br><span class="line">	</span><br><span class="line">	//配置NVIC</span><br><span class="line">	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);//选择分组二</span><br><span class="line">	</span><br><span class="line">	NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;//通道数</span><br><span class="line">	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;</span><br><span class="line">	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;//抢占优先级</span><br><span class="line">	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;//响应优先级</span><br><span class="line">	NVIC_Init(&amp;NVIC_InitStructure);</span><br><span class="line">	</span><br><span class="line">	//最后一步，启动定时器</span><br><span class="line">	TIM_Cmd(TIM2,ENABLE);</span><br><span class="line">	</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">//void TIM2_IRQHandler(void)//定时器2的中断函数</span><br><span class="line">//&#123;</span><br><span class="line">//	if(TIM_GetITStatus(TIM2,TIM_IT_Update) == SET)//检查中断标志位</span><br><span class="line">//	&#123;</span><br><span class="line">//		</span><br><span class="line">//		TIM_ClearITPendingBit(TIM2,TIM_IT_Update);//清除标志位</span><br><span class="line">//	&#125;</span><br><span class="line">//&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>
+
+<p>Timer.h如下：</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#ifndef __TIMER_H</span><br><span class="line">#define __TIMER_H</span><br><span class="line"></span><br><span class="line">void Timer_Init(void);</span><br><span class="line"></span><br><span class="line">#endif</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>
+
+<p>main.c如下：</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;stm32f10x.h&quot;</span><br><span class="line">#include &quot;Delay.h&quot;</span><br><span class="line">#include &quot;OLED.h&quot;</span><br><span class="line">#include &quot;Timer.h&quot;</span><br><span class="line"></span><br><span class="line">uint16_t Num;</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">	OLED_Init();</span><br><span class="line">	Timer_Init();</span><br><span class="line">	</span><br><span class="line">	OLED_ShowString(1,1,&quot;WangQi&#x27;s Weight:&quot;);//显示字符串</span><br><span class="line">	</span><br><span class="line">	while (1)</span><br><span class="line">	&#123;</span><br><span class="line">		OLED_ShowNum(2,1,Num,5);</span><br><span class="line">		OLED_ShowNum(3,1,TIM_GetCounter(TIM2),5);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">void TIM2_IRQHandler(void)//定时器2的中断函数</span><br><span class="line">&#123;</span><br><span class="line">	if(TIM_GetITStatus(TIM2,TIM_IT_Update) == SET)//检查中断标志位</span><br><span class="line">	&#123;</span><br><span class="line">		Num ++;</span><br><span class="line">		TIM_ClearITPendingBit(TIM2,TIM_IT_Update);//清除标志位</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>
+
+<h3 id="内外时钟源选择"><a href="#内外时钟源选择" class="headerlink" title="内外时钟源选择"></a>内外时钟源选择</h3><p>还是先说下注意事项，使用外部时钟源，在配置定时器的时候就要更换第二步的函数，</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">TIM_ETRClockMode2Config(TIM2,TIM_ExtTRGPSC_OFF,TIM_ExtTRGPolarity_NonInverted,0x00);//第二步，选择时基单元的时钟,用这个函数说明TIM2的时基单元用了外部时钟。</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>
+
+<p>各参数的含义为：</p>
+<p>   @brief  Configures the External clock Mode2</p>
+<p>  @param  TIMx: where x can be  1, 2, 3, 4, 5 or 8 to select the TIM peripheral.</p>
+<p>   @param  TIM_ExtTRGPrescaler: The external Trigger Prescaler.</p>
+<pre><code> This parameter can be one of the following values:
+
+@arg TIM_ExtTRGPSC_OFF: ETRP Prescaler OFF.
+@arg TIM_ExtTRGPSC_DIV2: ETRP frequency divided by 2.
+@arg TIM_ExtTRGPSC_DIV4: ETRP frequency divided by 4.
+@arg TIM_ExtTRGPSC_DIV8: ETRP frequency divided by 8.
+</code></pre>
+<p>   @param  TIM_ExtTRGPolarity: The external Trigger Polarity.<br>     This parameter can be one of the following values:</p>
+<pre><code>   @arg TIM_ExtTRGPolarity_Inverted: active low or falling edge active.
+   @arg TIM_ExtTRGPolarity_NonInverted: active high or rising edge active.
+</code></pre>
+<p>   @param  ExtTRGFilter: External Trigger Filter.<br>     This parameter must be a value between 0x00 and 0x0F</p>
+<p>   @retval None</p>
+<p>   第一个为选择TIM2定时器，第二个参数意味着不需要分频，第三个为外部触发的极性——TIM_ExtTRGPolarity_Inverted意味着反向，就是低电平或者下降沿有效，TIM_ExtTRGPolarity_NonInverted为不反向，高电平有效。<br>   第四个参数为外部触发滤波器，还是对输入时钟进行一个滤波。</p>
+<p>UP主不滤波就能得到不错的结果，我对滤波设置为0x08实测效果达到预期。</p>
+<p>代码如下：</p>
+<p>main.c</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;stm32f10x.h&quot;</span><br><span class="line">#include &quot;Delay.h&quot;</span><br><span class="line">#include &quot;OLED.h&quot;</span><br><span class="line">#include &quot;Timer.h&quot;</span><br><span class="line"></span><br><span class="line">uint16_t Num;</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">	OLED_Init();</span><br><span class="line">	Timer_Init();</span><br><span class="line">	</span><br><span class="line">	OLED_ShowString(1,1,&quot;WangQi&#x27;s Weight:&quot;);//显示字符串</span><br><span class="line">	OLED_ShowString(3,1,&quot;CNT:&quot;);</span><br><span class="line">	</span><br><span class="line">	while (1)</span><br><span class="line">	&#123;</span><br><span class="line">		OLED_ShowNum(2,1,Num,5);</span><br><span class="line">		OLED_ShowNum(4,1,Timer_GetCounter(),5);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">void TIM2_IRQHandler(void)//定时器2的中断函数</span><br><span class="line">&#123;</span><br><span class="line">	if(TIM_GetITStatus(TIM2,TIM_IT_Update) == SET)//检查中断标志位</span><br><span class="line">	&#123;</span><br><span class="line">		Num ++;</span><br><span class="line">		TIM_ClearITPendingBit(TIM2,TIM_IT_Update);//清除标志位</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>
+
+<p>现在的Timer.c</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;stm32f10x.h&quot;                  // Device header</span><br><span class="line">#include &quot;stdint.h&quot;</span><br><span class="line"></span><br><span class="line">/*  extern uint16_t Num; */</span><br><span class="line"></span><br><span class="line">void Timer_Init(void)</span><br><span class="line">&#123;</span><br><span class="line">	TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;</span><br><span class="line">	NVIC_InitTypeDef NVIC_InitStructure;</span><br><span class="line">	GPIO_InitTypeDef GPIO_InitStructure;</span><br><span class="line">	</span><br><span class="line">	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2,ENABLE);//第一步开启时钟，TIM2通用计时器在APB1上</span><br><span class="line">	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA,ENABLE);</span><br><span class="line">	</span><br><span class="line">	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;</span><br><span class="line">	GPIO_InitStructure.GPIO_Pin  = GPIO_Pin_0;</span><br><span class="line">	GPIO_InitStructure.GPIO_Speed  = GPIO_Speed_50MHz;</span><br><span class="line">	GPIO_Init(GPIOA,&amp;GPIO_InitStructure);</span><br><span class="line">	</span><br><span class="line">	TIM_ETRClockMode2Config(TIM2,TIM_ExtTRGPSC_OFF,TIM_ExtTRGPolarity_NonInverted,0x08);//第二步，选择时基单元的时钟,用这个函数说明TIM2的时基单元用了外部时钟。</span><br><span class="line">	</span><br><span class="line">	//第三步，配置时基单元</span><br><span class="line">	TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;//指定时钟分频，时钟分频是决定输入信号的滤波的采样频率的</span><br><span class="line">	TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;//计数器模式，向上计数</span><br><span class="line">	TIM_TimeBaseInitStructure.TIM_Period = 10 - 1;//周期，ARR自动重装器的值</span><br><span class="line">	TIM_TimeBaseInitStructure.TIM_Prescaler = 1 - 1;//PSC预分频器的值</span><br><span class="line">	TIM_TimeBaseInitStructure.TIM_RepetitionCounter = 0;//重复计数器</span><br><span class="line">	TIM_TimeBaseInit(TIM2,&amp;TIM_TimeBaseInitStructure);</span><br><span class="line">	//时基单元配置完成</span><br><span class="line">	</span><br><span class="line">	TIM_ClearFlag(TIM2,TIM_FLAG_Update);//手动把更新中断标志位清除了，避免了刚初始化完就进中断的问题</span><br><span class="line">	</span><br><span class="line">	//配置使能更新中断</span><br><span class="line">	TIM_ITConfig(TIM2,TIM_IT_Update,ENABLE);//开启更新中断到NVIC的通路</span><br><span class="line">	</span><br><span class="line">	//配置NVIC</span><br><span class="line">	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);//选择分组二</span><br><span class="line">	</span><br><span class="line">	NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;//通道数</span><br><span class="line">	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;</span><br><span class="line">	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;//抢占优先级</span><br><span class="line">	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;//响应优先级</span><br><span class="line">	NVIC_Init(&amp;NVIC_InitStructure);</span><br><span class="line">	</span><br><span class="line">	//最后一步，启动定时器</span><br><span class="line">	TIM_Cmd(TIM2,ENABLE);</span><br><span class="line">	</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">uint16_t Timer_GetCounter(void)</span><br><span class="line">&#123;</span><br><span class="line">	return TIM_GetCounter(TIM2);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">//void TIM2_IRQHandler(void)//定时器2的中断函数</span><br><span class="line">//&#123;</span><br><span class="line">//	if(TIM_GetITStatus(TIM2,TIM_IT_Update) == SET)//检查中断标志位</span><br><span class="line">//	&#123;</span><br><span class="line">//		</span><br><span class="line">//		TIM_ClearITPendingBit(TIM2,TIM_IT_Update);//清除标志位</span><br><span class="line">//	&#125;</span><br><span class="line">//&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>
+
+<p>第一节定时器中断完结。</p>
+]]></content>
+      <tags>
+        <tag>STM32</tag>
+        <tag>学习笔记</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>OpenMMLab介绍&amp;安装MMSegmentation</title>
+    <url>/2023/09/11/Openmmlab/</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>笔者参加了23年9月的组队学习任务，特此记录学习笔记，以及作为打卡链接。</p>
+<p><a class="link"   href="https://github.com/TommyZihao/MMSegmentation_Tutorials" >笔记资料来源 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<h2 id="OpenMMLab介绍"><a href="#OpenMMLab介绍" class="headerlink" title="OpenMMLab介绍"></a>OpenMMLab介绍</h2><p>近年来以深度学习为代表的人工智能技术得到飞速发展，在计算机视觉、强化学习等领域产生了很多成果，而开发深度学习算法就离不开框架。途中诞生了许多深度学习的框架，Pytorch等。而OpenMMLab就是一个由国人主导的，在国际上有影响力的计算机视觉开源算法体系，其整理好的各类论文、提供的案例为学习者提供方便。</p>
+<p>OpenMMLab已经累计开源了30多个视觉算法库，2400个预训练模型，涵盖各类计算机视觉任务，全部开源。</p>
+<p>MMDetection是目标检测、实例分割和全景分割，，优点在于复现等方便，模型库将前沿的必读的论文等都整理成了学习路径等。</p>
+<p>MMYOLO目标检测算法，收录了多个版本YOLO等。</p>
+<p>还有MMRotate、MMSegmentation等多个库。以及对应部署过程的MMDeploy工具箱。</p>
+<h2 id="语义分割"><a href="#语义分割" class="headerlink" title="语义分割"></a>语义分割</h2><h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p>语义分割任务是要将图像按照物体的类别分割成不同的区域，相当于对每个像素进行分类。语义就是指类别。提取像素信息，十分精准。</p>
+<p>语义分割是视觉解决的基础任务之一。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230911171403.png"
+                     
+                ></p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230911171521.jpg"
+                     
+                ></p>
+<p>上面两个图很好的说明了视觉各类任务的区别所在。</p>
+<h3 id="语义分割标注格式"><a href="#语义分割标注格式" class="headerlink" title="语义分割标注格式"></a>语义分割标注格式</h3><p>格式为和图像等尺寸的整数掩膜（Int mask）图像——和图像一样大小的矩阵，矩阵中的值是用于区分像素的0~N种类的数字。</p>
+<h3 id="语义分割应用场景"><a href="#语义分割应用场景" class="headerlink" title="语义分割应用场景"></a>语义分割应用场景</h3><p>当不存在“实例”概念，只需要每个像素分类，用语义分割（目标大片，尖细分布，轮廓不规则时），比如裂纹、农田遥感、金属金相，血管等。腾讯会议的背景替换，核磁共振影像等等。</p>
+<p>如果不存在“实例”概念，只需要每个像素分类，用语义分割；</p>
+<p>如果需要区分“实例”，用实例分割脑部肿瘤、细胞核、汽车、行人、动物。</p>
+<p>如果需要目标检测预测框（计数、追踪、流量统计），用实例分割目标检测本身就是“实例级”，关键点检测可以视为特殊的“实例分割”。</p>
+<p>现在可以用AI指定替换图中的内容进行P图。</p>
+<h3 id="语义分割算法演进"><a href="#语义分割算法演进" class="headerlink" title="语义分割算法演进"></a>语义分割算法演进</h3><p>代表性的语义分割算法有2015CVRR的FCN，医疗影像中广泛使用的UNet，MMSegmentation模型库都进行了很全面的整理和复现，还有一些骨干网络。SAM算法能够很快自动将物体标注出来。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/20230914210404.jpg"
+                     
+                ></p>
+<h3 id="语义分割数据集"><a href="#语义分割数据集" class="headerlink" title="语义分割数据集"></a>语义分割数据集</h3><p><a class="link"   href="https://paperswithcode.com/sota" >数据集榜单 <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a>，，还有一些工具包和库，建议挑Star高的。ADE20K、Cityscapes等都是常用的benchmark。</p>
+<h3 id="语义分割评估指标"><a href="#语义分割评估指标" class="headerlink" title="语义分割评估指标"></a>语义分割评估指标</h3><p>和分类很像，大致如图：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/20230914211346.jpg"
+                     
+                ></p>
+<h2 id="标注自己的数据集"><a href="#标注自己的数据集" class="headerlink" title="标注自己的数据集"></a>标注自己的数据集</h2><h3 id="标注前"><a href="#标注前" class="headerlink" title="标注前"></a>标注前</h3><p>下载标注软件Labelme并配置完成。</p>
+<p><a class="link"   href="https://github.com/wkentaro/labelme" >Labelme <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a>，大大帮助提高标注效率。</p>
+<p>在项目中安装对应版本。打开程序后，点击File取消勾选Save With Image Data这一项，否则会包含原始的源文件使得标注文件很大，再勾选上Save Automatically自动保存。</p>
+<p>用labelme打开存有所有需要标注的文件夹，即可导入图片开始标注，在edit里选择标注方式，比如点划线，将物体包囊起来，起一个名字，ctrl+s保存后，本地就会出现一个json文件。</p>
+<h3 id="标注中"><a href="#标注中" class="headerlink" title="标注中"></a>标注中</h3><h3 id="标注后"><a href="#标注后" class="headerlink" title="标注后"></a>标注后</h3><h2 id="安装MMSegmentation"><a href="#安装MMSegmentation" class="headerlink" title="安装MMSegmentation"></a>安装MMSegmentation</h2><p>基于云GPU以及notebook上的代码框架，已经成功配置完成。</p>
+]]></content>
+      <tags>
+        <tag>学习笔记</tag>
+        <tag>算法</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>STM32学习笔记（八）——TIM输出比较</title>
+    <url>/2023/09/04/STM32-6-2/</url>
+    <content><![CDATA[<h2 id="输出比较简介"><a href="#输出比较简介" class="headerlink" title="输出比较简介"></a>输出比较简介</h2><p>OC（Output Compare输出比较），输出比较是通过比较CNT（时基单元中的计数器）与CCR（捕获&#x2F;比较寄存器）值的关系，来实现对输出电平进行置1、置0或反转的操作，用于输出一定频率的波形。</p>
+<blockquote>
+<p>补充点英文IC（Input Capture输入捕获），CC（Capture&#x2F;Compare输入捕获和输出比较的单元）</p>
+</blockquote>
+<p>每个高级定时器和通用定时器都拥有4个输出比较通道，高级定时器的前三个额外拥有死区生成和互补输出的功能。</p>
+<p>以上设计结构的部分都可以从通用定时器和高级定时器的结构图上辅助理解。</p>
+<h2 id="PWM简介"><a href="#PWM简介" class="headerlink" title="PWM简介"></a>PWM简介</h2><p>PWM（Pulse Width Modulation）脉冲宽度调制，PWM波是一个数字输出，由连续的高低电平信号组成，在具有惯性的系统中，可以通过对一系列脉冲的宽度进行调制，来等效地获得所需要地模拟参量，用于电机控速等领域。</p>
+<p>也就是本身是数字信号，通过调制宽度来等效实现一个模拟信号。比如，通过调制宽度，来控制电机不断地通电断电，将电机维持在一个中等速度，当然这个“不断”是非常快地一个闪变。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230905154254.jpg"
+                     
+                ></p>
+<p>就如上方左图，通过不断变换的方波，能等效为连续的模拟量。</p>
+<p>重要的PWM参数：</p>
+<ul>
+<li>频率 &#x3D; 1&#x2F;Ts</li>
+<li>占空比 &#x3D; Ton&#x2F;Ts</li>
+<li>分辨率 &#x3D; 占空比变化步距</li>
+</ul>
+<p>对照上方的右图，占空比是高电平的时间比上周期时间的百分比，占空比越小，等效的模拟电压越趋近于低电平。有一点比较好，等效关系是线性的，高电平5V，低电平0V，此时50%的占空比就是中间电压——2.5V，20%就是1&#x2F;5也就是1V，最后一个分辨率，指的是跳变的步距，比方说1%-&gt;2%-&gt;3%，这种步距就是1%。描述的就是占空比变换的细密程度。</p>
+<h2 id="定时器输出比较模块输出PWM波的原理"><a href="#定时器输出比较模块输出PWM波的原理" class="headerlink" title="定时器输出比较模块输出PWM波的原理"></a>定时器输出比较模块输出PWM波的原理</h2><p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230905161432.jpg"
+                     
+                ></p>
+<p>上图为通用定时器的输出比较电路的结构，左边是CNT计数器和CCR1第一路的捕获&#x2F;比较寄存器，二者进行比较，当CNT&gt;CCR1或者CNT&#x3D;CCR1时，给输出模式控制器传一个信号，然后控制器改变它输出的OC1REF（参考信号）的高低电平，这个信号可以前往主模式控制器，即可以映射到主模式的TRGO上面去，但主要去向还是下面这路，走到了一个极性选择的电路，给这块的寄存器写0，电平不反转，写一就会通过非门反转，即选择要不要翻转电平信号，最后这块是输出使能电路，选择要不要输出，引出的OC1引脚就是CH1通道的引脚。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230905162355.jpg"
+                     
+                ></p>
+<p>怎样通过控制器来选择输出比较的模式见上表各个模式的描述。</p>
+<p>冻结模式，REF保持，用于暂停一段时间输出；下面三个模式中的前两个，都是“匹配时置”，所以电平仅会置一下下，是一次性的，用处不大；而匹配时电平反转就有用了，记一个CRR为0，当CNT达到重装值一重装，CNT为0，即可反转一次电平，可以用来输出占空比50%的波形，至于有效无效可以看作高与低；</p>
+<p>接着是两个强制电平，和冻结模式差不多，如果想暂停输出，并且维持一段高电平或者低电平，就可以用这两个；</p>
+<p>模式1和模式2最为关键，可以输出频率和占空比都可调的PWM波，基本思想都差不多，分析下向上计数的，</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230906134346.jpg"
+                     
+                ></p>
+<p>看下上面这个结构图，左上角还是时基单元和运行控制部分，包含了时钟源选择，这里都是定时器结构不再赘述，我们说CNT计数器是一直在不断运行的，到达重装值就重装计数，它下面就是输出比较单元，总共有4路，最开始是需要自己设置的CCR比较寄存器，不断与CNT比较，接着就是模式控制器，假设为模式1，对照右上的图得以理解，REF就是可调PWM，经过使能，输出即可。</p>
+<h2 id="参数计算"><a href="#参数计算" class="headerlink" title="参数计算"></a>参数计算</h2><p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230906135158.jpg"
+                     
+                ></p>
+<p>下面绿的就是输出的PWM波，它的周期对应着计数器从零到重装值的一个溢出更新周期，所以PWM的频率就等于计数器更新频率，公式解读为，预分频器的值&#x2F;预分频器加一也就是实际分频系数的值，这一步一除，其实是CK_CNT的值，再除以（重装值+1），得到的就是重装即更新事件的频率-&gt;PWM的频率</p>
+<p>第二个公式PWM占空比，在图中的累加的情况下，CCR的值&#x2F;（ARR+1）就是高电平占的比例，即占空比。</p>
+<p>第三个分辨率，占空比变化的步距，看步距，先明确变化的范围，CCR的变化范围取决于ARR+1，所以分辨率就是占空比最小的步距即1&#x2F;(ARR+1)。</p>
+<p>另有高级定时器可做了解。</p>
+<h2 id="外部设备"><a href="#外部设备" class="headerlink" title="外部设备"></a>外部设备</h2><h3 id="舵机"><a href="#舵机" class="headerlink" title="舵机"></a>舵机</h3><p>舵机是一种根据输入PWM信号占空比来控制输出角度的装置，对信号要求为：周期20ms，高电平宽度为0.5ms~2.5ms。套件中用到了SG90型号舵机，有三根输入线，两根电源，一根PWM信号。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230906173900.jpg"
+                     
+                ></p>
+<h3 id="直流电机"><a href="#直流电机" class="headerlink" title="直流电机"></a>直流电机</h3><p>需要外挂驱动器。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230906174327.jpg"
+                     
+                ></p>
+<p>TB6612有两路推挽的电路，可以控制电流的流向，内部电路如下：</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20230906174901.jpg"
+                     
+                ></p>
+<p>VM是电机电源的正极，要求是一个大电流电源（4.5-10V），和电机额定电压保持一致，VCC就是控制器相同的电源（STM32就是3.3V），内部GND都是相通的，接一个就行。AO1、AO2和BO1、BO2就是两路电机的输出，PWMA、AIN2和AIN1就是A路电机的控制端，PWMA引脚接PWM信号输出端，这几个脚接GPIO即可。注意右下角的电平与控制关系。</p>
+]]></content>
+      <tags>
+        <tag>STM32</tag>
+        <tag>学习笔记</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>大三第一个月</title>
+    <url>/2023/10/02/firstmonth/</url>
+    <content><![CDATA[<p>23年9月4号，大三学期开始。我知道大三的重要性，所以在暑期留校多日稳住心里后，开学几天就如大一新生，踌躇满志。很明显，越是同时想抓的越多，越是难以坚持，期间lyj焦虑到失眠，我曾表示关心，同时表达自己心中的不知所措。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/0ABVR2%7BJYDQ_NF5EPBG2%60UI_tmb.jpg"
+                     
+                ></p>
+<p>开学前明确了下这个学期的任务，过六级，刷绩点，技术吃透，带带比赛。看着虽然不多，但实践起来，每一样的压力堆积起来，又会让人想要摆烂，再加上本来计划学习一下语义分割，但却因为工作室突然的联系而心烦意乱，心一燥，就没有什么事能踏实做好。国庆中秋双节放假前夕，浮躁的很，课程胡乱跟一下，然后将两个比赛报上名。放假，开摆。</p>
+<p>感冒，加上放假休息三天，终于回过些神来，仔细想想问题所在。要想刷绩点，好好学习，一定不能懒惰，这一定要做好心理预期，而不是想娱乐就娱乐。英语学习，贵在坚持，复习六级，也要复习全面，这也十分不容易。学习技术更是要花时间心思，按部就班，一蹴而就很困难。别被别人打乱了阵脚。比赛要学会任务下放与管理。主要问题在于不想放下假期里的娱乐习惯，还希望能够获得不错的收益，哪有这种美事。也就是说，当你写下一个学期的目标，它不只是一段文字，首先要看到他背后需要付出什么，接着就是承受代价并坚持。</p>
+<p>这让我想到了国庆放假前一周的周末，和wq，ss去夜爬武功山，旅行前已经做好了累成狗的准备，但真真切切去了，还是感觉难以承受，好在最后咬牙坚持下来，并且成功看到了日出。但回来两三天后，小腿的疼痛才得以缓解。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20231002101634.jpg"
+                     
+                ></p>
+<p>说到此行，简单进行一点记录。晚上十点多到达江西萍乡站，打车去游客中心坐免费大巴到达登山口，门票不急着买，接着就是爬爬爬爬，穿过云海的山路部分十分潮湿。金顶上人头攒动，难以落脚，最后在草甸上席地而坐，五点多了，等待日出。下山之痛，难以言表，不再形容。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/QQ20231002101701.jpg"
+                     
+                ></p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://zyipan-1316060708.cos.ap-guangzhou.myqcloud.com/JS6IFGQ%40MA53TVRO%5D7NKXYR_tmb.jpg"
+                     
+                ></p>
+<p>说回目前的困扰，首先要下定决心，努力一把，真正踏实下来，去做好规划的每一项，不要浮躁，不要心急。然后就是升学的困扰，保研率增高，绩点要再冲一把，考研也要抓，多定几个学校。但还是说慢慢来了解，别心急。要有自己的节奏。<br>记录就到这，主要想记一下开学这一月来的心路历程，相较于前两年，大三想的确实变多了，但不应该浮躁，更应该踏实走好每一步。</p>
+]]></content>
+      <tags>
+        <tag>杂记</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>使用Materials Studio进行半导体实验——基于MS的常见半导体材料第一性原理理论计算</title>
+    <url>/2024/01/12/bandaoti/</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>很久没更新了，趁着期末考试结束，把这学期学习使用的MS报告整理整理共享出来，希望能对人有些帮助。</p>
+<p>经过本学期半导体物理学的课程学习，对半导体的诸多物理性质有所了解，而进行此次实验，真正利用仿真软件进行实践计算，得出书中的部分结论，有效巩固了理论知识概念，实现理论方法水平和软件操作技能的双重提升。在此次实验中，针对诸多不解内容也查阅了大量资料，更多地了解材料计算方面的一些理论概念。</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">本文只是作为一个本科生的笔主的课程实验报告整理而来，理论数据等还请参考真正的论文，本文也不对精度有过高要求，本人业余，文章仅供参考。</span><br></pre></td></tr></table></figure></div>
+
+<h2 id="仿真实验理论基础"><a href="#仿真实验理论基础" class="headerlink" title="仿真实验理论基础"></a>仿真实验理论基础</h2><p>在本次实验中，利用仿真软件计算过程中仍存在许多困惑，查阅了一些资料对一些理论概念进行了学习，记录如下：</p>
+<p>第一性原理（First Principles）是一种理论和计算方法，用于研究材料的物理和化学性质，特别是固体材料的电子结构。这个方法基于量子力学的基本方程——薛定谔方程，可以确定材料中电子的运动方式，并推导出材料的基本性质，例如晶格常数、能带结构、态密度、晶体缺陷等。第一性原理方法的核心是采用量子力学、电子相互作用、周期性边界条件等，对材料中的电子结构和性质进行严格计算。这种方法通常使用密度泛函理论等近似来解决多体量子力学问题。</p>
+<p>另外经查阅资料了解到，第一性原理方法一直以来都是计算材料领域中的重要问题。作为材料计算的标准模型，局域密度近似（LDA）或广义梯度近似（GGA）下的密度泛函理论（DFT）仍存在显著低估材料带隙的系统性误差，即所谓的“带隙问题”。</p>
+<p>密度泛函理论（Density Functional Theory，DFT）是一种基于电子密度的量子力学方法，能够提供对物质基本性质和相互作用的深入理解。</p>
+]]></content>
+      <tags>
+        <tag>工具</tag>
+      </tags>
+  </entry>
+</search>
